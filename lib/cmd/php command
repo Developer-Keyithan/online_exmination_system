@@ -1,0 +1,5 @@
+# change permissions (0755,0644)
+    php lib/cmd/fix_permissions.php
+    -OR -
+    #http://localhost/web_app_1/fix_permissions?key=dino123 -->
+
