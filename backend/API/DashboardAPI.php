@@ -18,9 +18,4 @@ class DashboardAPI {
         // return view('auth.login', ['title' => 'Login']);
         // redirect('login');
     }
-
-    public function dashboard() {
-        // This route should be protected by middleware
-        return view('admin.dashboard', ['title' => 'Dashboard']);
-    }
 }

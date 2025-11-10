@@ -53,7 +53,7 @@ if (!function_exists('config')) {
 function view($view, $data = [])
 {
     // use Core\View;
-    $viewPath = FRONTEND_PATH . "views/" . str_replace('.', '/', $view) . ".php";
+    $viewPath = FRONTEND_PATH . "pages/" . str_replace('.', '/', $view) . ".php";
     $viewEngine = new View($data);
     return $viewEngine->render($viewPath, $data);
 }
@@ -61,7 +61,7 @@ function view($view, $data = [])
 // view_path helper for includes
 function view_path($view)
 {
-    return FRONTEND_PATH . "views/" . str_replace('.', '/', $view) . ".php";
+    return FRONTEND_PATH . "pages/" . str_replace('.', '/', $view) . ".php";
 }
 
 
@@ -183,7 +183,7 @@ function renderMenuOptions($menu, $collapse, $level = 0)
             $menuId = 'menu_' . $item['id'] . '_' . $level;
             $isActive = isActiveMenuItem($item, $current);
             $checked = $isActive ? 'checked' : '';
-            $activeClass = $isActive ? 'bg-[#0006] border-blue-500 border-l-red-500 border-l-2' : 'text-gray-300 hover:text-white hover:bg-[#fff6]';
+            $activeClass = $isActive ? 'bg-[#0ff3] hover:bg-[#0ff6] border-blue-500 border-l-[#0ff] border-l-2' : 'text-gray-300 hover:text-white hover:bg-[#fff6]';
             // $iconClass = $isActive ? 'text-blue-500' : 'text-gray-400';
             ?>
 

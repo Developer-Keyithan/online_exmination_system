@@ -1,11 +1,23 @@
-<?php
-$this->extend('frontend');
-$this->controller('dashboardController');
-// setMinibar();
-?>
-
+<?php $this->extend('frontend'); ?>
+<?php $this->controller('AuthController')?>
 <?php $this->start('content'); ?>
-    <div class="glass-effect rounded-3xl p-8 w-full max-w-md" style="animation-duration: 6s;">
+<!-- Background lighting effects -->
+<div class="light-effect light-left"></div>
+<div class="light-effect light-right"></div>
+<div class="light-effect light-center"></div>
+
+<!-- Floating particles -->
+<div class="absolute top-1/4 left-1/4 w-3 h-3 bg-blue-400 rounded-full opacity-60 floating"
+    style="animation-delay: 0.5s;"></div>
+<div class="absolute top-1/3 right-1/4 w-2 h-2 bg-purple-400 rounded-full opacity-60 floating"
+    style="animation-delay: 1s;"></div>
+<div class="absolute bottom-1/4 left-1/3 w-4 h-4 bg-cyan-400 rounded-full opacity-60 floating"
+    style="animation-delay: 1.5s;"></div>
+<div class="absolute top-2/3 right-1/3 w-3 h-3 bg-pink-400 rounded-full opacity-60 floating"
+    style="animation-delay: 2s;"></div>
+
+<!-- Login container -->
+<div class="glass-effect rounded-3xl p-8 w-full max-w-md floating mx-auto" style="animation-duration: 6s;">
     <div class="text-center mb-2">
         <div class="inline-block p-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 mb-4 pulse">
             <i class="fas fa-user text-white text-2xl"></i>

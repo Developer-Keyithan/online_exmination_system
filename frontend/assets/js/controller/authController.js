@@ -1,4 +1,4 @@
-app.controller('authController', [
+app.controller('AuthController', [
     "$scope",
     "$http",
     function ($scope, $http) {

@@ -115,14 +115,14 @@ class View
         }
 
         $path = str_replace('.', DIRECTORY_SEPARATOR, $viewPath);
-        $baseDir = rtrim(FRONTEND_PATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR;
+        $baseDir = rtrim(FRONTEND_PATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'pages' . DIRECTORY_SEPARATOR;
         return $baseDir . $path . '.php';
     }
 
     private function resolveLayoutPath($layout)
     {
         $path = str_replace('.', DIRECTORY_SEPARATOR, $layout);
-        $baseDir = rtrim(FRONTEND_PATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR;
+        $baseDir = rtrim(FRONTEND_PATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'pages' . DIRECTORY_SEPARATOR;
 
         $layoutPath = $baseDir . 'layouts' . DIRECTORY_SEPARATOR . $path . '.php';
         if (file_exists($layoutPath)) {

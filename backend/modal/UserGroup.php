@@ -16,7 +16,12 @@ class UserGroup {
         ];
         $this->seeds = [
             ['id'=>1,'name' => 'Technical'],
-            ['id'=>2,'name' => 'Administrator']
+            ['id'=>2,'name' => 'Administrator'],
+            ['id'=>3,'name' => 'Admin'],
+            ['id'=>4,'name' => 'HOD'],
+            ['id'=>5,'name' => 'Lecturer'],
+            ['id'=>6,'name' => 'Student'],
+            ['id'=>7,'name' => 'Parent']
         ];
     }
     // Database table

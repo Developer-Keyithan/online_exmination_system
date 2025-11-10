@@ -24,7 +24,7 @@ class AuthAPI
                 throw new Exception("Email and password are required.");
             }
 
-            $statement = db()->prepare(" SELECT u.*, g.permission FROM users u LEFT JOIN user_group g ON u.user_group = g.id WHERE u.email = ?");
+            $statement = db()->prepare(" SELECT u.*, g.permission, g.name as role_name FROM users u LEFT JOIN user_group g ON u.user_group = g.id WHERE u.email = ?");
             $statement->execute([$email]);
             $user = $statement->fetch(PDO::FETCH_ASSOC);
 
@@ -46,6 +46,7 @@ class AuthAPI
             $_SESSION['email'] = $user['email'];
             $_SESSION['role'] = $user['user_group'];
             $_SESSION['username'] = $user['name'];
+            $_SESSION['role_name'] = $user['role_name'];
             $_SESSION['permissions'] = !empty($user['permission']) ? explode(',', $user['permission']) : [];
 
             return json_encode([
