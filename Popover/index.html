@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Popover System Demo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Your provided CSS here */
+        .popover-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .popover-overlay.show {
+            opacity: 1;
+        }
+        
+        .popover-container {
+            position: absolute;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            min-width: 300px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: auto;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 10000;
+        }
+        
+        /* Center position (default for all popovers) */
+        .popover-container.center {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+        }
+        
+        .popover-container.center.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+        
+        /* Top-center position (for content popovers) */
+        .popover-container.top-center {
+            top: 10%;
+            left: 50%;
+            transform: translate(-50%, -10%) scale(0.9);
+        }
+        
+        .popover-container.top-center.show {
+            transform: translate(-50%, -10%) scale(1);
+            opacity: 1;
+        }
+        
+        .popover-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            user-select: none;
+        }
+        
+        .popover-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .popover-close {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: #6b7280;
+            transition: color 0.2s;
+        }
+        
+        .popover-close:hover {
+            color: #374151;
+        }
+        
+        .popover-body {
+            padding: 1.5rem;
+        }
+        
+        .popover-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        
+        .popover-button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        
+        .popover-button-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .popover-button-primary:hover {
+            background-color: #2563eb;
+        }
+        
+        .popover-button-secondary {
+            background-color: #6b7280;
+            color: white;
+        }
+        
+        .popover-button-secondary:hover {
+            background-color: #4b5563;
+        }
+        
+        .popover-button-success {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .popover-button-success:hover {
+            background-color: #059669;
+        }
+        
+        .popover-button-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        .popover-button-danger:hover {
+            background-color: #dc2626;
+        }
+        
+        .popover-content {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        /* Dragging state */
+        .popover-container.dragging {
+            cursor: move;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Loading state */
+        .popover-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            flex-direction: column;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Form styles */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            ring: 2px solid #3b82f6;
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .data-table th {
+            background-color: #f9fafb;
+            font-weight: 600;
+        }
+        
+        .data-table tr:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-active {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .api-info {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Demo page styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        h1 {
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .demo-card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .demo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .demo-card h3 {
+            margin-top: 0;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .demo-card p {
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+        
+        .demo-button {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .demo-button:hover {
+            background-color: #2563eb;
+        }
+        
+        .demo-button.success {
+            background-color: #10b981;
+        }
+        
+        .demo-button.success:hover {
+            background-color: #059669;
+        }
+        
+        .demo-button.warning {
+            background-color: #f59e0b;
+        }
+        
+        .demo-button.warning:hover {
+            background-color: #d97706;
+        }
+        
+        .demo-button.danger {
+            background-color: #ef4444;
+        }
+        
+        .demo-button.danger:hover {
+            background-color: #dc2626;
+        }
+        
+        .demo-button.secondary {
+            background-color: #6b7280;
+        }
+        
+        .demo-button.secondary:hover {
+            background-color: #4b5563;
+        }
+        
+        .features-section {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .features-section h2 {
+            margin-top: 0;
+            color: #1f2937;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .feature-icon {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .feature-content h4 {
+            margin: 0 0 0.5rem 0;
+            color: #1f2937;
+        }
+        
+        .feature-content p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Popover System Demo</h1>
+            <p class="subtitle">A flexible and powerful popover system with API integration</p>
+        </header>
+        
+        <div class="demo-grid">
+            <div class="demo-card">
+                <h3><i class="fas fa-info-circle"></i> Info Popover</h3>
+                <p>Simple informational popover with a single OK button.</p>
+                <button class="demo-button" id="info-popover-btn">Show Info Popover</button>
+            </div>
+            
+            <div class="demo-card">
+                <h3><i class="fas fa-question-circle"></i> Confirm Popover</h3>
+                <p>Confirmation dialog with both OK and Cancel buttons.</p>
+                <button class="demo-button secondary" id="confirm-popover-btn">Show Confirm Popover</button>
+            </div>
+            
+            <div class="demo-card">
+                <h3><i class="fas fa-check-circle"></i> Success Popover</h3>
+                <p>Success notification with a positive action button.</p>
+                <button class="demo-button success" id="success-popover-btn">Show Success Popover</button>
+            </div>
+            
+            <div class="demo-card">
+                <h3><i class="fas fa-exclamation-triangle"></i> Error Popover</h3>
+                <p>Error message display with retry option.</p>
+                <button class="demo-button danger" id="error-popover-btn">Show Error Popover</button>
+            </div>
+            
+            <div class="demo-card">
+                <h3><i class="fas fa-file-alt"></i> Content Popover</h3>
+                <p>Popover with custom content and multiple action buttons.</p>
+                <button class="demo-button" id="content-popover-btn">Show Content Popover</button>
+            </div>
+            
+            <div class="demo-card">
+                <h3><i class="fas fa-database"></i> API Content Popover</h3>
+                <p>Popover that fetches and displays content from an API.</p>
+                <button class="demo-button warning" id="api-popover-btn">Show API Popover</button>
+            </div>
+        </div>
+        
+        <div class="features-section">
+            <h2>Features</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-mouse-pointer"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Drag & Drop</h4>
+                        <p>Drag popovers by the header to reposition them on screen.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-keyboard"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Keyboard Navigation</h4>
+                        <p>Use Escape to close or Enter to confirm actions.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-spinner"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Loading States</h4>
+                        <p>Visual feedback when content is loading from APIs.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>API Integration</h4>
+                        <p>Seamlessly fetch and display content from backend APIs.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Customizable</h4>
+                        <p>Multiple button styles and positioning options.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Responsive</h4>
+                        <p>Works perfectly on all screen sizes and devices.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Popover System Demo &copy; 2023</p>
+        </footer>
+    </div>
+
+    <script>
+        // Your provided JavaScript here
+        const PHPAPILoader = {
+            config: {
+                baseUrl: 'api/',
+                timeout: 10000,
+                retryAttempts: 3,
+                defaultHeaders: {
+                    'Content-Type': 'application/json',
+                }
+            },
+
+            configure(newConfig) {
+                this.config = { ...this.config, ...newConfig };
+            },
+
+            async fetchContent(endpoint, data = null, method = null) {
+                if (!endpoint || typeof endpoint !== 'string') {
+                    throw new Error('Endpoint must be a valid string');
+                }
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
+
+                let attempts = 0;
+
+                while (attempts < this.config.retryAttempts) {
+                    try {
+                        const url = this.config.baseUrl + endpoint;
+                        const requestMethod = method || (data ? 'POST' : 'GET');
+                        const options = {
+                            method: requestMethod,
+                            headers: this.config.defaultHeaders,
+                            signal: controller.signal
+                        };
+
+                        if (data && (requestMethod === 'POST' || requestMethod === 'PUT' || requestMethod === 'PATCH')) {
+                            options.body = JSON.stringify(data);
+                        }
+
+                        const response = await fetch(url, options);
+                        clearTimeout(timeoutId);
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        return await response.json();
+
+                    } catch (error) {
+                        attempts++;
+                        console.warn(`Attempt ${attempts} failed:`, error.message);
+
+                        if (attempts >= this.config.retryAttempts) {
+                            clearTimeout(timeoutId);
+                            throw error;
+                        }
+                    }
+                }
+            },
+
+            renderError(message, error = null) {
+                return `
+                    <div class="text-center p-6">
+                        <i class="fas fa-exclamation-triangle text-3xl text-red-500 mb-3"></i>
+                        <h4 class="font-semibold text-lg text-red-700 mb-2">API Error</h4>
+                        <p class="text-red-600 mb-2">${message}</p>
+                        ${error ? `<p class="text-sm text-gray-600">${error.message}</p>` : ''}
+                        <button class="mt-4 popover-button popover-button-primary" onclick="location.reload()">
+                            <i class="fas fa-redo mr-1"></i>
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
+        };
+
+        const Popover = {
+            async show(options) {
+                const overlay = document.createElement('div');
+                overlay.className = 'popover-overlay';
+                document.body.appendChild(overlay);
+
+                const popover = document.createElement('div');
+                const positionClass = options.type === 'content' ? 'top-center' : 'center';
+                popover.className = `popover-container ${positionClass}`;
+
+                let contentHtml = options.content || '';
+
+                if (options.apiConfig) {
+                    contentHtml = `
+                        <div class="popover-loading">
+                            <div class="loading-spinner"></div>
+                            <p class="mt-3 text-gray-600">Loading content...</p>
+                        </div>
+                    `;
+                } else if (typeof options.content === 'function') {
+                    contentHtml = `
+                        <div class="popover-loading">
+                            <div class="loading-spinner"></div>
+                            <p class="mt-3 text-gray-600">Loading content...</p>
+                        </div>
+                    `;
+                }
+
+                let footerHtml = '';
+
+                switch (options.type) {
+                    case 'info':
+                        footerHtml = `
+                            <button class="popover-button popover-button-primary" data-action="ok">
+                                ${options.confirmText || 'OK'}
+                            </button>
+                        `;
+                        break;
+                    case 'confirm':
+                        footerHtml = `
+                            <button class="popover-button popover-button-secondary" data-action="cancel">
+                                ${options.cancelText || 'Cancel'}
+                            </button>
+                            <button class="popover-button popover-button-primary" data-action="confirm">
+                                ${options.confirmText || 'Confirm'}
+                            </button>
+                        `;
+                        break;
+                    case 'content':
+                        if (Array.isArray(options.buttons)) {
+                            footerHtml = options.buttons.map((btn, index) => `
+                                <button class="popover-button ${btn.class || ''}" 
+                                        style="background: ${btn.background || '#4CAF50'}; color: ${btn.color || '#fff'}"
+                                        data-index="${index}">
+                                    ${btn.text}
+                                </button>
+                            `).join('');
+                        } else {
+                            footerHtml = options.buttons || '';
+                        }
+                        break;
+                    case 'success':
+                        footerHtml = `
+                            <button class="popover-button popover-button-success" data-action="ok">
+                                ${options.confirmText || 'OK'}
+                            </button>
+                        `;
+                        break;
+                }
+
+                popover.innerHTML = `
+                    <div class="popover-header">
+                        <h3 class="popover-title">${options.title}</h3>
+                        <button class="popover-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="popover-body">
+                        ${contentHtml}
+                    </div>
+                    <div class="popover-footer">
+                        ${footerHtml}
+                    </div>
+                `;
+
+                document.body.appendChild(popover);
+
+                setTimeout(() => {
+                    overlay.classList.add('show');
+                    popover.classList.add('show');
+                }, 10);
+
+                if (options.apiConfig) {
+                    try {
+                        const loadedContent = await Popover.fetchAPIContent(options.apiConfig);
+                        const body = popover.querySelector('.popover-body');
+                        body.innerHTML = loadedContent;
+                    } catch (error) {
+                        const body = popover.querySelector('.popover-body');
+                        body.innerHTML = Popover.renderError(error.message);
+                    }
+                } else if (typeof options.content === 'function') {
+                    try {
+                        const loadedContent = await options.content();
+                        const body = popover.querySelector('.popover-body');
+                        body.innerHTML = loadedContent;
+                    } catch (error) {
+                        const body = popover.querySelector('.popover-body');
+                        body.innerHTML = Popover.renderError(error.message);
+                    }
+                }
+
+                const closePopover = () => {
+                    overlay.classList.remove('show');
+                    popover.classList.remove('show');
+
+                    setTimeout(() => {
+                        if (document.body.contains(overlay)) document.body.removeChild(overlay);
+                        if (document.body.contains(popover)) document.body.removeChild(popover);
+                    }, 300);
+                };
+
+                popover.querySelector('.popover-close').addEventListener('click', closePopover);
+
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        closePopover();
+                        if (options.onCancel) options.onCancel();
+                    }
+                });
+
+                popover.querySelectorAll('[data-action]').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const action = button.getAttribute('data-action');
+
+                        if (action === 'ok' || action === 'confirm') {
+                            if (options.onConfirm) options.onConfirm();
+                        } else if (action === 'cancel') {
+                            if (options.onCancel) options.onCancel();
+                        }
+
+                        closePopover();
+                    });
+                });
+
+                popover.querySelectorAll('.popover-footer button').forEach((btn, idx) => {
+                    btn.addEventListener('click', () => {
+                        const button = options.buttons && options.buttons[idx];
+                        if (button && button.onClick) button.onClick(popover);
+                        else closePopover();
+                    });
+                });
+
+                const handleKeydown = (e) => {
+                    if (e.key === 'Escape') {
+                        if (options.onCancel) options.onCancel();
+                        closePopover();
+                        document.removeEventListener('keydown', handleKeydown);
+                    } else if (e.key === 'Enter') {
+                        const primaryButton = popover.querySelector('[data-action="ok"], [data-action="confirm"]');
+                        if (primaryButton) {
+                            primaryButton.click();
+                            document.removeEventListener('keydown', handleKeydown);
+                        }
+                    }
+                };
+
+                document.addEventListener('keydown', handleKeydown);
+
+                let isDragging = false;
+                let dragOffset = { x: 0, y: 0 };
+
+                const header = popover.querySelector('.popover-header');
+
+                header.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    popover.classList.add('dragging');
+                    const rect = popover.getBoundingClientRect();
+                    dragOffset.x = e.clientX - rect.left;
+                    dragOffset.y = e.clientY - rect.top;
+                    e.preventDefault();
+                });
+
+                const handleMouseMove = (e) => {
+                    if (!isDragging) return;
+                    popover.style.left = `${e.clientX - dragOffset.x}px`;
+                    popover.style.top = `${e.clientY - dragOffset.y}px`;
+                    popover.style.transform = 'none';
+                };
+
+                const handleMouseUp = () => {
+                    isDragging = false;
+                    popover.classList.remove('dragging');
+                };
+
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+
+                const originalClose = closePopover;
+                const enhancedClose = () => {
+                    document.removeEventListener('keydown', handleKeydown);
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                    originalClose();
+                };
+
+                return {
+                    close: enhancedClose,
+                    element: popover,
+                    updateContent: (newContent) => {
+                        const body = popover.querySelector('.popover-body');
+                        body.innerHTML = newContent;
+                    },
+                    reloadContent: async () => {
+                        if (options.apiConfig) {
+                            try {
+                                const body = popover.querySelector('.popover-body');
+                                body.innerHTML = `
+                                    <div class="popover-loading">
+                                        <div class="loading-spinner"></div>
+                                        <p class="mt-3 text-gray-600">Reloading...</p>
+                                    </div>
+                                `;
+                                const loadedContent = await Popover.fetchAPIContent(options.apiConfig);
+                                body.innerHTML = loadedContent;
+                            } catch (error) {
+                                const body = popover.querySelector('.popover-body');
+                                body.innerHTML = Popover.renderError(error.message);
+                            }
+                        }
+                    }
+                };
+            },
+
+            async fetchAPIContent(apiConfig) {
+                try {
+                    const { endpoint, method = 'GET', data = null } = apiConfig;
+                    
+                    // For demo purposes, simulate API response
+                    if (endpoint === 'users') {
+                        return new Promise(resolve => {
+                            setTimeout(() => {
+                                resolve(`
+                                    <div class="api-info">
+                                        <h4>User Data</h4>
+                                        <p>This content was loaded from the API endpoint: <code>${endpoint}</code></p>
+                                    </div>
+                                    <div class="table-container">
+                                        <table class="data-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Name</th>
+                                                    <th>Email</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>1</td>
+                                                    <td>John Doe</td>
+                                                    <td>john@example.com</td>
+                                                    <td><span class="status-badge status-active">Active</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>2</td>
+                                                    <td>Jane Smith</td>
+                                                    <td>jane@example.com</td>
+                                                    <td><span class="status-badge status-active">Active</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>3</td>
+                                                    <td>Robert Johnson</td>
+                                                    <td>robert@example.com</td>
+                                                    <td><span class="status-badge status-pending">Pending</span></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                `);
+                            }, 1500);
+                        });
+                    }
+                    
+                    // Simulate API error for demo
+                    if (endpoint === 'error') {
+                        return new Promise((_, reject) => {
+                            setTimeout(() => {
+                                reject(new Error('Failed to fetch data from API'));
+                            }, 1500);
+                        });
+                    }
+                    
+                    // Default demo content
+                    return `
+                        <div class="api-info">
+                            <h4>API Content</h4>
+                            <p>This content was loaded from the API endpoint: <code>${endpoint}</code></p>
+                            <p>Method: <code>${method}</code></p>
+                            ${data ? `<p>Data: <code>${JSON.stringify(data)}</code></p>` : ''}
+                        </div>
+                        <p>This is a simulated API response for demonstration purposes.</p>
+                    `;
+                } catch (error) {
+                    return this.renderError(`Failed to load content: ${error.message}`);
+                }
+            },
+
+            renderObjectAsHTML(data) {
+                if (Array.isArray(data)) {
+                    if (data.length === 0) return '<p class="text-gray-500 text-center p-4">No data available</p>';
+
+                    const headers = Object.keys(data[0]);
+                    return `
+                        <div class="overflow-auto max-h-96">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        ${headers.map(header =>
+                        `<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">${header}</th>`
+                    ).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    ${data.map(row => `
+                                        <tr>
+                                            ${headers.map(header =>
+                        `<td class="px-4 py-2 text-sm text-gray-900">${row[header]}</td>`
+                    ).join('')}
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="space-y-2">
+                            ${Object.entries(data).map(([key, value]) => `
+                                <div class="flex justify-between border-b pb-1">
+                                    <span class="font-medium text-gray-700">${key}:</span>
+                                    <span class="text-gray-900">${value}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            },
+
+            showError(title, message) {
+                return this.show({
+                    type: 'info',
+                    title,
+                    content: `
+                        <div class="text-center p-4">
+                            <i class="fas fa-exclamation-triangle text-3xl text-red-500 mb-3"></i>
+                            <p class="text-red-600">${message}</p>
+                        </div>
+                    `,
+                    confirmText: 'OK'
+                });
+            },
+
+            renderError(message) {
+                return `
+                    <div class="text-center p-6">
+                        <i class="fas fa-exclamation-triangle text-3xl text-red-500 mb-3"></i>
+                        <h4 class="font-semibold text-lg text-red-700 mb-2">Error</h4>
+                        <p class="text-red-600">${message}</p>
+                    </div>
+                `;
+            },
+
+            info({ title, content, options = {
+                confirm: { text: 'OK', background: '#3498db', color: '#fff', onConfirm: null }
+            } }) {
+                return this.show({
+                    type: 'info',
+                    title,
+                    content,
+                    confirmText: options.confirm.text,
+                    onConfirm: options.confirm.onConfirm
+                });
+            },
+
+            confirm({ title, content, options = {
+                confirm: { text: 'OK', background: '#4CAF50', color: '#fff', onConfirm: null },
+                cancel: { text: 'Cancel', background: '#f44336', color: '#fff', onCancel: null }
+            } }) {
+                return this.show({
+                    type: 'confirm',
+                    title,
+                    content,
+                    confirmText: options.confirm.text,
+                    cancelText: options.cancel.text,
+                    onConfirm: options.confirm.onConfirm,
+                    onCancel: options.cancel.onCancel
+                });
+            },
+
+            content({ title, content, buttons = [], apiConfig = null }) {
+                return this.show({
+                    type: 'content',
+                    title,
+                    content,
+                    buttons,
+                    apiConfig
+                });
+            },
+
+            success({ title, content, options = { confirmText: 'OK', onConfirm: null } }) {
+                return this.show({
+                    type: 'success',
+                    title,
+                    content,
+                    confirmText: options.confirmText,
+                    onConfirm: options.onConfirm
+                });
+            },
+
+            apiContent({ title, endpoint, method = 'GET', data = null, buttons = [] }) {
+                return this.content({
+                    title,
+                    apiConfig: { endpoint, method, data },
+                    buttons
+                });
+            },
+
+            destroyAll() {
+                document.querySelectorAll('.popover-overlay, .popover-container').forEach(el => {
+                    if (document.body.contains(el)) {
+                        document.body.removeChild(el);
+                    }
+                });
+            }
+        };
+
+        const Toast = {
+            popover({ type, title, content, options = {}, buttons = [], apiConfig = null }) {
+                switch (type) {
+                    case 'success':
+                        return Popover.success({ title, content, options });
+                    case 'confirm':
+                        return Popover.confirm({ title, content, options });
+                    case 'info':
+                        return Popover.info({ title, content, options });
+                    case 'content':
+                        return Popover.content({ title, content, buttons, apiConfig });
+                    case 'apiContent':
+                        return Popover.apiContent({ title, endpoint: apiConfig?.endpoint, method: apiConfig?.method, data: apiConfig?.data, buttons });
+                    default:
+                        return Popover.success({ title, content, options });
+                }
+            }
+        };
+
+        // Demo event handlers
+        document.getElementById('info-popover-btn').addEventListener('click', () => {
+            Popover.info({
+                title: 'Information',
+                content: '<p>This is an informational popover. It provides helpful information to the user.</p>',
+                options: {
+                    confirm: {
+                        text: 'Got it!',
+                        onConfirm: () => console.log('Info popover confirmed')
+                    }
+                }
+            });
+        });
+
+        document.getElementById('confirm-popover-btn').addEventListener('click', () => {
+            Popover.confirm({
+                title: 'Confirm Action',
+                content: '<p>Are you sure you want to proceed with this action?</p>',
+                options: {
+                    confirm: {
+                        text: 'Yes, proceed',
+                        onConfirm: () => console.log('Action confirmed')
+                    },
+                    cancel: {
+                        text: 'No, cancel',
+                        onCancel: () => console.log('Action cancelled')
+                    }
+                }
+            });
+        });
+
+        document.getElementById('success-popover-btn').addEventListener('click', () => {
+            Popover.success({
+                title: 'Success!',
+                content: '<p>Your action has been completed successfully.</p>',
+                options: {
+                    confirmText: 'Continue',
+                    onConfirm: () => console.log('Success action completed')
+                }
+            });
+        });
+
+        document.getElementById('error-popover-btn').addEventListener('click', () => {
+            Popover.showError('Error Occurred', 'Something went wrong while processing your request. Please try again.');
+        });
+
+        document.getElementById('content-popover-btn').addEventListener('click', () => {
+            Popover.content({
+                title: 'Custom Content',
+                content: `
+                    <div class="form-group">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-input" placeholder="Enter your name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-input" rows="3" placeholder="Enter your message"></textarea>
+                    </div>
+                `,
+                buttons: [
+                    {
+                        text: 'Cancel',
+                        class: 'popover-button-secondary',
+                        onClick: (popover) => {
+                            console.log('Cancel clicked');
+                            popover.close();
+                        }
+                    },
+                    {
+                        text: 'Save Draft',
+                        class: 'popover-button-secondary',
+                        onClick: (popover) => {
+                            console.log('Save Draft clicked');
+                            // You could update content here without closing
+                            popover.updateContent('<p>Draft saved successfully!</p>');
+                        }
+                    },
+                    {
+                        text: 'Submit',
+                        class: 'popover-button-primary',
+                        onClick: (popover) => {
+                            console.log('Submit clicked');
+                            popover.close();
+                        }
+                    }
+                ]
+            });
+        });
+
+        document.getElementById('api-popover-btn').addEventListener('click', () => {
+            Popover.apiContent({
+                title: 'API Data',
+                endpoint: 'users',
+                method: 'GET',
+                buttons: [
+                    {
+                        text: 'Close',
+                        class: 'popover-button-secondary'
+                    },
+                    {
+                        text: 'Refresh',
+                        class: 'popover-button-primary',
+                        onClick: (popover) => {
+                            popover.reloadContent();
+                        }
+                    }
+                ]
+            });
+        });
+    </script>
+</body>
+</html>
