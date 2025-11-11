@@ -38,6 +38,17 @@ app.controller('mainController', ["$scope", "$http", function ($scope, $http) {
         }
     };
 
+    // Rotate arrow when checkbox checked
+    $(document).on('change', 'input[type="checkbox"].peer', function () {
+        const arrow = $(this).next('label').find('.fa-chevron-right');
+        if ($(this).is(':checked')) {
+            arrow.addClass('rotate-90');
+        } else {
+            arrow.removeClass('rotate-90');
+        }
+    });
+
+
     // Sidebar toggle buttons
     menuBtn.off('click').on('click', function () {
         menuBtn.toggleClass('rotate-180');
@@ -92,14 +103,14 @@ app.controller('mainController', ["$scope", "$http", function ($scope, $http) {
         $http.post('API/logout').then(function (response) {
             const data = response.data;
             if (data.status === 'success') {
-                Toast({ type: 'success', title: 'Logout', msg: data.msg });
+                Toast.fire({ type: 'success', title: 'Logout', msg: data.msg });
                 setTimeout(function () {
                     window.location.href = 'login';
                 }, 1000);
             }
         }, function (error) {
             console.error('Logout Error:', error);
-            Toast({ type: 'error', title: 'Error', msg: 'Logout failed' });
+            Toast.fire({ type: 'error', title: 'Error', msg: 'Logout failed' });
         });
     });
 }]);

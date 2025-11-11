@@ -89,7 +89,7 @@ function adjustToastPositions(position) {
 }
 
 // Show toast function with position-based animations
-function showToast(type, title, message, position , toastTime) {
+function showToast(type, title, message, position, toastTime) {
     // Create toast element
     const toast = document.createElement('div');
     toast.className = `toast-card toast-${type} toast-${position}`;
@@ -131,24 +131,24 @@ function showToast(type, title, message, position , toastTime) {
     let progressInterval;
     let remainingTime = toastTime * 1000;
     let startTime = Date.now();
-    
+
     function startProgressBar() {
         progressBar.style.transition = `none`;
         progressBar.style.transform = `scaleX(${progressWidth / 100})`;
-        
+
         setTimeout(() => {
             progressBar.style.transition = `transform ${remainingTime}ms linear`;
             progressBar.style.transform = 'scaleX(0)';
         }, 10);
-        
+
         startTime = Date.now();
     }
-    
+
     function pauseProgressBar() {
         const elapsed = Date.now() - startTime;
         remainingTime -= elapsed;
         progressWidth = (remainingTime / (toastTime * 1000)) * 100;
-        
+
         // Remove transition to freeze current state
         progressBar.style.transition = 'none';
         progressBar.style.transform = `scaleX(${progressWidth / 100})`;
@@ -156,7 +156,7 @@ function showToast(type, title, message, position , toastTime) {
 
     // Set up auto dismiss
     let dismissTimeout = setTimeout(() => dismissToast(toast, position), toastTime * 1000);
-    
+
     // Start progress bar
     startProgressBar();
 
@@ -204,8 +204,24 @@ function dismissToast(toast, position) {
     }, 300);
 }
 
-export function Toast({ type, title, msg, position = 'top-right', duration = 5 } = {}) {
-    showToast(type, title, msg, position, duration);
+export const Toast = {
+    popover(type, title, content, options = { confirmText, cancelText, onConfirm, onCancel, content, buttons: { text, onClick, color, background, rounded } }) {
+        switch (type) {
+            case 'info':
+                return Popover.info(title, content, options)
+            case 'success':
+                return Popover.success(title, content, options)
+            case 'content':
+                return Popover.content(title, content, options)
+            case 'confirm':
+                return Popover.confirm(title, content, options)
+            default:
+                return Popover.info(title, content, options)
+        }
+    },
+    fire({type, title, msg, position = 'top-right', duration = 5}) {
+        showToast(type, title, msg, position, duration);
+    }
 }
 window.Toast = Toast;
 

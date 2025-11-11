@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Popover System with API Integration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .popover-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .popover-overlay.show {
+            opacity: 1;
+        }
+        
+        .popover-container {
+            position: absolute;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            min-width: 300px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: auto;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 10000;
+        }
+        
+        /* Center position (default for all popovers) */
+        .popover-container.center {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+        }
+        
+        .popover-container.center.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+        
+        /* Top-center position (for content popovers) */
+        .popover-container.top-center {
+            top: 10%;
+            left: 50%;
+            transform: translate(-50%, -10%) scale(0.9);
+        }
+        
+        .popover-container.top-center.show {
+            transform: translate(-50%, -10%) scale(1);
+            opacity: 1;
+        }
+        
+        .popover-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            user-select: none;
+        }
+        
+        .popover-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .popover-close {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: #6b7280;
+            transition: color 0.2s;
+        }
+        
+        .popover-close:hover {
+            color: #374151;
+        }
+        
+        .popover-body {
+            padding: 1.5rem;
+        }
+        
+        .popover-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        
+        .popover-button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        
+        .popover-button-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .popover-button-primary:hover {
+            background-color: #2563eb;
+        }
+        
+        .popover-button-secondary {
+            background-color: #6b7280;
+            color: white;
+        }
+        
+        .popover-button-secondary:hover {
+            background-color: #4b5563;
+        }
+        
+        .popover-button-success {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .popover-button-success:hover {
+            background-color: #059669;
+        }
+        
+        .popover-button-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        .popover-button-danger:hover {
+            background-color: #dc2626;
+        }
+        
+        .popover-content {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        /* Dragging state */
+        .popover-container.dragging {
+            cursor: move;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Success icon animation */
+        .success-icon {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 2;
+            stroke: #4caf50;
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px #4caf50;
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+        
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 2;
+            stroke-miterlimit: 10;
+            stroke: #4caf50;
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+        
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+        
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+        
+        @keyframes scale {
+            0%, 100% {
+                transform: none;
+            }
+            50% {
+                transform: scale3d(1.1, 1.1, 1);
+            }
+        }
+        
+        @keyframes fill {
+            100% {
+                box-shadow: inset 0px 0px 0px 30px #4caf50;
+            }
+        }
+        
+        /* Loading state */
+        .popover-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            flex-direction: column;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Position indicator */
+        .position-indicator {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            z-index: 1;
+        }
+        
+        /* API content styles */
+        .api-content {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .data-table th {
+            background-color: #f9fafb;
+            font-weight: 600;
+        }
+        
+        .data-table tr:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-active {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-inactive {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .api-info {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .api-endpoint {
+            font-family: monospace;
+            background: #1f2937;
+            color: #10b981;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-2">Enhanced Popover System with API Integration</h1>
+        <p class="text-gray-600 text-center mb-8">All popovers display in center, but content popovers appear at top-center with API-loaded content</p>
+
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Popover Types with API Content</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <button id="info-popover" class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg transition-colors">
+                    <i class="fas fa-info-circle"></i>
+                    Information Popover
+                </button>
+                
+                <button id="confirm-popover" class="flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white py-3 px-4 rounded-lg transition-colors">
+                    <i class="fas fa-question-circle"></i>
+                    Confirmation Popover
+                </button>
+                
+                <button id="content-popover" class="flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white py-3 px-4 rounded-lg transition-colors">
+                    <i class="fas fa-table"></i>
+                    Content Popover (Top-Center)
+                </button>
+                
+                <button id="success-popover" class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg transition-colors">
+                    <i class="fas fa-check-circle"></i>
+                    Success Popover
+                </button>
+            </div>
+            
+            <div class="mt-6">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">API Content Examples</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button id="jsonplaceholder-popover" class="flex flex-col items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white py-4 px-4 rounded-lg transition-colors">
+                        <i class="fas fa-users text-2xl"></i>
+                        <span>JSONPlaceholder API</span>
+                        <small class="text-indigo-200">(Real REST API)</small>
+                    </button>
+                    <button id="weather-api-popover" class="flex flex-col items-center justify-center gap-2 bg-teal-500 hover:bg-teal-600 text-white py-4 px-4 rounded-lg transition-colors">
+                        <i class="fas fa-cloud-sun text-2xl"></i>
+                        <span>Weather API</span>
+                        <small class="text-teal-200">(Mock Data)</small>
+                    </button>
+                    <button id="github-api-popover" class="flex flex-col items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white py-4 px-4 rounded-lg transition-colors">
+                        <i class="fab fa-github text-2xl"></i>
+                        <span>GitHub API</span>
+                        <small class="text-rose-200">(Mock Data)</small>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">API Integration Features</h2>
+            
+            <div class="api-info mb-4">
+                <h4 class="font-semibold text-blue-900 mb-2">Real API Integration</h4>
+                <p class="text-blue-800 text-sm">This demo uses JSONPlaceholder API for real data and mocks other APIs for demonstration.</p>
+                <div class="api-endpoint">GET https://jsonplaceholder.typicode.com/users</div>
+            </div>
+            
+            <ul class="list-disc pl-5 text-gray-600 mb-4 space-y-2">
+                <li><strong>Real API Calls</strong> - Fetch data from REST APIs with proper error handling</li>
+                <li><strong>Position Control</strong> - All popovers display in center, content popovers at top-center</li>
+                <li><strong>Loading States</strong> - Beautiful loading animations during API calls</li>
+                <li><strong>Error Handling</strong> - Graceful error handling for failed API requests</li>
+                <li><strong>Response Caching</strong> - Optional caching to reduce API calls</li>
+                <li><strong>Authentication Ready</strong> - Easy to add API keys and authentication headers</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // API Content Loader - Loads content from various APIs
+        const APIContentLoader = {
+            // Cache for API responses
+            cache: new Map(),
+            
+            // Generic API fetch method
+            async fetchFromAPI(url, options = {}) {
+                const cacheKey = `${url}-${JSON.stringify(options)}`;
+                
+                // Check cache first
+                if (this.cache.has(cacheKey)) {
+                    return this.cache.get(cacheKey);
+                }
+                
+                try {
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...options.headers
+                        },
+                        ...options
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Cache successful responses
+                    this.cache.set(cacheKey, data);
+                    
+                    return data;
+                    
+                } catch (error) {
+                    console.error('API fetch error:', error);
+                    throw error;
+                }
+            },
+            
+            // Load users from JSONPlaceholder API
+            async loadUsers() {
+                try {
+                    const users = await this.fetchFromAPI('https://jsonplaceholder.typicode.com/users');
+                    return this.renderUsers(users);
+                } catch (error) {
+                    return this.renderError('Failed to load users from API', error);
+                }
+            },
+            
+            // Load posts from JSONPlaceholder API
+            async loadPosts() {
+                try {
+                    const posts = await this.fetchFromAPI('https://jsonplaceholder.typicode.com/posts?_limit=5');
+                    return this.renderPosts(posts);
+                } catch (error) {
+                    return this.renderError('Failed to load posts from API', error);
+                }
+            },
+            
+            // Mock weather data (in real app, this would be a real API)
+            async loadWeather() {
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const weatherData = {
+                    location: 'New York',
+                    temperature: 22,
+                    condition: 'Partly Cloudy',
+                    humidity: 65,
+                    wind: 15,
+                    forecast: [
+                        { day: 'Today', high: 24, low: 18, condition: 'Partly Cloudy' },
+                        { day: 'Tomorrow', high: 26, low: 20, condition: 'Sunny' },
+                        { day: 'Wednesday', high: 23, low: 17, condition: 'Rainy' }
+                    ]
+                };
+                
+                return this.renderWeather(weatherData);
+            },
+            
+            // Mock GitHub data
+            async loadGitHubRepos() {
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                const repos = [
+                    { name: 'react', stars: 201000, forks: 41700, language: 'JavaScript', description: 'A declarative, efficient, and flexible JavaScript library for building user interfaces.' },
+                    { name: 'vue', stars: 203000, forks: 33500, language: 'JavaScript', description: 'Vue.js is a progressive, incrementally-adoptable JavaScript framework for building UI on the web.' },
+                    { name: 'angular', stars: 87700, forks: 23300, language: 'TypeScript', description: 'Angular is a platform for building mobile and desktop web applications.' }
+                ];
+                
+                return this.renderGitHubRepos(repos);
+            },
+            
+            // Render methods
+            renderUsers(users) {
+                return `
+                    <div class="api-content">
+                        <div class="api-info">
+                            <h4 class="font-semibold text-blue-900">JSONPlaceholder API</h4>
+                            <p class="text-blue-800 text-sm">Real data from JSONPlaceholder REST API</p>
+                            <div class="api-endpoint">GET https://jsonplaceholder.typicode.com/users</div>
+                        </div>
+                        
+                        <h4 class="font-semibold text-lg mb-4 border-b pb-2">Users from API</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Website</th>
+                                    <th>Company</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${users.map(user => `
+                                    <tr>
+                                        <td class="font-semibold">${user.name}</td>
+                                        <td>${user.email}</td>
+                                        <td>${user.phone}</td>
+                                        <td>
+                                            <a href="http://${user.website}" target="_blank" class="text-blue-600 hover:text-blue-800">
+                                                ${user.website}
+                                            </a>
+                                        </td>
+                                        <td>${user.company.name}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        <div class="mt-3 text-sm text-gray-600">
+                            <i class="fas fa-database mr-1"></i>
+                            Loaded ${users.length} users from JSONPlaceholder API
+                        </div>
+                    </div>
+                `;
+            },
+            
+            renderPosts(posts) {
+                return `
+                    <div class="api-content">
+                        <div class="api-info">
+                            <h4 class="font-semibold text-blue-900">JSONPlaceholder API</h4>
+                            <p class="text-blue-800 text-sm">Real data from JSONPlaceholder REST API</p>
+                            <div class="api-endpoint">GET https://jsonplaceholder.typicode.com/posts</div>
+                        </div>
+                        
+                        <h4 class="font-semibold text-lg mb-4 border-b pb-2">Recent Posts</h4>
+                        <div class="space-y-4">
+                            ${posts.map(post => `
+                                <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                                    <h5 class="font-semibold text-lg mb-2">${post.title}</h5>
+                                    <p class="text-gray-600 text-sm">${post.body}</p>
+                                    <div class="mt-2 flex justify-between items-center text-xs text-gray-500">
+                                        <span>Post ID: ${post.id}</span>
+                                        <span>User ID: ${post.userId}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            },
+            
+            renderWeather(weather) {
+                return `
+                    <div class="api-content">
+                        <div class="api-info">
+                            <h4 class="font-semibold text-teal-900">Weather API Integration</h4>
+                            <p class="text-teal-800 text-sm">Mock weather data - easily replace with real weather API</p>
+                        </div>
+                        
+                        <h4 class="font-semibold text-lg mb-4 border-b pb-2">Weather in ${weather.location}</h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-gradient-to-br from-blue-400 to-blue-600 text-white rounded-lg p-6">
+                                <div class="text-4xl font-bold mb-2">${weather.temperature}°C</div>
+                                <div class="text-xl mb-4">${weather.condition}</div>
+                                <div class="grid grid-cols-2 gap-2 text-sm">
+                                    <div>
+                                        <i class="fas fa-tint mr-1"></i>
+                                        Humidity: ${weather.humidity}%
+                                    </div>
+                                    <div>
+                                        <i class="fas fa-wind mr-1"></i>
+                                        Wind: ${weather.wind} km/h
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h5 class="font-semibold mb-3">3-Day Forecast</h5>
+                                <div class="space-y-3">
+                                    ${weather.forecast.map(day => `
+                                        <div class="flex justify-between items-center border-b pb-2">
+                                            <span class="font-medium">${day.day}</span>
+                                            <span class="text-gray-600">${day.condition}</span>
+                                            <span class="font-semibold">${day.high}° / ${day.low}°</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+            
+            renderGitHubRepos(repos) {
+                return `
+                    <div class="api-content">
+                        <div class="api-info">
+                            <h4 class="font-semibold text-rose-900">GitHub API Integration</h4>
+                            <p class="text-rose-800 text-sm">Mock GitHub data - easily replace with real GitHub API</p>
+                        </div>
+                        
+                        <h4 class="font-semibold text-lg mb-4 border-b pb-2">Popular GitHub Repositories</h4>
+                        
+                        <div class="space-y-4">
+                            ${repos.map(repo => `
+                                <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h5 class="font-semibold text-lg text-blue-600">${repo.name}</h5>
+                                        <div class="flex gap-4 text-sm text-gray-600">
+                                            <span>
+                                                <i class="fas fa-star mr-1"></i>
+                                                ${repo.stars.toLocaleString()}
+                                            </span>
+                                            <span>
+                                                <i class="fas fa-code-branch mr-1"></i>
+                                                ${repo.forks.toLocaleString()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mb-3">${repo.description}</p>
+                                    <div class="flex justify-between items-center">
+                                        <span class="inline-flex items-center gap-1 text-sm text-gray-500">
+                                            <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+                                            ${repo.language}
+                                        </span>
+                                        <button class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">
+                                            <i class="fab fa-github mr-1"></i>
+                                            View on GitHub
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            },
+            
+            renderError(message, error) {
+                return `
+                    <div class="text-center p-6">
+                        <i class="fas fa-exclamation-triangle text-3xl text-red-500 mb-3"></i>
+                        <h4 class="font-semibold text-lg text-red-700 mb-2">API Error</h4>
+                        <p class="text-red-600 mb-2">${message}</p>
+                        <p class="text-sm text-gray-600">${error.message}</p>
+                        <button class="mt-4 popover-button popover-button-primary" onclick="location.reload()">
+                            <i class="fas fa-redo mr-1"></i>
+                            Retry
+                        </button>
+                    </div>
+                `;
+            },
+            
+            // Clear cache method
+            clearCache() {
+                this.cache.clear();
+            }
+        };
+
+        // Popover system
+        const Popover = {
+            // Create and show a popover
+            async show(options) {
+                // Create overlay
+                const overlay = document.createElement('div');
+                overlay.className = 'popover-overlay';
+                document.body.appendChild(overlay);
+                
+                // Create popover container
+                const popover = document.createElement('div');
+                
+                // Determine position class based on type
+                // Content popovers use top-center, others use center
+                const positionClass = options.type === 'content' ? 'top-center' : 'center';
+                popover.className = `popover-container ${positionClass}`;
+                
+                // Show loading state if content is being loaded asynchronously
+                let contentHtml = options.content || '';
+                
+                // If content is a function or promise, handle it
+                if (typeof options.content === 'function') {
+                    contentHtml = `
+                        <div class="popover-loading">
+                            <div class="loading-spinner"></div>
+                            <p class="mt-3 text-gray-600">Loading data from API...</p>
+                            <p class="text-sm text-gray-500 mt-1">Please wait</p>
+                        </div>
+                    `;
+                }
+                
+                // Build popover content based on type
+                let footerHtml = '';
+                
+                switch(options.type) {
+                    case 'info':
+                        footerHtml = `
+                            <button class="popover-button popover-button-primary" data-action="ok">
+                                ${options.okText || 'OK'}
+                            </button>
+                        `;
+                        break;
+                        
+                    case 'confirm':
+                        footerHtml = `
+                            <button class="popover-button popover-button-secondary" data-action="cancel">
+                                ${options.cancelText || 'Cancel'}
+                            </button>
+                            <button class="popover-button popover-button-primary" data-action="confirm">
+                                ${options.confirmText || 'Confirm'}
+                            </button>
+                        `;
+                        break;
+                        
+                    case 'content':
+                        footerHtml = options.buttons || '';
+                        break;
+                        
+                    case 'success':
+                        footerHtml = `
+                            <button class="popover-button popover-button-success" data-action="ok">
+                                ${options.okText || 'OK'}
+                            </button>
+                        `;
+                        break;
+                }
+                
+                // Set popover HTML
+                popover.innerHTML = `
+                    <div class="position-indicator">${positionClass}</div>
+                    <div class="popover-header">
+                        <h3 class="popover-title">${options.title}</h3>
+                        <button class="popover-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="popover-body">
+                        ${contentHtml}
+                    </div>
+                    <div class="popover-footer">
+                        ${footerHtml}
+                    </div>
+                `;
+                
+                // Add to document
+                document.body.appendChild(popover);
+                
+                // Show with animation
+                setTimeout(() => {
+                    overlay.classList.add('show');
+                    popover.classList.add('show');
+                }, 10);
+                
+                // If content is a function, load it asynchronously
+                if (typeof options.content === 'function') {
+                    try {
+                        const loadedContent = await options.content();
+                        const body = popover.querySelector('.popover-body');
+                        body.innerHTML = loadedContent;
+                    } catch (error) {
+                        const body = popover.querySelector('.popover-body');
+                        body.innerHTML = `
+                            <div class="text-center p-6">
+                                <i class="fas fa-exclamation-triangle text-3xl text-red-500 mb-3"></i>
+                                <h4 class="font-semibold text-lg text-red-700 mb-2">Loading Failed</h4>
+                                <p class="text-red-600">${error.message}</p>
+                            </div>
+                        `;
+                    }
+                }
+                
+                // Set up event handlers
+                const closePopover = () => {
+                    overlay.classList.remove('show');
+                    popover.classList.remove('show');
+                    
+                    setTimeout(() => {
+                        if (document.body.contains(overlay)) {
+                            document.body.removeChild(overlay);
+                        }
+                        if (document.body.contains(popover)) {
+                            document.body.removeChild(popover);
+                        }
+                    }, 300);
+                };
+                
+                // Close button
+                popover.querySelector('.popover-close').addEventListener('click', closePopover);
+                
+                // Overlay click (outside popover)
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        closePopover();
+                        if (options.onCancel) options.onCancel();
+                    }
+                });
+                
+                // Button actions
+                popover.querySelectorAll('[data-action]').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const action = button.getAttribute('data-action');
+                        
+                        if (action === 'ok' || action === 'confirm') {
+                            if (options.onConfirm) options.onConfirm();
+                        } else if (action === 'cancel') {
+                            if (options.onCancel) options.onCancel();
+                        }
+                        
+                        closePopover();
+                    });
+                });
+                
+                // Keyboard support
+                const handleKeydown = (e) => {
+                    if (e.key === 'Escape') {
+                        if (options.onCancel) options.onCancel();
+                        closePopover();
+                        document.removeEventListener('keydown', handleKeydown);
+                    } else if (e.key === 'Enter') {
+                        const primaryButton = popover.querySelector('[data-action="ok"], [data-action="confirm"]');
+                        if (primaryButton) {
+                            primaryButton.click();
+                            document.removeEventListener('keydown', handleKeydown);
+                        }
+                    }
+                };
+                
+                document.addEventListener('keydown', handleKeydown);
+                
+                // Make popover draggable
+                let isDragging = false;
+                let dragOffset = { x: 0, y: 0 };
+                
+                const header = popover.querySelector('.popover-header');
+                
+                header.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    popover.classList.add('dragging');
+                    
+                    const rect = popover.getBoundingClientRect();
+                    dragOffset.x = e.clientX - rect.left;
+                    dragOffset.y = e.clientY - rect.top;
+                    
+                    e.preventDefault();
+                });
+                
+                const handleMouseMove = (e) => {
+                    if (!isDragging) return;
+                    
+                    popover.style.left = `${e.clientX - dragOffset.x}px`;
+                    popover.style.top = `${e.clientY - dragOffset.y}px`;
+                    popover.style.transform = 'none';
+                };
+                
+                const handleMouseUp = () => {
+                    isDragging = false;
+                    popover.classList.remove('dragging');
+                };
+                
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+                
+                // Clean up event listeners when popover is closed
+                const originalClose = closePopover;
+                const enhancedClose = () => {
+                    document.removeEventListener('keydown', handleKeydown);
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                    originalClose();
+                };
+                
+                return {
+                    close: enhancedClose,
+                    element: popover
+                };
+            },
+            
+            // Information popover (center position)
+            info(title, content, options = {}) {
+                return this.show({
+                    type: 'info',
+                    title,
+                    content,
+                    okText: options.okText,
+                    onConfirm: options.onConfirm
+                });
+            },
+            
+            // Confirmation popover (center position)
+            confirm(title, content, options = {}) {
+                return this.show({
+                    type: 'confirm',
+                    title,
+                    content,
+                    confirmText: options.confirmText,
+                    cancelText: options.cancelText,
+                    onConfirm: options.onConfirm,
+                    onCancel: options.onCancel
+                });
+            },
+            
+            // Content popover (top-center position)
+            content(title, content, buttons, options = {}) {
+                return this.show({
+                    type: 'content',
+                    title,
+                    content,
+                    buttons
+                });
+            },
+            
+            // Success popover (center position)
+            success(title, content, options = {}) {
+                return this.show({
+                    type: 'success',
+                    title,
+                    content,
+                    okText: options.okText,
+                    onConfirm: options.onConfirm
+                });
+            }
+        };
+
+        // Set up button event listeners
+        document.getElementById('info-popover').addEventListener('click', () => {
+            Popover.info(
+                'Information',
+                'This is an information popover with an OK button. It appears in the center position.',
+                {
+                    okText: 'Got it!',
+                    onConfirm: () => {
+                        console.log('Information popover confirmed');
+                    }
+                }
+            );
+        });
+        
+        document.getElementById('confirm-popover').addEventListener('click', () => {
+            Popover.confirm(
+                'Confirm Action',
+                'Are you sure you want to proceed with this action? This cannot be undone. This popover appears in the center position.',
+                {
+                    confirmText: 'Yes, proceed',
+                    cancelText: 'No, cancel',
+                    onConfirm: () => {
+                        console.log('Action confirmed');
+                    },
+                    onCancel: () => {
+                        console.log('Action cancelled');
+                    }
+                }
+            );
+        });
+        
+        document.getElementById('content-popover').addEventListener('click', () => {
+            const buttons = `
+                <button class="popover-button popover-button-secondary" data-action="cancel">
+                    Close
+                </button>
+                <button class="popover-button popover-button-primary" data-action="save">
+                    Save Changes
+                </button>
+            `;
+            
+            const content = `
+                <h4 class="font-semibold mb-2">Sample Form</h4>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Enter your name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Enter your email">
+                    </div>
+                </div>
+                <div class="mt-4 bg-purple-50 p-3 rounded-md">
+                    <p class="text-sm text-purple-700">This content popover appears at the top-center position.</p>
+                </div>
+            `;
+            
+            const popover = Popover.content('Content Popover', content, buttons);
+        });
+        
+        document.getElementById('success-popover').addEventListener('click', () => {
+            Popover.success(
+                'Success!',
+                'Your action has been completed successfully. You can now continue with your work. This popover appears in the center position.',
+                {
+                    okText: 'Continue',
+                    onConfirm: () => {
+                        console.log('Success popover closed');
+                    }
+                }
+            );
+        });
+        
+        // API Content Examples (all appear at top-center)
+        document.getElementById('jsonplaceholder-popover').addEventListener('click', async () => {
+            const buttons = `
+                <button class="popover-button popover-button-secondary" data-action="cancel">
+                    Close
+                </button>
+                <button class="popover-button popover-button-primary" data-action="load-posts">
+                    <i class="fas fa-file-alt mr-1"></i> Load Posts
+                </button>
+                <button class="popover-button popover-button-success" data-action="refresh">
+                    <i class="fas fa-sync-alt mr-1"></i> Refresh
+                </button>
+            `;
+            
+            const popover = await Popover.content(
+                'JSONPlaceholder API - Users', 
+                () => APIContentLoader.loadUsers(), 
+                buttons
+            );
+            
+            // Add custom handlers for API buttons
+            setTimeout(() => {
+                const loadPostsButton = document.querySelector('[data-action="load-posts"]');
+                const refreshButton = document.querySelector('[data-action="refresh"]');
+                
+                if (loadPostsButton) {
+                    loadPostsButton.addEventListener('click', async () => {
+                        // Close current popover and open new one with posts
+                        popover.close();
+                        const postsPopover = await Popover.content(
+                            'JSONPlaceholder API - Posts',
+                            () => APIContentLoader.loadPosts(),
+                            `
+                                <button class="popover-button popover-button-secondary" data-action="cancel">
+                                    Close
+                                </button>
+                                <button class="popover-button popover-button-primary" data-action="back-to-users">
+                                    <i class="fas fa-arrow-left mr-1"></i> Back to Users
+                                </button>
+                            `
+                        );
+                    });
+                }
+                
+                if (refreshButton) {
+                    refreshButton.addEventListener('click', () => {
+                        APIContentLoader.clearCache();
+                        location.reload();
+                    });
+                }
+            }, 100);
+        });
+        
+        document.getElementById('weather-api-popover').addEventListener('click', async () => {
+            const buttons = `
+                <button class="popover-button popover-button-secondary" data-action="cancel">
+                    Close
+                </button>
+                <button class="popover-button popover-button-primary" data-action="details">
+                    <i class="fas fa-chart-line mr-1"></i> More Details
+                </button>
+            `;
+            
+            const popover = await Popover.content(
+                'Weather Data', 
+                () => APIContentLoader.loadWeather(), 
+                buttons
+            );
+        });
+        
+        document.getElementById('github-api-popover').addEventListener('click', async () => {
+            const buttons = `
+                <button class="popover-button popover-button-secondary" data-action="cancel">
+                    Close
+                </button>
+                <button class="popover-button popover-button-primary" data-action="load-more">
+                    <i class="fas fa-plus mr-1"></i> Load More
+                </button>
+            `;
+            
+            const popover = await Popover.content(
+                'GitHub Repositories', 
+                () => APIContentLoader.loadGitHubRepos(), 
+                buttons
+            );
+        });
+
+        // Demo: Show a welcome popover on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                Popover.info(
+                    'API Integration Demo',
+                    'This demo shows real API integration using JSONPlaceholder REST API. Content popovers appear at top-center while others appear in center.',
+                    {
+                        okText: 'Explore APIs',
+                        onConfirm: () => console.log('Welcome popover closed')
+                    }
+                );
+            }, 1000);
+        });
+
+        // Export to global scope for debugging
+        window.APIContentLoader = APIContentLoader;
+        window.Popover = Popover;
+    </script>
+</body>
+</html>

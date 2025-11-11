@@ -8,14 +8,17 @@ if (!function_exists('route')) {
         return $router->url($name, $parameters);
     }
 }
+
 if (!function_exists('redirect')) {
     function redirect($name, $parameters = [])
     {
         $router = Router::getInstance();
+    //   $router->url($name, $parameters);
         header('Location: ' . $router->url($name, $parameters));
         exit();
     }
 }
+
 if (!function_exists('config')) {
     function config($key = null, $default = null)
     {

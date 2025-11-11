@@ -10,10 +10,11 @@ class DashboardAPI {
     }
 
     public function index() {
+        // echo 'Dashboard';
         // If user is logged in, show dashboard, otherwise home
         // if (Auth::isLoggedIn()) {
         //     redirect('admin.dashboard');
-        //     // return view('admin.dashboard', ['title' => 'Dashboard']);
+            return view('dashboard', ['title' => 'Dashboard']);
         // }
         // return view('auth.login', ['title' => 'Login']);
         // redirect('login');

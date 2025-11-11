@@ -36,7 +36,7 @@ $menuData = [
                 'title' => 'Add Course',
                 'icon' => '<i class="fa-solid fa-plus"></i>',
                 'url' => 'add_course',
-                'role' => [1, 2, 5],
+                'role' => [1, 2, 4],
                 'permissions' => ['manage_courses'],
                 'children' => []
             ],
@@ -45,8 +45,8 @@ $menuData = [
                 'title' => 'My Courses',
                 'icon' => '<i class="fa-solid fa-book"></i>',
                 'url' => 'my_courses',
-                'role' => [1, 3, 6, 7], // student + parent
-                'permissions' => ['view_courses'],
+                'role' => [1, 3, 5, 6, 7], // student + parent
+                'permissions' => [],
                 'children' => []
             ]
         ]
@@ -58,7 +58,7 @@ $menuData = [
         'title' => 'Lectures',
         'icon' => '<i class="fa-solid fa-chalkboard-teacher"></i>',
         'url' => '#',
-        'role' => [1, 2, 3, 5, 6, 7],
+        'role' => [1, 2, 3, 4, 6, 7],
         'permissions' => ['manage_lectures', 'view_lectures'],
         'children' => [
             [
@@ -66,7 +66,7 @@ $menuData = [
                 'title' => 'All Lectures',
                 'icon' => '<i class="fa-solid fa-list"></i>',
                 'url' => 'lectures',
-                'role' => [1, 2, 5],
+                'role' => [1, 2, 4],
                 'permissions' => ['manage_lectures'],
                 'children' => []
             ],
@@ -88,7 +88,7 @@ $menuData = [
         'title' => 'Exams',
         'icon' => '<i class="fa-solid fa-file-circle-check"></i>',
         'url' => '#',
-        'role' => [1, 2, 3, 5, 6, 7],
+        'role' => [1, 2, 3, 4, 5, 6, 7],
         'permissions' => ['create_exam', 'view_exam', 'delete_exam', 'attempt_exam'],
         'open' => ['exams', 'create_exam', 'all_exams', 'question_bank', 'my_exams'],
         'children' => [
@@ -97,7 +97,7 @@ $menuData = [
                 'title' => 'All Exams',
                 'icon' => '<i class="fa-solid fa-list"></i>',
                 'url' => 'exams',
-                'role' => [1, 2, 5],
+                'role' => [1, 2, 3, 4, 5],
                 'permissions' => ['view_exam'],
                 'children' => []
             ],
@@ -115,11 +115,62 @@ $menuData = [
                 'title' => 'My Exams',
                 'icon' => '<i class="fa-solid fa-clipboard-list"></i>',
                 'url' => 'my_exams',
-                'role' => [1, 3, 6, 7],
+                'role' => [1, 3, 5, 6, 7],
                 'permissions' => ['attempt_exam', 'view_exam'],
                 'children' => []
             ]
         ]
+    ],
+
+    // QUESTIONS
+    [
+        'id' => 'questions',
+        'title' => 'Question',
+        'icon' => '<i class="fa-solid fa-book-bookmark"></i>',
+        'url' => '#',
+        'role' => [1, 2, 3, 4, 5],
+        'permissions' => ['create_question', 'view_question', 'edit_question', 'delete_question'],
+        'open' => ['question_bank', 'create_question', 'all_questions'],
+        'children' => [
+            [
+                'id' => 'question_bank',
+                'title' => 'Question Bank',
+                'icon' => '<i class="fa-solid fa-book"></i>',
+                'url' => 'question_bank',
+                'role' => [1, 2, 3, 4, 5],
+                'permissions' => [],
+                'children' => []
+            ],
+            [
+                'id' => 'create_questions',
+                'title' => 'Create Question',
+                'icon' => '<i class="fa-solid fa-plus"></i>',
+                'url' => 'create_questions',
+                'role' => [1, 5],
+                'permissions' => [],
+                'children' => []
+            ],
+            [
+                'id' => 'my_questions',
+                'title' => 'My Questions',
+                'icon' => '<i class="fa-solid fa-book-open-reader"></i>',
+                'url' => 'my_questions',
+                'role' => [1, 5],
+                'permissions' => [],
+                'children' => []
+            ]
+        ]
+    ],
+
+    // PAST PAPER
+    [
+        'id' => 'past_papers',
+        'title' => 'Past Papers',
+        'icon' => '<i class="fa-solid fa-file-lines"></i>',
+        'url' => 'past_papers',
+        'role' => [1, 2, 3, 4, 5, 6, 7],
+        'permissions' => ['view_exams'],
+        'children' => []
     ],
 
     // RESULTS
@@ -128,7 +179,7 @@ $menuData = [
         'title' => 'Results',
         'icon' => '<i class="fa-solid fa-chart-simple"></i>',
         'url' => '#',
-        'role' => [1, 2, 3, 6, 7],
+        'role' => [1, 2, 3, 4, 5, 6, 7],
         'permissions' => ['view_results', 'publish_results'],
         'open' => ['results', 'all_results', 'my_results'],
         'children' => [
@@ -137,7 +188,7 @@ $menuData = [
                 'title' => 'All Results',
                 'icon' => '<i class="fa-solid fa-list-check"></i>',
                 'url' => 'results',
-                'role' => [1, 2, 3],
+                'role' => [1, 2, 3, 4, 5],
                 'permissions' => ['view_results'],
                 'children' => []
             ],
@@ -159,7 +210,7 @@ $menuData = [
         'title' => 'Attendance',
         'icon' => '<i class="fa-solid fa-calendar-check"></i>',
         'url' => '#',
-        'role' => [1, 2, 3, 6, 7],
+        'role' => [1, 2, 3, 4, 5, 6, 7],
         'permissions' => ['manage_attendance', 'view_attendance'],
         'children' => [
             [
@@ -167,7 +218,7 @@ $menuData = [
                 'title' => 'View Attendance',
                 'icon' => '<i class="fa-solid fa-eye"></i>',
                 'url' => 'attendance',
-                'role' => [1, 2, 3, 6, 7],
+                'role' => [1, 2, 3, 4, 5],
                 'permissions' => ['view_attendance'],
                 'children' => []
             ],
@@ -176,10 +227,19 @@ $menuData = [
                 'title' => 'Mark Attendance',
                 'icon' => '<i class="fa-solid fa-pen"></i>',
                 'url' => 'mark_attendance',
-                'role' => [1, 2],
+                'role' => [1, 5],
                 'permissions' => ['manage_attendance'],
                 'children' => []
-            ]
+            ],
+            [
+                'id' => 'my_attendance',
+                'title' => 'My Attendance',
+                'icon' => '<i class="fa-solid fa-user"></i>',
+                'url' => 'my_attendance',
+                'role' => [1, 6, 7],
+                'permissions' => [],
+                'children' => []
+            ],
         ]
     ],
 
@@ -190,7 +250,7 @@ $menuData = [
         'icon' => '<i class="fa-solid fa-bell"></i>',
         'url' => 'notifications',
         'role' => [1, 2, 3, 4, 5, 6, 7],
-        'permissions' => ['send_notification', 'view_notification'],
+        'permissions' => [],
         'children' => []
     ],
 
@@ -200,7 +260,7 @@ $menuData = [
         'title' => 'User Management',
         'icon' => '<i class="fa-solid fa-users"></i>',
         'url' => '#',
-        'role' => [1, 2, 3], // only developers
+        'role' => [1, 2, 3],
         'permissions' => ['manage_users'],
         'open' => ['users', 'create_user'],
         'children' => [
@@ -218,7 +278,7 @@ $menuData = [
                 'title' => 'Add User',
                 'icon' => '<i class="fa-solid fa-user-plus"></i>',
                 'url' => 'add_user',
-                'role' => [1, 2, 3],
+                'role' => [1, 2, 3, 4],
                 'permissions' => ['manage_users', 'manage_students', 'manage_teachers', 'manage_parents'],
                 'children' => []
             ],
@@ -240,7 +300,7 @@ $menuData = [
         'title' => 'Reports',
         'icon' => '<i class="fa-solid fa-chart-line"></i>',
         'url' => '#',
-        'role' => [1, 2, 3],
+        'role' => [1, 2, 3, 4, 5],
         'permissions' => ['view_reports'],
         'children' => [
             [
@@ -248,7 +308,7 @@ $menuData = [
                 'title' => 'Exam Reports',
                 'icon' => '<i class="fa-solid fa-file-invoice"></i>',
                 'url' => 'exam_reports',
-                'role' => [1, 2, 3],
+                'role' => [1, 2, 3, 4, 5],
                 'permissions' => ['view_reports'],
                 'children' => []
             ],
@@ -257,7 +317,7 @@ $menuData = [
                 'title' => 'Student Performance',
                 'icon' => '<i class="fa-solid fa-chart-pie"></i>',
                 'url' => 'student_performance',
-                'role' => [1, 2, 3],
+                'role' => [1, 2, 3, 4, 5],
                 'permissions' => ['view_reports'],
                 'children' => []
             ]

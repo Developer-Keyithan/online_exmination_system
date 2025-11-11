@@ -14,6 +14,7 @@ class Route
     public function __construct($uri, $methods, $action, $name = null, $middleware = [])
     {
         $this->originalUri = $uri;
+
         $this->uri = $this->compileUri($uri);
         $this->methods = (array) $methods;
         $this->action = $action;
@@ -220,6 +221,7 @@ class Router
 
         // Replace {param} placeholders
         $uri = $route->originalUri;
+        print_r($route);
         foreach ($parameters as $key => $value) {
             $uri = str_replace("{{$key}}", $value, $uri);
         }

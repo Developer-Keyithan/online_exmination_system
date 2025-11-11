@@ -13,3 +13,4 @@ if (!defined('MIDDLEWARE_PATH')) define('MIDDLEWARE_PATH', BACKEND_PATH . 'middl
 if (!defined('API_PATH')) define('API_PATH', BACKEND_PATH . 'API' . DIRECTORY_SEPARATOR);
 if (!defined('VERSION')) define('VERSION', '1.0.0');
 if (!defined('NAME')) define('NAME', 'Online Exam');
+if (!defined('SKIP_ROOT')) define('SKIP_ROOT', false);

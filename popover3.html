@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Popover System with Position Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .popover-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .popover-overlay.show {
+            opacity: 1;
+        }
+
+        .popover-container {
+            position: absolute;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            min-width: 300px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: auto;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 10000;
+        }
+
+        /* Center position (default for all popovers) */
+        .popover-container.center {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+        }
+
+        .popover-container.center.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        /* Top-center position (for content popovers) */
+        .popover-container.top-center {
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -20%) scale(0.9);
+        }
+
+        .popover-container.top-center.show {
+            transform: translate(-50%, -20%) scale(1);
+            opacity: 1;
+        }
+
+        .popover-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            user-select: none;
+        }
+
+        .popover-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .popover-close {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: #6b7280;
+            transition: color 0.2s;
+        }
+
+        .popover-close:hover {
+            color: #374151;
+        }
+
+        .popover-body {
+            padding: 1.5rem;
+        }
+
+        .popover-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        .popover-button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .popover-button-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .popover-button-primary:hover {
+            background-color: #2563eb;
+        }
+
+        .popover-button-secondary {
+            background-color: #6b7280;
+            color: white;
+        }
+
+        .popover-button-secondary:hover {
+            background-color: #4b5563;
+        }
+
+        .popover-button-success {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .popover-button-success:hover {
+            background-color: #059669;
+        }
+
+        .popover-button-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .popover-button-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .popover-content {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Dragging state */
+        .popover-container.dragging {
+            cursor: move;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Success icon animation */
+        .success-icon {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 2;
+            stroke: #4caf50;
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px #4caf50;
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 2;
+            stroke-miterlimit: 10;
+            stroke: #4caf50;
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes scale {
+
+            0%,
+            100% {
+                transform: none;
+            }
+
+            50% {
+                transform: scale3d(1.1, 1.1, 1);
+            }
+        }
+
+        @keyframes fill {
+            100% {
+                box-shadow: inset 0px 0px 0px 30px #4caf50;
+            }
+        }
+
+        /* Loading state */
+        .popover-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Position indicator */
+        .position-indicator {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            z-index: 1;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-2">Enhanced Popover System with Position Control</h1>
+        <p class="text-gray-600 text-center mb-8">All popovers display in center, but content popovers appear at
+            top-center</p>
+
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Popover Types with Position Control</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <button id="info-popover"
+                    class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg transition-colors">
+                    <i class="fas fa-info-circle"></i>
+                    Information Popover
+                </button>
+
+                <button id="confirm-popover"
+                    class="flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white py-3 px-4 rounded-lg transition-colors">
+                    <i class="fas fa-question-circle"></i>
+                    Confirmation Popover
+                </button>
+
+                <button id="content-popover"
+                    class="flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white py-3 px-4 rounded-lg transition-colors">
+                    <i class="fas fa-table"></i>
+                    Content Popover (Top-Center)
+                </button>
+
+                <button id="success-popover"
+                    class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg transition-colors">
+                    <i class="fas fa-check-circle"></i>
+                    Success Popover
+                </button>
+            </div>
+
+            <div class="mt-6">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">External Content Examples</h3>
+                <div class="flex flex-wrap gap-2">
+                    <button id="user-data-popover"
+                        class="bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded-lg transition-colors">
+                        Load User Data (Top-Center)
+                    </button>
+                    <button id="product-table-popover"
+                        class="bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded-lg transition-colors">
+                        Load Product Table (Top-Center)
+                    </button>
+                    <button id="contact-form-popover"
+                        class="bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded-lg transition-colors">
+                        Load Contact Form (Top-Center)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Features</h2>
+            <ul class="list-disc pl-5 text-gray-600 mb-4 space-y-2">
+                <li><strong>Position Control</strong> - All popovers display in center, content popovers at top-center
+                </li>
+                <li><strong>Four types</strong> - Information, Confirmation, Content, and Success popovers</li>
+                <li><strong>External content</strong> - Load content from separate files</li>
+                <li><strong>Draggable</strong> - Click and drag the header to move popovers</li>
+                <li><strong>Background blur</strong> - Background is blurred when popover is open</li>
+                <li><strong>Auto-close</strong> - Click outside the popover to close it</li>
+                <li><strong>Keyboard support</strong> - Enter triggers OK/Confirm, Escape triggers Cancel</li>
+                <li><strong>Fully customizable</strong> - Title, content, buttons, and colors can be customized</li>
+                <li><strong>Callback support</strong> - Execute actions after confirmation</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- External content templates (would normally be in separate files) -->
+    <script type="text/template" id="user-data-template">
+        <div class="space-y-4">
+            <h4 class="font-semibold text-lg border-b pb-2">User Information</h4>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm text-gray-500">Name</p>
+                    <p class="font-medium">John Doe</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Email</p>
+                    <p class="font-medium">john.doe@example.com</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Phone</p>
+                    <p class="font-medium">+1 (555) 123-4567</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Location</p>
+                    <p class="font-medium">New York, USA</p>
+                </div>
+            </div>
+            <div class="bg-blue-50 p-3 rounded-md mt-4">
+                <p class="text-sm text-blue-700">This user data was loaded from an external template file.</p>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/template" id="product-table-template">
+        <div class="overflow-x-auto">
+            <h4 class="font-semibold text-lg mb-3">Product Inventory</h4>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr>
+                        <td class="px-4 py-2 whitespace-nowrap">Laptop Pro</td>
+                        <td class="px-4 py-2 whitespace-nowrap">Electronics</td>
+                        <td class="px-4 py-2 whitespace-nowrap">$1,299.99</td>
+                        <td class="px-4 py-2 whitespace-nowrap">15</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2 whitespace-nowrap">Wireless Mouse</td>
+                        <td class="px-4 py-2 whitespace-nowrap">Accessories</td>
+                        <td class="px-4 py-2 whitespace-nowrap">$29.99</td>
+                        <td class="px-4 py-2 whitespace-nowrap">42</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2 whitespace-nowrap">Mechanical Keyboard</td>
+                        <td class="px-4 py-2 whitespace-nowrap">Accessories</td>
+                        <td class="px-4 py-2 whitespace-nowrap">$89.99</td>
+                        <td class="px-4 py-2 whitespace-nowrap">23</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2 whitespace-nowrap">Monitor 27"</td>
+                        <td class="px-4 py-2 whitespace-nowrap">Electronics</td>
+                        <td class="px-4 py-2 whitespace-nowrap">$349.99</td>
+                        <td class="px-4 py-2 whitespace-nowrap">8</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="bg-yellow-50 p-3 rounded-md mt-4">
+                <p class="text-sm text-yellow-700">This product table was loaded from an external template file.</p>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/template" id="contact-form-template">
+        <div class="space-y-4">
+            <h4 class="font-semibold text-lg border-b pb-2">Contact Us</h4>
+            <form id="contactForm" class="space-y-4">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input type="text" id="name" name="name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <input type="email" id="email" name="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <div>
+                    <label for="subject" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                    <input type="text" id="subject" name="subject" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <div>
+                    <label for="message" class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                    <textarea id="message" name="message" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+                </div>
+            </form>
+            <div class="bg-green-50 p-3 rounded-md">
+                <p class="text-sm text-green-700">This contact form was loaded from an external template file.</p>
+            </div>
+        </div>
+    </script>
+
+    <script>
+        // Content Loader - Simulates loading content from external files
+        const ContentLoader = {
+            // In a real application, these would be fetch requests to external files
+            async loadContent(contentId) {
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Get content from template (in real app, this would be from external file)
+                const template = document.getElementById(contentId);
+                if (template) {
+                    return template.innerHTML;
+                }
+
+                throw new Error(`Content with ID '${contentId}' not found`);
+            },
+
+            // Specific content loaders
+            async loadUserData() {
+                return await this.loadContent('user-data-template');
+            },
+
+            async loadProductTable() {
+                return await this.loadContent('product-table-template');
+            },
+
+            async loadContactForm() {
+                return await this.loadContent('contact-form-template');
+            }
+        };
+
+        // Popover system
+        const Popover = {
+            // Create and show a popover
+            async show(options) {
+                // Create overlay
+                const overlay = document.createElement('div');
+                overlay.className = 'popover-overlay';
+                document.body.appendChild(overlay);
+
+                // Create popover container
+                const popover = document.createElement('div');
+
+                // Determine position class based on type
+                // Content popovers use top-center, others use center
+                const positionClass = options.type === 'content' ? 'top-center' : 'center';
+                popover.className = `popover-container ${positionClass}`;
+
+                // Show loading state if content is being loaded asynchronously
+                let contentHtml = options.content || '';
+
+                // If content is a function or promise, handle it
+                if (typeof options.content === 'function') {
+                    contentHtml = '<div class="popover-loading"><div class="loading-spinner"></div></div>';
+                }
+
+                // Build popover content based on type
+                let footerHtml = '';
+
+                switch (options.type) {
+                    case 'info':
+                        footerHtml = `
+                            <button class="popover-button popover-button-primary" data-action="ok">
+                                ${options.confirmText || 'OK'}
+                            </button>
+                        `;
+                        break;
+
+                    case 'confirm':
+                        footerHtml = `
+                            <button class="popover-button popover-button-secondary" data-action="cancel">
+                                ${options.cancelText || 'Cancel'}
+                            </button>
+                            <button class="popover-button popover-button-primary" data-action="confirm">
+                                ${options.confirmText || 'Confirm'}
+                            </button>
+                        `;
+                        break;
+
+                    case 'content':
+                        footerHtml = options.buttons || '';
+                        break;
+
+                    case 'success':
+                        footerHtml = `
+                            <button class="popover-button popover-button-success" data-action="ok">
+                                ${options.confirmText || 'OK'}
+                            </button>
+                        `;
+                        break;
+                }
+
+                // Set popover HTML
+                popover.innerHTML = `
+                    <div class="position-indicator">${positionClass}</div>
+                    <div class="popover-header">
+                        <h3 class="popover-title">${options.title}</h3>
+                        <button class="popover-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="popover-body">
+                        ${contentHtml}
+                    </div>
+                    <div class="popover-footer">
+                        ${footerHtml}
+                    </div>
+                `;
+
+                // Add to document
+                document.body.appendChild(popover);
+
+                // Show with animation
+                setTimeout(() => {
+                    overlay.classList.add('show');
+                    popover.classList.add('show');
+                }, 10);
+
+                // If content is a function, load it asynchronously
+                if (typeof options.content === 'function') {
+                    try {
+                        const loadedContent = await options.content();
+                        const body = popover.querySelector('.popover-body');
+                        body.innerHTML = loadedContent;
+                    } catch (error) {
+                        const body = popover.querySelector('.popover-body');
+                        body.innerHTML = `<div class="text-red-500 text-center">Error loading content: ${error.message}</div>`;
+                    }
+                }
+
+                // Set up event handlers
+                const closePopover = () => {
+                    overlay.classList.remove('show');
+                    popover.classList.remove('show');
+
+                    setTimeout(() => {
+                        if (document.body.contains(overlay)) {
+                            document.body.removeChild(overlay);
+                        }
+                        if (document.body.contains(popover)) {
+                            document.body.removeChild(popover);
+                        }
+                    }, 300);
+                };
+
+                // Close button
+                popover.querySelector('.popover-close').addEventListener('click', closePopover);
+
+                // Overlay click (outside popover)
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        closePopover();
+                        if (options.onCancel) options.onCancel();
+                    }
+                });
+
+                // Button actions
+                popover.querySelectorAll('[data-action]').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const action = button.getAttribute('data-action');
+
+                        if (action === 'ok' || action === 'confirm') {
+                            if (options.onConfirm) options.onConfirm();
+                        } else if (action === 'cancel') {
+                            if (options.onCancel) options.onCancel();
+                        }
+
+                        closePopover();
+                    });
+                });
+
+                // Keyboard support
+                const handleKeydown = (e) => {
+                    if (e.key === 'Escape') {
+                        if (options.onCancel) options.onCancel();
+                        closePopover();
+                        document.removeEventListener('keydown', handleKeydown);
+                    } else if (e.key === 'Enter') {
+                        const primaryButton = popover.querySelector('[data-action="ok"], [data-action="confirm"]');
+                        if (primaryButton) {
+                            primaryButton.click();
+                            document.removeEventListener('keydown', handleKeydown);
+                        }
+                    }
+                };
+
+                document.addEventListener('keydown', handleKeydown);
+
+                // Make popover draggable
+                let isDragging = false;
+                let dragOffset = { x: 0, y: 0 };
+
+                const header = popover.querySelector('.popover-header');
+
+                header.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    popover.classList.add('dragging');
+
+                    const rect = popover.getBoundingClientRect();
+                    dragOffset.x = e.clientX - rect.left;
+                    dragOffset.y = e.clientY - rect.top;
+
+                    e.preventDefault();
+                });
+
+                const handleMouseMove = (e) => {
+                    if (!isDragging) return;
+
+                    popover.style.left = `${e.clientX - dragOffset.x}px`;
+                    popover.style.top = `${e.clientY - dragOffset.y}px`;
+                    popover.style.transform = 'none';
+                };
+
+                const handleMouseUp = () => {
+                    isDragging = false;
+                    popover.classList.remove('dragging');
+                };
+
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+
+                // Clean up event listeners when popover is closed
+                const originalClose = closePopover;
+                const enhancedClose = () => {
+                    document.removeEventListener('keydown', handleKeydown);
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                    originalClose();
+                };
+
+                // Replace close function
+                Object.defineProperty(closePopover, 'name', { value: 'enhancedClose' });
+
+                return {
+                    close: enhancedClose,
+                    element: popover
+                };
+            },
+
+            // Information popover (center position)
+            info(title, content, options = {}) {
+                return this.show({
+                    type: 'info',
+                    title,
+                    content,
+                    confirmText: options.confirmText,
+                    onConfirm: options.onConfirm
+                });
+            },
+
+            // Confirmation popover (center position)
+            confirm(title, content, options = {}) {
+                return this.show({
+                    type: 'confirm',
+                    title,
+                    content,
+                    confirmText: options.confirmText,
+                    cancelText: options.cancelText,
+                    onConfirm: options.onConfirm,
+                    onCancel: options.onCancel
+                });
+            },
+
+            // Content popover (top-center position)
+            content(title, content, buttons, options = {}) {
+                return this.show({
+                    type: 'content',
+                    title,
+                    content,
+                    buttons
+                });
+            },
+
+            // Success popover (center position)
+            success(title, content, options = {}) {
+                return this.show({
+                    type: 'success',
+                    title,
+                    content,
+                    confirmText: options.confirmText,
+                    onConfirm: options.onConfirm
+                });
+            }
+        };
+
+        const Toast = {
+            popover(type, title, content, options = {confirmText, cancelText, onConfirm, onCancel, content, buttons: {text, onClick, color, background, rounded}}) {
+                switch (type) {
+                    case 'info':
+                        return Popover.info(title, content, options)
+                    case 'success':
+                        return Popover.success(title, content, options)
+                    case 'content':
+                        return Popover.content(title, content, options)
+                    case 'confirm':
+                        return Popover.confirm(title, content, options)
+                    default:
+                        return Popover.info(title, content, options)
+                }
+            },
+            Toast(type, title, msg, position = 'top-right', duration = 5) {}
+        }
+
+        // Set up button event listeners
+        document.getElementById('info-popover').addEventListener('click', () => {
+            Toast.popover(
+                'info',
+                'Information',
+                'This is an information popover with an OK button. It appears in the center position.',
+                {
+                    confirmText: 'Got it!',
+                    onConfirm: () => {
+                        console.log('Information popover confirmed');
+                    }
+                }
+            );
+        });
+
+        document.getElementById('confirm-popover').addEventListener('click', () => {
+            Toast.popover(
+                'confirm',
+                'Confirm Action',
+                'Are you sure you want to proceed with this action? This cannot be undone. This popover appears in the center position.',
+                {
+                    confirmText: 'Yes, proceed',
+                    cancelText: 'No, cancel',
+                    onConfirm: () => {
+                        console.log('Action confirmed');
+                        // Perform the action here
+                    },
+                    onCancel: () => {
+                        console.log('Action cancelled');
+                    }
+                }
+            );
+        });
+
+        document.getElementById('content-popover').addEventListener('click', () => {
+            const buttons = `
+                <button class="popover-button popover-button-secondary" data-action="cancel">
+                    Close
+                </button>
+                <button class="popover-button popover-button-primary" data-action="save">
+                    Save Changes
+                </button>
+            `;
+
+            const content = `
+                <h4 class="font-semibold mb-2">Sample Form</h4>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Enter your name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Enter your email">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                        <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md" rows="3" placeholder="Enter your message"></textarea>
+                    </div>
+                </div>
+                <div class="mt-4 bg-purple-50 p-3 rounded-md">
+                    <p class="text-sm text-purple-700">This content popover appears at the top-center position.</p>
+                </div>
+            `;
+
+            const popover = Popover.content('Content Popover', content, buttons);
+
+            // Add custom handler for save button
+            setTimeout(() => {
+                const saveButton = document.querySelector('[data-action="save"]');
+                if (saveButton) {
+                    saveButton.addEventListener('click', () => {
+                        console.log('Save button clicked');
+                        // Handle save logic here
+                    });
+                }
+            }, 100);
+        });
+
+        document.getElementById('success-popover').addEventListener('click', () => {
+            Popover.success(
+                'Success!',
+                'Your action has been completed successfully. You can now continue with your work. This popover appears in the center position.',
+                {
+                    confirmText: 'Continue',
+                    onConfirm: () => {
+                        console.log('Success popover closed');
+                    }
+                }
+            );
+        });
+
+        // External content examples (all content popovers appear at top-center)
+        document.getElementById('user-data-popover').addEventListener('click', async () => {
+            const buttons = `
+                <button class="popover-button popover-button-secondary" data-action="cancel">
+                    Close
+                </button>
+                <button class="popover-button popover-button-primary" data-action="edit">
+                    Edit User
+                </button>
+            `;
+
+            const popover = await Popover.content(
+                'User Data',
+                () => ContentLoader.loadUserData(),
+                buttons
+            );
+
+            // Add custom handler for edit button
+            setTimeout(() => {
+                const editButton = document.querySelector('[data-action="edit"]');
+                if (editButton) {
+                    editButton.addEventListener('click', () => {
+                        console.log('Edit user button clicked');
+                        // Handle edit logic here
+                    });
+                }
+            }, 100);
+        });
+
+        document.getElementById('product-table-popover').addEventListener('click', async () => {
+            const buttons = `
+                <button class="popover-button popover-button-secondary" data-action="cancel">
+                    Close
+                </button>
+                <button class="popover-button popover-button-primary" data-action="export">
+                    Export Data
+                </button>
+            `;
+
+            const popover = await Popover.content(
+                'Product Inventory',
+                () => ContentLoader.loadProductTable(),
+                buttons
+            );
+
+            // Add custom handler for export button
+            setTimeout(() => {
+                const exportButton = document.querySelector('[data-action="export"]');
+                if (exportButton) {
+                    exportButton.addEventListener('click', () => {
+                        console.log('Export data button clicked');
+                        // Handle export logic here
+                    });
+                }
+            }, 100);
+        });
+
+        document.getElementById('contact-form-popover').addEventListener('click', async () => {
+            const buttons = `
+                <button class="popover-button popover-button-secondary" data-action="cancel">
+                    Cancel
+                </button>
+                <button class="popover-button popover-button-primary" data-action="submit">
+                    Send Message
+                </button>
+            `;
+
+            const popover = await Popover.content(
+                'Contact Form',
+                () => ContentLoader.loadContactForm(),
+                buttons
+            );
+
+            // Add custom handler for submit button
+            setTimeout(() => {
+                const submitButton = document.querySelector('[data-action="submit"]');
+                if (submitButton) {
+                    submitButton.addEventListener('click', () => {
+                        console.log('Submit form button clicked');
+                        // Handle form submission logic here
+                    });
+                }
+            }, 100);
+        });
+    </script>
+</body>
+
+</html>

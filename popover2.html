@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Popover System</title>
+    <title>Enhanced Popover System with External Content</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -200,15 +200,37 @@
                 box-shadow: inset 0px 0px 0px 30px #4caf50;
             }
         }
+        
+        /* Loading state */
+        .popover-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen p-8">
     <div class="max-w-4xl mx-auto">
         <h1 class="text-3xl font-bold text-center text-gray-800 mb-2">Enhanced Popover System</h1>
-        <p class="text-gray-600 text-center mb-8">Four types of popovers with drag, blur, keyboard support, and custom styling</p>
+        <p class="text-gray-600 text-center mb-8">Four types of popovers with external content loading</p>
 
         <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-            <h2 class="text-xl font-semibold text-gray-700 mb-4">Popover Types</h2>
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Popover Types with External Content</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <button id="info-popover" class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg transition-colors">
@@ -231,12 +253,28 @@
                     Success Popover
                 </button>
             </div>
+            
+            <div class="mt-6">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">External Content Examples</h3>
+                <div class="flex flex-wrap gap-2">
+                    <button id="user-data-popover" class="bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded-lg transition-colors">
+                        Load User Data
+                    </button>
+                    <button id="product-table-popover" class="bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded-lg transition-colors">
+                        Load Product Table
+                    </button>
+                    <button id="contact-form-popover" class="bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded-lg transition-colors">
+                        Load Contact Form
+                    </button>
+                </div>
+            </div>
         </div>
         
         <div class="bg-white rounded-xl shadow-md p-6">
             <h2 class="text-xl font-semibold text-gray-700 mb-4">Features</h2>
             <ul class="list-disc pl-5 text-gray-600 mb-4 space-y-2">
                 <li><strong>Four types</strong> - Information, Confirmation, Content, and Success popovers</li>
+                <li><strong>External content</strong> - Load content from separate files</li>
                 <li><strong>Draggable</strong> - Click and drag the header to move popovers</li>
                 <li><strong>Background blur</strong> - Background is blurred when popover is open</li>
                 <li><strong>Auto-close</strong> - Click outside the popover to close it</li>
@@ -247,11 +285,141 @@
         </div>
     </div>
 
+    <!-- External content templates (would normally be in separate files) -->
+    <script type="text/template" id="user-data-template">
+        <div class="space-y-4">
+            <h4 class="font-semibold text-lg border-b pb-2">User Information</h4>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm text-gray-500">Name</p>
+                    <p class="font-medium">John Doe</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Email</p>
+                    <p class="font-medium">john.doe@example.com</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Phone</p>
+                    <p class="font-medium">+1 (555) 123-4567</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Location</p>
+                    <p class="font-medium">New York, USA</p>
+                </div>
+            </div>
+            <div class="bg-blue-50 p-3 rounded-md mt-4">
+                <p class="text-sm text-blue-700">This user data was loaded from an external template file.</p>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/template" id="product-table-template">
+        <div class="overflow-x-auto">
+            <h4 class="font-semibold text-lg mb-3">Product Inventory</h4>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr>
+                        <td class="px-4 py-2 whitespace-nowrap">Laptop Pro</td>
+                        <td class="px-4 py-2 whitespace-nowrap">Electronics</td>
+                        <td class="px-4 py-2 whitespace-nowrap">$1,299.99</td>
+                        <td class="px-4 py-2 whitespace-nowrap">15</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2 whitespace-nowrap">Wireless Mouse</td>
+                        <td class="px-4 py-2 whitespace-nowrap">Accessories</td>
+                        <td class="px-4 py-2 whitespace-nowrap">$29.99</td>
+                        <td class="px-4 py-2 whitespace-nowrap">42</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2 whitespace-nowrap">Mechanical Keyboard</td>
+                        <td class="px-4 py-2 whitespace-nowrap">Accessories</td>
+                        <td class="px-4 py-2 whitespace-nowrap">$89.99</td>
+                        <td class="px-4 py-2 whitespace-nowrap">23</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2 whitespace-nowrap">Monitor 27"</td>
+                        <td class="px-4 py-2 whitespace-nowrap">Electronics</td>
+                        <td class="px-4 py-2 whitespace-nowrap">$349.99</td>
+                        <td class="px-4 py-2 whitespace-nowrap">8</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="bg-yellow-50 p-3 rounded-md mt-4">
+                <p class="text-sm text-yellow-700">This product table was loaded from an external template file.</p>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/template" id="contact-form-template">
+        <div class="space-y-4">
+            <h4 class="font-semibold text-lg border-b pb-2">Contact Us</h4>
+            <form id="contactForm" class="space-y-4">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input type="text" id="name" name="name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <input type="email" id="email" name="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <div>
+                    <label for="subject" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                    <input type="text" id="subject" name="subject" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <div>
+                    <label for="message" class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                    <textarea id="message" name="message" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+                </div>
+            </form>
+            <div class="bg-green-50 p-3 rounded-md">
+                <p class="text-sm text-green-700">This contact form was loaded from an external template file.</p>
+            </div>
+        </div>
+    </script>
+
     <script>
+        // Content Loader - Simulates loading content from external files
+        const ContentLoader = {
+            // In a real application, these would be fetch requests to external files
+            async loadContent(contentId) {
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Get content from template (in real app, this would be from external file)
+                const template = document.getElementById(contentId);
+                if (template) {
+                    return template.innerHTML;
+                }
+                
+                throw new Error(`Content with ID '${contentId}' not found`);
+            },
+            
+            // Specific content loaders
+            async loadUserData() {
+                return await this.loadContent('user-data-template');
+            },
+            
+            async loadProductTable() {
+                return await this.loadContent('product-table-template');
+            },
+            
+            async loadContactForm() {
+                return await this.loadContent('contact-form-template');
+            }
+        };
+
         // Popover system
         const Popover = {
             // Create and show a popover
-            show(options) {
+            async show(options) {
                 // Create overlay
                 const overlay = document.createElement('div');
                 overlay.className = 'popover-overlay';
@@ -261,17 +429,19 @@
                 const popover = document.createElement('div');
                 popover.className = 'popover-container';
                 
+                // Show loading state if content is being loaded asynchronously
+                let contentHtml = options.content || '';
+                
+                // If content is a function or promise, handle it
+                if (typeof options.content === 'function') {
+                    contentHtml = '<div class="popover-loading"><div class="loading-spinner"></div></div>';
+                }
+                
                 // Build popover content based on type
-                let contentHtml = '';
                 let footerHtml = '';
                 
                 switch(options.type) {
                     case 'info':
-                        contentHtml = `
-                            <div class="popover-body">
-                                <p>${options.content}</p>
-                            </div>
-                        `;
                         footerHtml = `
                             <button class="popover-button popover-button-primary" data-action="ok">
                                 ${options.okText || 'OK'}
@@ -280,11 +450,6 @@
                         break;
                         
                     case 'confirm':
-                        contentHtml = `
-                            <div class="popover-body">
-                                <p>${options.content}</p>
-                            </div>
-                        `;
                         footerHtml = `
                             <button class="popover-button popover-button-secondary" data-action="cancel">
                                 ${options.cancelText || 'Cancel'}
@@ -296,28 +461,10 @@
                         break;
                         
                     case 'content':
-                        contentHtml = `
-                            <div class="popover-body">
-                                <div class="popover-content">
-                                    ${options.content}
-                                </div>
-                            </div>
-                        `;
                         footerHtml = options.buttons || '';
                         break;
                         
                     case 'success':
-                        contentHtml = `
-                            <div class="popover-body">
-                                <div class="success-icon">
-                                    <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                                        <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-                                        <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                                    </svg>
-                                </div>
-                                <p class="text-center">${options.content}</p>
-                            </div>
-                        `;
                         footerHtml = `
                             <button class="popover-button popover-button-success" data-action="ok">
                                 ${options.okText || 'OK'}
@@ -334,7 +481,9 @@
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
-                    ${contentHtml}
+                    <div class="popover-body">
+                        ${contentHtml}
+                    </div>
                     <div class="popover-footer">
                         ${footerHtml}
                     </div>
@@ -349,14 +498,30 @@
                     popover.classList.add('show');
                 }, 10);
                 
+                // If content is a function, load it asynchronously
+                if (typeof options.content === 'function') {
+                    try {
+                        const loadedContent = await options.content();
+                        const body = popover.querySelector('.popover-body');
+                        body.innerHTML = loadedContent;
+                    } catch (error) {
+                        const body = popover.querySelector('.popover-body');
+                        body.innerHTML = `<div class="text-red-500 text-center">Error loading content: ${error.message}</div>`;
+                    }
+                }
+                
                 // Set up event handlers
                 const closePopover = () => {
                     overlay.classList.remove('show');
                     popover.classList.remove('show');
                     
                     setTimeout(() => {
-                        document.body.removeChild(overlay);
-                        document.body.removeChild(popover);
+                        if (document.body.contains(overlay)) {
+                            document.body.removeChild(overlay);
+                        }
+                        if (document.body.contains(popover)) {
+                            document.body.removeChild(popover);
+                        }
                     }, 300);
                 };
                 
@@ -420,30 +585,37 @@
                     e.preventDefault();
                 });
                 
-                document.addEventListener('mousemove', (e) => {
+                const handleMouseMove = (e) => {
                     if (!isDragging) return;
                     
                     popover.style.left = `${e.clientX - dragOffset.x}px`;
                     popover.style.top = `${e.clientY - dragOffset.y}px`;
                     popover.style.transform = 'none';
-                });
+                };
                 
-                document.addEventListener('mouseup', () => {
+                const handleMouseUp = () => {
                     isDragging = false;
                     popover.classList.remove('dragging');
-                });
+                };
+                
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
                 
                 // Clean up event listeners when popover is closed
                 const originalClose = closePopover;
-                closePopover = () => {
+                const enhancedClose = () => {
                     document.removeEventListener('keydown', handleKeydown);
-                    document.removeEventListener('mousemove', handleMousemove);
-                    document.removeEventListener('mouseup', handleMouseup);
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
                     originalClose();
                 };
                 
+                // Replace close function
+                Object.defineProperty(closePopover, 'name', { value: 'enhancedClose' });
+                
                 return {
-                    close: closePopover
+                    close: enhancedClose,
+                    element: popover
                 };
             },
             
@@ -578,6 +750,91 @@
                     }
                 }
             );
+        });
+        
+        // External content examples
+        document.getElementById('user-data-popover').addEventListener('click', async () => {
+            const buttons = `
+                <button class="popover-button popover-button-secondary" data-action="cancel">
+                    Close
+                </button>
+                <button class="popover-button popover-button-primary" data-action="edit">
+                    Edit User
+                </button>
+            `;
+            
+            const popover = await Popover.content(
+                'User Data', 
+                () => ContentLoader.loadUserData(), 
+                buttons
+            );
+            
+            // Add custom handler for edit button
+            setTimeout(() => {
+                const editButton = document.querySelector('[data-action="edit"]');
+                if (editButton) {
+                    editButton.addEventListener('click', () => {
+                        console.log('Edit user button clicked');
+                        // Handle edit logic here
+                    });
+                }
+            }, 100);
+        });
+        
+        document.getElementById('product-table-popover').addEventListener('click', async () => {
+            const buttons = `
+                <button class="popover-button popover-button-secondary" data-action="cancel">
+                    Close
+                </button>
+                <button class="popover-button popover-button-primary" data-action="export">
+                    Export Data
+                </button>
+            `;
+            
+            const popover = await Popover.content(
+                'Product Inventory', 
+                () => ContentLoader.loadProductTable(), 
+                buttons
+            );
+            
+            // Add custom handler for export button
+            setTimeout(() => {
+                const exportButton = document.querySelector('[data-action="export"]');
+                if (exportButton) {
+                    exportButton.addEventListener('click', () => {
+                        console.log('Export data button clicked');
+                        // Handle export logic here
+                    });
+                }
+            }, 100);
+        });
+        
+        document.getElementById('contact-form-popover').addEventListener('click', async () => {
+            const buttons = `
+                <button class="popover-button popover-button-secondary" data-action="cancel">
+                    Cancel
+                </button>
+                <button class="popover-button popover-button-primary" data-action="submit">
+                    Send Message
+                </button>
+            `;
+            
+            const popover = await Popover.content(
+                'Contact Form', 
+                () => ContentLoader.loadContactForm(), 
+                buttons
+            );
+            
+            // Add custom handler for submit button
+            setTimeout(() => {
+                const submitButton = document.querySelector('[data-action="submit"]');
+                if (submitButton) {
+                    submitButton.addEventListener('click', () => {
+                        console.log('Submit form button clicked');
+                        // Handle form submission logic here
+                    });
+                }
+            }, 100);
         });
     </script>
 </body>

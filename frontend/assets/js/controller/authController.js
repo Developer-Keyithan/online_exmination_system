@@ -30,7 +30,7 @@ app.controller('AuthController', [
                 }).then(function (response) {
                     const data = response.data;
                     if (data.status === 'success') {
-                        Toast({
+                        Toast.fire({
                             type: 'success',
                             title: 'Success!',
                             msg: data.msg || 'Login successful'
@@ -39,7 +39,7 @@ app.controller('AuthController', [
                             window.location.href = 'dashboard';
                         }, 1000);
                     } else if (data.status === 'error') {
-                        Toast({
+                        Toast.fire({
                             type: 'error',
                             title: 'Error!',
                             msg: data.msg || 'Login failed'
@@ -48,7 +48,7 @@ app.controller('AuthController', [
                         button.prop('disabled', false);
                     }
                 }, function (error) {
-                    Toast({
+                    Toast.fire({
                         type: 'error',
                         title: 'Error!',
                         msg: 'Login failed'

@@ -61,6 +61,24 @@ class PageAPI
         return view('exams.my', ['title' => 'My Exams']);
     }
 
+    public function questionBank()
+    {
+        return view('questions.bank', ['title' => 'All Exams']);
+    }
+    public function createQuestions()
+    {
+        return view('questions.create', ['title' => 'My Exams']);
+    }
+    public function myQuestions()
+    {
+        return view('questions.my', ['title' => 'My Exams']);
+    }
+    
+    public function pastPapers()
+    {
+        return view('past_paper', ['title' => 'My Exams']);
+    }
+
     public function results()
     {
         return view('results.all', ['title' => 'All Results']);
@@ -77,6 +95,10 @@ class PageAPI
     public function markAttendance()
     {
         return view('attendance.mark', ['title' => 'Mark Attendance']);
+    }
+    public function myAttendance()
+    {
+        return view('attendance.my', ['title' => 'Mark Attendance']);
     }
 
     public function notifications()
