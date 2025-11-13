@@ -113,4 +113,6 @@ app.controller('mainController', ["$scope", "$http", function ($scope, $http) {
             Toast.fire({ type: 'error', title: 'Error', msg: 'Logout failed' });
         });
     });
+
+    
 }]);

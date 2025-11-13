@@ -62,3 +62,7 @@ Router::group(['prefix' => 'API'], function() {
     Router::post('/login', 'AuthAPI@login');
     Router::post('/logout', 'AuthAPI@logout');
 });
+
+Router::group(['prefix' => 'model'], function() {
+    Router::get('/{model}', 'ModelAPI@getModel');
+});

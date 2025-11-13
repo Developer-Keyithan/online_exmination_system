@@ -13,7 +13,7 @@ if (!function_exists('redirect')) {
     function redirect($name, $parameters = [])
     {
         $router = Router::getInstance();
-    //   $router->url($name, $parameters);
+        //   $router->url($name, $parameters);
         header('Location: ' . $router->url($name, $parameters));
         exit();
     }
@@ -91,6 +91,15 @@ if (!function_exists('asset')) {
         return $url;
     }
 }
+
+if (!function_exists('getModelFile')) {
+    function getModelFile($model)
+    {
+        $url = 'frontend/models/' . str_replace('.', '/', $model) . '.php';
+        return $url;
+    }
+}
+
 
 // db()
 if (!function_exists('db')) {
@@ -223,4 +232,112 @@ function renderMenuOptions($menu, $collapse, $level = 0)
         <?php endforeach; ?>
     </ul>
     <?php
+}
+
+function format_nic($number)
+{
+    // Remove spaces and make uppercase
+    $number = strtoupper(trim($number));
+
+    // Old NIC (9 digits + V/X)
+    if (preg_match('/^\d{9}[VX]$/', $number)) {
+        return substr($number, 0, 3) . ' ' . substr($number, 3, 3) . ' ' . substr($number, 6, 3) . ' ' . substr($number, 9);
+    }
+    // New NIC (12 digits)
+    elseif (preg_match('/^\d{12}$/', $number)) {
+        return substr($number, 0, 4) . ' ' . substr($number, 4, 4) . ' ' . substr($number, 8, 4);
+    }
+    // Invalid
+    else {
+        return $number;
+    }
+
+}
+
+function format_mobile($number)
+{
+    // Remove non-digit characters
+    $number = preg_replace('/\D/', '', $number);
+
+    // Remove first 0 if exists
+    if (substr($number, 0, 1) == '0') {
+        $number = substr($number, 1);
+    }
+
+
+    // Remove country code if exists
+    if (substr($number, 0, 2) == '94') {
+        $number = substr($number, 2);
+    }
+
+
+    // Format: XX-XXX-XXXX
+    if (strlen($number) == 9) {
+        return '+94 ' . substr($number, 0, 2) . ' ' . substr($number, 2, 3) . ' ' . substr($number, 5);
+    } else {
+        return $number;
+    }
+}
+
+function uploadImg($folderName, $file, $allowed)
+{
+    $currentYear = date('Y');
+    $currentMonth = date('m');
+
+    // storage/uploads/{year}/{month}/{folderName}/
+    $uploadDirectory = '../storage/uploads/' . $currentYear . '/' . $currentMonth . '/' . $folderName . '/';
+
+    if (!is_dir($uploadDirectory)) {
+        mkdir($uploadDirectory, 0755, true);
+    }
+
+    // file details
+    $imageName = $file['name'];
+    $tmpPath = $file['tmp_name'];
+    $size = $file['size'];
+    $extension = strtolower(pathinfo($imageName, PATHINFO_EXTENSION));
+
+    // print_r($file);
+    if (!in_array($extension, $allowed)) {
+        // print_r($allowed);
+        throw new Exception('Invalid file format.');
+    }
+
+    $newImageName = uniqid() . '.' . $extension;
+    $imagePath = $uploadDirectory . $newImageName;
+    // upload
+    if (!move_uploaded_file($tmpPath, $imagePath)) {
+        throw new Exception('Failed to upload image.');
+    }
+
+    return $imagePath; // return single file path
+}
+
+
+function currency_format($value)
+{
+    if (is_numeric($value)) {
+        $place = 2;//get_decimal_place();
+        if ($place > 0) {
+            return number_format($value, $place);
+        }
+        return round($value);
+    }
+    return $value;
+}
+
+function unique_transaction_ref_no($type = 'deposit')
+{
+    if ($type == 'deposit') {
+        $prefix = 'D';
+    } elseif ($type == 'withdraw') {
+        $prefix = 'W';
+    } else {
+        $prefix = 'OT';
+    }
+
+    $statement = db()->prepare("SELECT `info_id` as `total` FROM `bank_transaction_info`");
+    $statement->execute(array());
+    $inc = (int) $statement->rowCount() + 1;
+    return $prefix . $inc;
 }

@@ -65,8 +65,7 @@
             <!-- load dynamic content -->
             <?= $this->section('content') ?>
         </div>
-        <?php if (currentNav() != 'login')
-            include 'layouts/footer.php' ?>
+        <?php if (currentNav() != 'login') include 'layouts/footer.php' ?>
         </div>
         <!-- end body -->
     </body>

@@ -26,6 +26,33 @@ app.directive("bindHtmlCompile", [
     };
   },
 ]);
+app.filter("formatDecimal", function () {
+  return function (value, limit) {
+    // if (!value) return "0.00";
+    return window.formatDecimal(value, limit);
+  };
+});
+app.filter("formatNIC", function () {
+  return function (value) {
+    if (!value) return "";
+
+    // Remove spaces and make uppercase
+    let number = value.toString().toUpperCase().trim();
+
+    // Old NIC (9 digits + V/X)
+    if (/^\d{9}[VX]$/.test(number)) {
+      return number.substring(0, 4) + ' ' + number.substring(4, 8) + ' ' + number.substring(8);
+    }
+    // New NIC (12 digits)
+    else if (/^\d{12}$/.test(number)) {
+      return number.substring(0, 4) + ' ' + number.substring(4, 8) + ' ' + number.substring(8, 12);
+    }
+    // Invalid - return original
+    else {
+      return value;
+    }
+  };
+});
 app.run([
   "$rootScope",
   function (

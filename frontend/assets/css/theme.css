@@ -168,13 +168,12 @@
 }
 
 .opacity-50 {
-    opacity: 0.5;
+  opacity: 0.5;
 }
 
 .animate-spin {
   animation: spin 1s linear infinite;
 }
-
 
 .toast-card {
   @apply fixed flex items-center px-4 py-2 rounded-md shadow-md transition-all duration-300 z-[10000000] min-w-[20rem] max-w-[36rem];
@@ -369,4 +368,87 @@
 
 .toast-light .toast-progress-bar {
   @apply bg-gray-300;
+}
+
+.popover-overlay {
+  @apply fixed top-0 left-0 w-screen h-screen bg-black/50 backdrop-blur-sm z-[9999999] opacity-0 transition-opacity duration-300 ease-in-out;
+}
+
+.popover-overlay.show {
+  @apply opacity-100;
+}
+
+.popover-content {
+  @apply fixed bg-white rounded-lg shadow-xl min-w-[300px] overflow-auto scale-90 opacity-0 transition-all duration-300 ease-in-out z-[10000000];
+}
+
+/* Center position (default for all popovers except content type) */
+.popover-content.center {
+  @apply top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-90;
+}
+
+.popover-content.center.show {
+  @apply -translate-x-1/2 -translate-y-1/2 scale-100 opacity-100;
+}
+
+/* Top-center position (for content popovers only) */
+.popover-content.top-center {
+  @apply top-[10%] left-1/2 -translate-x-1/2 -translate-y-[10%] scale-90;
+}
+
+.popover-content.top-center.show {
+  @apply -translate-x-1/2 -translate-y-[10%] scale-100 opacity-100;
+}
+
+.popover-header {
+  @apply px-6 py-4 border-b border-gray-200 flex justify-between items-center cursor-move select-none;
+}
+
+.popover-title {
+  @apply text-xl font-semibold m-0;
+}
+
+.popover-close {
+  @apply bg-transparent border-none text-xl cursor-pointer text-gray-500 transition-colors duration-200;
+}
+
+.popover-close:hover {
+  @apply text-gray-700;
+}
+
+.popover-body {
+  @apply p-6;
+}
+
+.popover-footer {
+  @apply px-6 py-4 flex justify-end gap-2;
+}
+
+.popover-button {
+  @apply px-4 py-2 rounded-md font-medium cursor-pointer transition-all duration-200 border-none;
+}
+
+/* Dragging state */
+.popover-content.dragging {
+  @apply cursor-move shadow-2xl;
+}
+
+/* Loading state */
+.popover-loading {
+  @apply flex justify-center items-center py-8 flex-col;
+}
+
+.loading-spinner {
+  @apply w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin;
+}
+
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
