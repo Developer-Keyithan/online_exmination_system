@@ -61,10 +61,16 @@ Router::group(['middleware' => ['auth']], function () {
 Router::group(['prefix' => 'API'], function() {
     Router::post('/login', 'AuthAPI@login');
     Router::post('/logout', 'AuthAPI@logout');
+    Router::post('/user_groups', 'UserGroupAPI@createUserGroup', 'create_user_group', ['auth']);
+
     Router::get('/users', 'UserAPI@getAllUsers', 'get_all_users', ['auth']);
     Router::get('/user_groups', 'UserGroupAPI@getAllGroups', 'get_all_users_groups', ['auth']);
+    Router::get('/user_groups/{id}', 'UserGroupAPI@createUserGroup', 'create_user_group', ['auth']);
     Router::get('/user_groups/{id}/permissions', 'UserGroupAPI@getGroupPermissions', 'get_group_permissions', ['auth']);
+    Router::get('/auth/logged_user', 'UserAPI@getLoggedUserAccesses', 'get_logged_user_accesses', ['auth']);
+
     Router::put('/user_groups/{id}/permissions', 'UserGroupAPI@setPermissions', 'set_group_permissions', ['auth']);
+    Router::put('/user_groups/{id}', 'UserGroupAPI@updateUserGroup', 'update_user_group', ['auth']);
 });
 
 Router::group(['prefix' => 'modal'], function() {

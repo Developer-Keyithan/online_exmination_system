@@ -10,15 +10,16 @@ class UserGroupAPI
 
     public function getAllGroups()
     {
-        $role = getUserRole();
-        $sql = "SELECT * FROM user_group WHERE name != 'Technical'";
-        if ($role = 'Administrator') {
-            $sql .= " AND name != 'Administrator'";
-        } else if ($role = 'Admin') {
-            $sql .= " AND name != 'Administrator' AND name != 'Admin'";
-        } else {
-           $sql .= " AND name != 'Administrator' AND name != 'Admin' AND name != 'HOD'";
-        }
+        $role = getLoggedUserRoleName();
+        $sql = "SELECT * FROM user_group";
+        // $sql = "SELECT * FROM user_group WHERE name != 'Technical'";
+        // if ($role = 'Administrator') {
+        //     $sql .= " AND name != 'Administrator'";
+        // } else if ($role = 'Admin') {
+        //     $sql .= " AND name != 'Administrator' AND name != 'Admin'";
+        // } else {
+        //    $sql .= " AND name != 'Administrator' AND name != 'Admin' AND name != 'HOD'";
+        // }
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
@@ -81,5 +82,41 @@ class UserGroupAPI
         $stmt->execute([$permissionsString, $id]);
 
         return json_encode(['status' => 'success', 'message' => 'Permissions updated successfully.']);
+    }
+
+    public function createUserGroup()
+    {
+        $name = $_POST['group_name'] ?? null;
+        $discription = $_POST['group_description'] ?? null;
+
+        if (!$name) {
+            return json_encode(['status' => 'error', 'message' => 'Group name is required.']);
+        }
+
+        $sql = "INSERT INTO user_group (name, description) VALUES (?, ?)";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$name, $discription]);
+
+        return json_encode(['status' => 'success', 'message' => 'User group created successfully.']);
+    }
+
+    public function updateUserGroup() {
+        $id = $_GET['id'] ?? null;
+        $name = $_PUT['group_name'] ?? null;
+        $description = $_PUT['group_description'] ?? null;
+
+        if (!$id) {
+            return json_encode(['status' => 'error', 'message' => 'Group ID is required.']);
+        }
+
+        if (!$name) {
+            return json_encode(['status' => 'error', 'message' => 'Group name is required.']);
+        }
+
+        $sql = "UPDATE user_group SET name = ?, description = ? WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$name, $description, $id]);
+
+        return json_encode(['status' => 'success', 'message' => 'User group updated successfully.']);
     }
 }

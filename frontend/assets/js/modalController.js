@@ -1,5 +1,5 @@
 // permissionModelController.js
-app.factory("permissionModelController", [
+app.factory("permissionModalController", [
     "API_URL",
     "window",
     "jQuery",
@@ -19,125 +19,318 @@ app.factory("permissionModelController", [
         $timeout
     ) {
         return function ($scope) {
-            const modalId = "permission-model";
 
             $rootScope.staticPermissionData = {
                 "dashboard": {
                     "name": "Dashboard",
+                    "access": { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] },
                     "permissions": {
-                        "dashboard.view": "View Dashboard"
+                        "dashboard.view": { label: "View Dashboard", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        // "dashboard.customize": { label: "Customize Dashboard", access: { role: [1, 2, 3], permissions: [] } },
+                        "dashboard.reports": { label: "View Dashboard Reports", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        // "dashboard.widgets": { label: "Manage Dashboard Widgets", access: { role: [1, 2, 3], permissions: [] } },
+                        "dashboard.analytics": { label: "View Analytics", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        "dashboard.notifications": { label: "View Notifications", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        // "dashboard.activity": { label: "View Activity Log", access: { role: [1, 2, 3], permissions: [] } },
+                        // "dashboard.export": { label: "Export Dashboard Data", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        // "dashboard.settings": { label: "Manage Dashboard Settings", access: { role: [1, 2, 3], permissions: [] } },
+                        // "dashboard.users": { label: "View User Statistics", access: { role: [1, 2, 3], permissions: [] } },
+                        // "dashboard.roles": { label: "View Role Statistics", access: { role: [1, 2, 3], permissions: [] } },
+                        // "dashboard.permissions": { label: "View Permission Statistics", access: { role: [1, 2, 3], permissions: [] } },
+                        // "dashboard.themes": { label: "Change Dashboard Theme", access: { role: [1, 2, 3], permissions: [] } },
+                        // "dashboard.layout": { label: "Manage Dashboard Layout", access: { role: [1, 2, 3], permissions: [] } },
+                        // "dashboard.data": { label: "Access Dashboard Data", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        // "dashboard.integration": { label: "Manage Integrations", access: { role: [1, 2, 3], permissions: [] } },
+                        // "dashboard.support": { label: "Access Support Features", access: { role: [1], permissions: [] } },
+                        // "dashboard.updates": { label: "Check for Updates", access: { role: [1, 2, 3], permissions: [] } },
+                        // "dashboard.backup": { label: "Create Backups", access: { role: [1, 2, 3], permissions: [] } },
+                        // "dashboard.restore": { label: "Restore from Backup", access: { role: [1, 2, 3], permissions: [] } }
                     }
                 },
                 "courses": {
                     "name": "Courses",
+                    "access": { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] },
                     "permissions": {
-                        "courses.manage": "Manage Courses",
-                        "courses.view": "View Courses",
-                        "courses.add": "Add Course",
-                        "courses.my_courses": "View My Courses"
-                    }
-                },
-                "lectures": {
-                    "name": "Lectures",
-                    "permissions": {
-                        "lectures.manage": "Manage Lectures",
-                        "lectures.view": "View Lectures",
-                        "lectures.all": "View All Lectures",
-                        "lectures.my": "View My Lectures"
+                        "courses.manage": { label: "Manage Courses", access: { role: [1, 2, 3, 4], permissions: [] } },
+                        "courses.view": { label: "View Courses", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        "courses.create": { label: "Create Courses", access: { role: [1, 2, 3, 4], permissions: [] } },
+                        "courses.my_courses": { label: "View My Courses", access: { role: [1, 5, 6, 7], permissions: [] } },
+                        "courses.edit": { label: "Edit Courses", access: { role: [1, 2, 3, 4], permissions: [] } },
+                        "courses.delete": { label: "Delete Courses", access: { role: [1, 2, 3, 4], permissions: [] } },
+                        "courses.assign": { label: "Assign Courses", access: { role: [1, 2, 3, 4], permissions: [] } },
+                        "courses.unassign": { label: "Unassign Courses", access: { role: [1, 2, 3, 4], permissions: [] } }
                     }
                 },
                 "exams": {
                     "name": "Exams",
+                    "access": { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] },
                     "permissions": {
-                        "exams.create": "Create Exam",
-                        "exams.edit": "Edit Exam",
-                        "exams.view": "View Exam",
-                        "exams.delete": "Delete Exam",
-                        "exams.attempt": "Attempt Exam",
-                        "exams.all": "View All Exams",
-                        "exams.my": "View My Exams"
+                        "exams.create": { label: "Create Exams", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "exams.edit": { label: "Edit Exams", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "exams.view": { label: "View Exams", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        "exams.delete": { label: "Delete Exams", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "exams.attempt": { label: "Attempt Exams", access: { role: [1, 6], permissions: [] } },
+                        "exams.all": { label: "View All Exams", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "exams.my": { label: "View My Exams", access: { role: [1, 5], permissions: [] } },
+                        "exams.manage": { label: "Manage Exams", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "exams.schedule": { label: "Schedule Exams", access: { role: [1, 2, 3, 4, 5], permissions: [] } }
                     }
                 },
                 "questions": {
                     "name": "Questions",
+                    "access": { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] },
                     "permissions": {
-                        "questions.create": "Create Question",
-                        "questions.view": "View Question",
-                        "questions.edit": "Edit Question",
-                        "questions.delete": "Delete Question",
-                        "questions.bank": "Access Question Bank",
-                        "questions.my": "View My Questions"
+                        "questions.create": { label: "Create Questions", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "questions.view": { label: "View Questions", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        "questions.edit": { label: "Edit Questions", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "questions.edit.my": { label: "Edit My Questions", access: { role: [1, 4, 5], permissions: [] } },
+                        "questions.delete": { label: "Delete Questions", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "questions.delete.my": { label: "Delete My Questions", access: { role: [1, 4, 5], permissions: [] } },
+                        "questions.bank": { label: "Access Question Bank", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "questions.my": { label: "View My Questions", access: { role: [1, 4, 5], permissions: [] } },
+                        "questions.all": { label: "View All Questions", access: { role: [1, 2, 3], permissions: [] } },
+                        "questions.assign": { label: "Assign Questions", access: { role: [1, 2, 3, 4, 5], permissions: [] } }
                     }
                 },
                 "past_papers": {
                     "name": "Past Papers",
+                    "access": { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] },
                     "permissions": {
-                        "past_papers.view": "View Past Papers"
+                        "past_papers.view": { label: "View Past Papers", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        "past_papers.upload": { label: "Upload Past Papers", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "past_papers.edit": { label: "Edit Past Papers", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "past_papers.delete": { label: "Delete Past Papers", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "past_papers.all": { label: "View All Past Papers", access: { role: [1, 2, 3], permissions: [] } },
+                        "past_papers.my": { label: "View My Past Papers", access: { role: [1, 5, 6, 7], permissions: [] } }
                     }
                 },
                 "results": {
                     "name": "Results",
+                    "access": { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] },
                     "permissions": {
-                        "results.view": "View Results",
-                        "results.publish": "Publish Results",
-                        "results.all": "View All Results",
-                        "results.my": "View My Results"
+                        "results.view": { label: "View Results", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        "results.publish": { label: "Publish Results", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "results.all": { label: "View All Results", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "results.my": { label: "View My Results", access: { role: [1, 6, 7], permissions: [] } },
+                        "rerults.edit": { label: "Edit Results", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "results.delete": { label: "Delete Results", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "results.create": { label: "Create Results", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "results.manage": { label: "Manage Results", access: { role: [1, 2, 3, 4, 5], permissions: [] } }
                     }
                 },
                 "attendance": {
                     "name": "Attendance",
+                    "access": { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] },
                     "permissions": {
-                        "attendance.manage": "Manage Attendance",
-                        "attendance.view": "View Attendance",
-                        "attendance.mark": "Mark Attendance",
-                        "attendance.my": "View My Attendance"
+                        "attendance.manage": { label: "Manage Attendance", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "attendance.view": { label: "View Attendance", access: { role: [1, 2, 3, 4, 5, 6], permissions: [] } },
+                        "attendance.mark": { label: "Mark Attendance", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "attendance.my": { label: "View My Attendance", access: { role: [1, 6, 7], permissions: [] } },
+                        "attendance.all": { label: "View All Attendance", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "attendance.change": { label: "Change Attendance", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "attendance.delete": { label: "Delete Attendance", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "attendance.edit": { label: "Edit Attendance", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "attendance.create": { label: "Create Attendance Records", access: { role: [1, 2, 3, 4, 5], permissions: [] } }
                     }
                 },
                 "notifications": {
                     "name": "Notifications",
+                    "access": { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] },
                     "permissions": {
-                        "notifications.view": "View Notifications"
+                        "notifications.view": { label: "View Notifications", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        "notifications.send": { label: "Send Notifications", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "notifications.manage": { label: "Manage Notifications", access: { role: [1, 2, 3], permissions: [] } },
+                        "notifications.my": { label: "View My Notifications", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        "notifications.all": { label: "View All Notifications", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "notifications.templates": { label: "Manage Notification Templates", access: { role: [1, 2, 3], permissions: [] } },
+                        "notifications.settings": { label: "Manage Notification Settings", access: { role: [1, 2, 3], permissions: [] } }
                     }
                 },
                 "users": {
                     "name": "User Management",
+                    "access": { role: [1, 2, 3], permissions: [] },
                     "permissions": {
-                        "users.manage": "Manage Users",
-                        "users.create": "Create Users",
-                        "users.edit": "Edit Users",
-                        "users.delete": "Delete Users",
-                        "users.view": "View Users",
-                        "students.manage": "Manage Students",
-                        "teachers.manage": "Manage Teachers",
-                        "parents.manage": "Manage Parents",
-                        "groups.manage": "Manage User Groups"
+                        "users.manage": { label: "Manage Users", access: { role: [1, 2, 3], permissions: [] } },
+                        "users.create": { label: "Create Users", access: { role: [1, 2, 3], permissions: [] } },
+                        "users.edit": { label: "Edit Users", access: { role: [1, 2, 3], permissions: [] } },
+                        "users.delete": { label: "Delete Users", access: { role: [1, 2, 3], permissions: [] } },
+                        "users.view": { label: "View Users", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        "students.manage": { label: "Manage Students", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "lecturers.manage": { label: "Manage Lecturers", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "parents.manage": { label: "Manage Parents", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "hod.manage": { label: "Manage HODs", access: { role: [1, 2, 3], permissions: [] } },
+                        "groups.manage": { label: "Manage User Groups", access: { role: [1, 2, 3], permissions: [] } }
+                    }
+                },
+                "students": {
+                    "name": "Students",
+                    "access": { role: [1, 2, 3, 5, 6], permissions: [] },
+                    "permissions": {
+                        "students.create": { label: "Create Students", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "students.edit": { label: "Edit Students", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "students.delete": { label: "Delete Students", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "students.view": { label: "View Students", access: { role: [1, 2, 3, 5, 6], permissions: [] } },
+                        "students.link": { label: "Link Students", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "students.link.classes": { label: "Link Students to Classes", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "students.link.subjects": { label: "Link Students to Subjects", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "students.link.parents": { label: "Link Students to Parents", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "students.link.guardians": { label: "Link Students to Guardians", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "students.link.attendance": { label: "Link Students to Attendance", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "students.link.exams": { label: "Link Students to Exams", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "students.link.results": { label: "Link Students to Results", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "students.link.behaviour": { label: "Link Students to Behaviour Records", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "students.link.medical": { label: "Link Students to Medical Records", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "students.link.documents": { label: "Link Students to Documents", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "students.link.transport": { label: "Link Students to Transport", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "students.link.fee": { label: "Link Students to Fee Records", access: { role: [1, 2, 3, 5], permissions: [] } }
+                    }
+                },
+                "parents": {
+                    "name": "Parents",
+                    "access": { role: [1, 2, 3, 5, 7], permissions: [] },
+                    "permissions": {
+                        "parents.create": { label: "Create Parents", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "parents.edit": { label: "Edit Parents", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "parents.delete": { label: "Delete Parents", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "parents.view": { label: "View Parents", access: { role: [1, 2, 3, 5, 7], permissions: [] } },
+                        "parents.link": { label: "Link Parents", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "parents.link.students": { label: "Link Parents to Students", access: { role: [1, 2, 3, 5], permissions: [] } },
+                        "parents.link.documents": { label: "Link Parents to Documents", access: { role: [1, 2, 3, 5], permissions: [] } }
+                    }
+                },
+                "lecturers": {
+                    "name": "Lecturers",
+                    "access": { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] },
+                    "permissions": {
+                        "lecturers.create": { label: "Create Lecturers", access: { role: [1, 2, 3], permissions: [] } },
+                        "lecturers.edit": { label: "Edit Lecturers", access: { role: [1, 2, 3], permissions: [] } },
+                        "lecturers.delete": { label: "Delete Lecturers", access: { role: [1, 2, 3], permissions: [] } },
+                        "lecturers.view": { label: "View Lecturers", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        "lecturers.view.my": { label: "View Under HOD Lecturers", access: { role: [1, 2, 3, 4], permissions: [] } },
+                        "lecturers.link.courses": { label: "Link Lecturers to Courses", access: { role: [1, 2, 3, 4], permissions: [] } },
+                        "lecturers.link.classes": { label: "Link Lecturers to Classes", access: { role: [1, 2, 3, 4], permissions: [] } },
+                        "lecturers.link.departments": { label: "Link Lecturers to Departments", access: { role: [1, 2, 3, 4], permissions: [] } },
+                        "lecturers.link.lectures": { label: "Link Lecturers to Lectures", access: { role: [1, 2, 3, 4, 5], permissions: [] } }
+                    }
+                },
+                "departments": {
+                    "name": "Departments",
+                    "access": { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] },
+                    "permissions": {
+                        "departments.manage": { label: "Manage Departments", access: { role: [1, 2, 3], permissions: [] } },
+                        "departments.view": { label: "View Departments", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        "departments.create": { label: "Create Departments", access: { role: [1, 2, 3], permissions: [] } },
+                        "departments.edit": { label: "Edit Departments", access: { role: [1, 2, 3], permissions: [] } },
+                        "departments.delete": { label: "Delete Departments", access: { role: [1, 2, 3], permissions: [] } },
+                        "departments.link": { label: "Link Departments", access: { role: [1, 2, 3], permissions: [] } },
+                        "departments.link.courses": { label: "Link Departments to Courses", access: { role: [1, 2, 3], permissions: [] } },
+                        "departments.link.lecturers": { label: "Link Departments to Lecturers", access: { role: [1, 2, 3], permissions: [] } },
+                        "departments.link.students": { label: "Link Departments to Students", access: { role: [1, 2, 3], permissions: [] } },
+                        "departments.link.staff": { label: "Link Departments to Staff", access: { role: [1, 2, 3], permissions: [] } },
+                        "departments.link.reports": { label: "Link Departments to Reports", access: { role: [1, 2, 3], permissions: [] } },
+                        "departments.link.branch": { label: "Link Departments to Branches", access: { role: [1, 2, 3], permissions: [] } }
+                    }
+                },
+                "HOD": {
+                    "name": "HOD",
+                    "access": { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] },
+                    "permissions": {
+                        "hod.view": { label: "View All HODs", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "hod.create": { label: "Create HOD", access: { role: [1, 2, 3], permissions: [] } },
+                        "hod.edit": { label: "Edit HOD", access: { role: [1, 2, 3], permissions: [] } },
+                        "hod.delete": { label: "Delete HOD", access: { role: [1, 2, 3], permissions: [] } },
+                        "hod.link.departments": { label: "Link HOD to Departments", access: { role: [1, 2, 3], permissions: [] } },
+                        "hod.my": { label: "View My HOD", access: { role: [1, 6, 7], permissions: [] } },
+                        // "hod.approve": { label: "Approve HOD Requests", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
                     }
                 },
                 "reports": {
                     "name": "Reports",
+                    "access": { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] },
                     "permissions": {
-                        "reports.view": "View Reports",
-                        "reports.exam": "Exam Reports",
-                        "reports.performance": "Student Performance Reports"
+                        "reports.view": { label: "View Reports", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        "reports.view.my": { label: "View Reports", access: { role: [1, 4, 5, 6, 7], permissions: [] } },
+                        "reports.create": { label: "Create Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "reports.edit": { label: "Edit Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "reports.edit.my": { label: "Edit My Reports", access: { role: [1, 4, 5], permissions: [] } },
+                        "reports.delete.my": { label: "Delete My Reports", access: { role: [1, 4, 5], permissions: [] } },
+                        "reports.download": { label: "Download Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "reports.download.my": { label: "Download My Reports", access: { role: [1, 4, 5, 6, 7], permissions: [] } },
+                        "reports.exam": { label: "Access Exam Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "reports.exam.create": { label: "Create Exam Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "reports.eaxm.edit": { label: "Edit Exam Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "reports.eaxm.edit.my": { label: "Edit My Exam Reports", access: { role: [1, 4, 5], permissions: [] } },
+                        "reports.eaxm.delete": { label: "Delete Exam Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "reports.eaxm.delete.my": { label: "Delete My Exam Reports", access: { role: [1, 4, 5], permissions: [] } },
+                        "reports.eaxm.view": { label: "View Exam Reports", access: { role: [1, 2, 3, 4, 5, 7], permissions: [] } },
+                        "reports.eaxm.view.my": { label: "View My Exam Reports", access: { role: [1, 4, 5, 6, 7], permissions: [] } },
+                        "reports.eaxm.download": { label: "Download Exam Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "reports.eaxm.download.my": { label: "Download My Exam Reports", access: { role: [1, 4, 5, 6, 7], permissions: [] } },
+                        "reports.fee": { label: "Access Fee Reports", access: { role: [1, 2, 3, 4, 5, 7], permissions: [] } },
+                        "reports.fee.my": { label: "Access My Fee Reports", access: { role: [1, 6, 7], permissions: [] } },
+                        "reports.attendance": { label: "Access Attendance Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "reports.attendance.my": { label: "Access My Attendance Reports", access: { role: [1, 6, 7], permissions: [] } },
+                        "reports.behaviour": { label: "Access Behaviour Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "reports.behaviour.my": { label: "Access My Behaviour Reports", access: { role: [1, 6, 7], permissions: [] } },
+                        "reports.academic": { label: "Access Academic Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "reports.academic.my": { label: "Access My Academic Reports", access: { role: [1, 6, 7], permissions: [] } },
+                        "reports.performance": { label: "Access Performance Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "reports.performance.my": { label: "Access My Performance Reports", access: { role: [1, 6, 7], permissions: [] } }
                     }
                 },
                 "profile": {
                     "name": "Profile",
+                    "access": { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] },
                     "permissions": {
-                        "profile.view": "View Profile",
-                        "profile.edit": "Edit Profile"
+                        "profile.view": { label: "View Profile", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        "profile.edit": { label: "Edit Profile", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        "profile.change_password": { label: "Change Password", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        "profile.delete": { label: "Delete Profile", access: { role: [1, 2, 3,], permissions: [] } },
+                        "profile.delete.my": { label: "Delete My Profile", access: { role: [1, 4, 5, 6, 7], permissions: [] } }
                     }
                 },
                 "settings": {
                     "name": "Settings",
+                    "access": { role: [1, 2, 3], permissions: ['settings.manage', 'settings.advanced'] },
                     "permissions": {
-                        "settings.manage": "Manage Settings",
-                        "settings.advanced": "Advanced Settings"
+                        "settings.manage": { label: "Manage Settings", access: { role: [1, 2, 3], permissions: ['settings.manage'] } },
+                        "settings.advanced": { label: "Access Advanced Settings", access: { role: [1], permissions: ['settings.advanced'] } }
                     }
                 }
             };
 
+            function getUserPermissionsFormat(staticData, loggedUser) {
+                // loggedUser = { role: 3, permissions: ['settings.manage'] }
 
+                const result = {};
+
+                for (let moduleKey in staticData) {
+                    const module = staticData[moduleKey];
+
+                    // Check module-level access
+                    if (module.access.role.includes(loggedUser.role) ||
+                        module.access.permissions.some(p => loggedUser.permissions.includes(p))) {
+
+                        result[moduleKey] = {
+                            name: module.name,
+                            permissions: {}
+                        };
+
+                        for (let permKey in module.permissions) {
+                            const perm = module.permissions[permKey];
+
+                            const hasRoleAccess = perm.access.role.includes(loggedUser.role);
+                            const hasPermissionAccess = perm.access.permissions.some(p => loggedUser.permissions.includes(p));
+
+                            if (hasRoleAccess || hasPermissionAccess) {
+                                result[moduleKey].permissions[permKey] = perm.label;
+                            }
+                        }
+                    }
+                }
+
+                return result;
+            }
 
             // Initialize permission modal scope
             $rootScope.initPermissionModal = function (group) {
@@ -147,6 +340,8 @@ app.factory("permissionModelController", [
                 $scope.isLoading = false;
                 $scope.isSaving = false;
 
+                $scope.selectedUserGroup = { role: group.id, permissions: [] };
+                $scope.filteredPermissions = getUserPermissionsFormat($scope.staticPermissionData, $scope.selectedUserGroup);
                 $scope.processStaticPermissionData();
                 $scope.loadGroupCurrentPermissions();
             };
@@ -154,9 +349,9 @@ app.factory("permissionModelController", [
             $scope.processStaticPermissionData = function () {
                 $scope.permissionModules = [];
 
-                for (var moduleKey in $scope.staticPermissionData) {
-                    if ($scope.staticPermissionData.hasOwnProperty(moduleKey)) {
-                        var module = $scope.staticPermissionData[moduleKey];
+                for (var moduleKey in $scope.filteredPermissions) {
+                    if ($scope.filteredPermissions.hasOwnProperty(moduleKey)) {
+                        var module = $scope.filteredPermissions[moduleKey];
                         var moduleObj = {
                             key: moduleKey,
                             name: module.name,
@@ -181,7 +376,6 @@ app.factory("permissionModelController", [
                     if (!$scope.$$phase) $scope.$apply();
                 }, 10);
             };
-
 
             // Load current permissions for the selected group from API
             $scope.loadGroupCurrentPermissions = function () {
@@ -295,6 +489,83 @@ app.factory("permissionModelController", [
                 },
                 save: function () {
                     $scope.savePermissions();
+                }
+            };
+        };
+    }
+]);
+
+// user group create/edit modal controller
+app.factory("createAndEdituserGroupModalController", [
+    "API_URL",
+    "window",
+    "jQuery",
+    "$http",
+    "$sce",
+    "$rootScope",
+    "$compile",
+    "$timeout",
+    function (
+        API_URL,
+        window,
+        $,
+        $http,
+        $sce,
+        $rootScope,
+        $compile,
+        $timeout
+    ) {
+        return function ($scope) {
+
+            $scope.initCreateAndEdituserGroupModal = function (isEditing, group = null) {
+                console.log("isEditing:", isEditing);
+                $scope.isEditing = isEditing;
+                console.log("group:", group);
+                if (isEditing && group) {
+                    $scope.group = angular.copy(group);
+                } else {
+                    $scope.group = {
+                        name: '',
+                        description: ''
+                    };
+                }
+            };
+
+            // Correct save
+            $scope.modalSave = function () {
+                $scope.isSaving = true;
+
+                const apiUrl = $scope.isEditing
+                    ? `API/user_groups/${$scope.group.id}`
+                    : 'API/user_groups';
+                const method = $scope.isEditing ? 'PUT' : 'POST';
+                console.log("Saving to URL:", apiUrl, "with method:", method);
+
+                $http({
+                    method: method,
+                    url: apiUrl,
+                    data: $('#user-group-create-and-edit-form').serialize(),
+                }).then(function (response) {
+                    $scope.isSaving = false;
+                    $scope.closeModal();
+                    $scope.loadUserGroups();
+                    Toast.fire({ type: "success", title: "Success!", msg: $scope.isEditing ? "User group updated successfully" : "User group created successfully" });
+                }, function (error) {
+                    $scope.isSaving = false;
+                    Toast.fire({ type: "error", title: "Error!", msg: $scope.isEditing ? "Failed to update user group" : "Failed to create user group" });
+                    console.error("Error saving user group:", error);
+                });
+            };
+
+            return {
+                init: function (isEditing, group = null) {
+                    $scope.initCreateAndEdituserGroupModal(isEditing, group);
+                },
+                close: function () {
+                    Toast.popover({ type: "close" });
+                },
+                save: function () {
+                    $scope.modalSave(); // <-- correct
                 }
             };
         };

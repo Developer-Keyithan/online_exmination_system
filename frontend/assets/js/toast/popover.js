@@ -122,13 +122,16 @@ export const popup = {
         }
 
         let footerHtml = '';
+        const btnWidth = options.buttonWidth === 'full' ? '100%' : options.buttonWidth === 'fit' ? 'fit-content' : options.buttonWidth === 'auto' ? 'auto' : (options.buttonWidth !== 'auto' && options.buttonWidth !== 'full' && options.buttonWidth !== 'fit') ? options.buttonWidth : 'auto';
+        const buttonContainerClass = options.buttonContainerClass || '';
+        const buttonContainerStyles = options.buttonContainerStyles || '';
 
         switch (options.type) {
             case 'info':
                 footerHtml = `
                     <button 
                         class="popover-button"
-                        style="background:${options.confirmBg || '#3498db'};color:${options.confirmColor || '#fff'}"
+                        style="background:${options.confirmBg || '#3498db'};color:${options.confirmColor || '#fff'}; width: ${btnWidth};"
                         data-action="ok">
                         ${options.confirmText || 'OK'}
                     </button>
@@ -139,13 +142,13 @@ export const popup = {
                 footerHtml = `
                     <button 
                         class="popover-button"
-                        style="background:${options.confirmBg || '#4CAF50'};color:${options.confirmColor || '#fff'}"
+                        style="background:${options.confirmBg || '#4CAF50'};color:${options.confirmColor || '#fff'}; width: ${btnWidth};"
                         data-action="confirm">
                         ${options.confirmText || 'Confirm'}
                     </button>
                     <button 
                         class="popover-button"
-                        style="background:${options.cancelBg || '#f44336'};color:${options.cancelColor || '#fff'}"
+                        style="background:${options.cancelBg || '#f44336'};color:${options.cancelColor || '#fff'}; width: ${btnWidth};"
                         data-action="cancel">
                         ${options.cancelText || 'Cancel'}
                     </button>
@@ -157,7 +160,7 @@ export const popup = {
                     footerHtml = options.buttons.map((btn, index) => `
                         <button 
                             class="popover-button ${btn.class || ''}"
-                            style="background:${btn.background || '#3498db'}; color:${btn.color || '#fff'}"
+                            style="background:${btn.background || '#3498db'}; color:${btn.color || '#fff'}; width: ${btnWidth};"
                             data-index="${index}">
                             ${btn.text}
                         </button>
@@ -171,7 +174,7 @@ export const popup = {
                 footerHtml = `
                     <button 
                         class="popover-button"
-                        style="background:${options.confirmBg || '#3498db'};color:${options.confirmColor || '#fff'}"
+                        style="background:${options.confirmBg || '#3498db'};color:${options.confirmColor || '#fff'}; width: ${btnWidth};"
                         data-action="ok">
                         ${options.confirmText || 'OK'}
                     </button>
@@ -184,6 +187,7 @@ export const popup = {
         const buttonPositionClass = options.btnPosition === 'start' ? 'flex-start' :
             options.btnPosition === 'end' ? 'flex-end' :
                 options.btnPosition === 'between' ? 'space-between' :
+                    options.btnPosition === 'around' ? 'space-around' :
                     'center';
 
         popover.innerHTML = `
@@ -196,7 +200,7 @@ export const popup = {
             <div class="popover-body" style="color:${options.contentColor || '#fff'}">
                 ${contentHtml}
             </div>
-            <div class="popover-footer" style="justify-content:${buttonPositionClass}">
+            <div class="popover-footer ${buttonContainerClass}" style="justify-content:${buttonPositionClass}; ${buttonContainerStyles}">
                 ${footerHtml}
             </div>
         `;
@@ -445,7 +449,7 @@ export const popup = {
         }
     },
 
-    error({ title, content, options = { confirm: { text: 'OK', background: '#3498db', color: '#fff', onConfirm: null }, size: 'md', buttonPosition: 'center' } }) {
+    error({ title, content, options = { confirm: { text: 'OK', background: '#3498db', color: '#fff', onConfirm: null }, size: 'md', buttonPosition: 'center', buttonWidth: 'fit', buttonContainerClass: '', buttonContainerStyles: '' } }) {
         return this.show({
             type: 'info',
             title,
@@ -461,7 +465,10 @@ export const popup = {
             confirmBg: options.confirm?.background || '#3498db',
             confirmColor: options.confirm?.color || '#fff',
             size: options.size,
-            btnPosition: options.buttonPosition
+            btnPosition: options.buttonPosition,
+            buttonWidth: options.buttonWidth,
+            buttonContainerClass: options.buttonContainerClass,
+            buttonContainerStyles: options.buttonContainerStyles
         });
     },
 
@@ -477,7 +484,7 @@ export const popup = {
 
     info({ title, content = { text, color: '#3498db' }, titleColor = '#3498db', size = 'md', options = {
         confirm: { text: 'OK', background: '#3498db', color: '#fff', onConfirm: null },
-        buttonPosition: 'center'
+        buttonPosition: 'center', buttonWidth: 'fit', buttonContainerClass: '', buttonContainerStyles: ''
     } }) {
         return this.show({
             type: 'info',
@@ -490,14 +497,17 @@ export const popup = {
             confirmColor: options.confirm?.color || '#fff',
             btnPosition: options.buttonPosition || 'center',
             size,
-            btnPosition: options.buttonPosition
+            btnPosition: options.buttonPosition,
+            buttonWidth: options.buttonWidth,
+            buttonContainerClass: options.buttonContainerClass,
+            buttonContainerStyles: options.buttonContainerStyles
         });
     },
 
     confirm({ title, content = { text, color: '#f59e0b' }, size = 'md', options = {
         confirm: { text: 'Ok, confirm', background: '#4CAF50', color: '#fff', onConfirm: null },
         cancel: { text: 'No, Cancel', background: '#f44336', color: '#fff', onCancel: null },
-        buttonPosition: 'center'
+        buttonPosition: 'center', buttonWidth: 'fit', buttonContainerClass: '', buttonContainerStyles: ''
     } }) {
         return this.show({
             type: 'confirm',
@@ -510,11 +520,14 @@ export const popup = {
             onConfirm: options.confirm?.onConfirm || null,
             onCancel: options.cancel?.onCancel || null,
             size,
-            btnPosition: options.buttonPosition
+            btnPosition: options.buttonPosition,
+            buttonWidth: options.buttonWidth,
+            buttonContainerClass: options.buttonContainerClass,
+            buttonContainerStyles: options.buttonContainerStyles
         });
     },
 
-    content({ title, content, buttons = [], apiConfig = null, size = 'md', buttonPosition = 'center' }) {
+    content({ title, content, buttons = [], apiConfig = null, size = 'md', buttonPosition = 'center', buttonWidth = 'fit', buttonContainerClass = '', buttonContainerStyles = '' }) {
         return this.show({
             type: 'content',
             title: title || 'Content Popover',
@@ -522,11 +535,14 @@ export const popup = {
             buttons,
             apiConfig,
             size,
-            btnPosition: buttonPosition
+            btnPosition: buttonPosition,
+            buttonWidth: buttonWidth,
+            buttonContainerClass,
+            buttonContainerStyles
         });
     },
 
-    success({ title, content = { text, color: '#4CAF50' }, options = { confirmText: 'OK', onConfirm: null, buttonPosition: 'center' }, size = 'md' }) {
+    success({ title, content = { text, color: '#4CAF50' }, options = { confirmText: 'OK', onConfirm: null, buttonPosition: 'center', buttonWidth: 'fit', buttonContainerClass: '', buttonContainerStyles: '' }, size = 'md' }) {
         return this.show({
             type: 'success',
             title: title || 'Success!',
@@ -536,18 +552,24 @@ export const popup = {
             confirmText: options.confirm?.text || 'OK',
             onConfirm: options.confirm?.onConfirm || null,
             size,
-            btnPosition: options.buttonPosition
+            btnPosition: options.buttonPosition,
+            buttonWidth: options.buttonWidth,
+            buttonContainerClass: options.buttonContainerClass,
+            buttonContainerStyles: options.buttonContainerStyles
         });
     },
 
     // Universal API content loader
-    apiContent({ title, endpoint, method = 'GET', data = null, buttons = [], size = 'lg', buttonPosition = 'center' }) {
+    apiContent({ title, endpoint, method = 'GET', data = null, buttons = [], size = 'lg', buttonPosition = 'center', buttonWidth = 'fit', buttonContainerClass = '', buttonContainerStyles = '' }) {
         return this.content({
             title,
             apiConfig: { endpoint, method, data },
             buttons,
             size,
-            buttonPosition
+            buttonPosition,
+            buttonWidth,
+            buttonContainerClass,
+            buttonContainerStyles
         });
     },
 

@@ -2,7 +2,7 @@
 <?php $this->controller('UserController'); ?>
 
 <?php $this->start('content'); ?>
-<div class="bg-[#0003] p-6 rounded-lg mb-16 lg:mb-0">
+<div class="bg-[#0003] p-6 rounded-lg mb-16">
     <!-- Header Section -->
     <div class="mb-6">
         <h1 class="text-2xl font-bold">User Groups Management</h1>
@@ -58,7 +58,8 @@
                                 <i class="fas fa-shield-alt text-green-500"></i>
                                 <span>Set Permissions</span>
                             </button>
-                            <button ng-click="deleteGroup(group)"
+                            <button
+                                ng-if="theLoggedUser.role === '1' || theLoggedUser.role === '2' || theLoggedUser.role === 1 || theLoggedUser.role === 2"
                                 class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-[#f001] transition-colors duration-300 hover:text-red-200 flex items-center space-x-2 rounded-md">
                                 <i class="fas fa-trash"></i>
                                 <span>Delete Group</span>
@@ -76,13 +77,13 @@
             <!-- Permissions Preview -->
             <div class="px-4 pb-3" ng-if="group.permission && group.permission.length > 0">
                 <div class="flex flex-wrap gap-1">
-                    <span ng-repeat="permission in group.permission.slice(0, 3)"
+                    <!-- <span ng-repeat="permission in group.permission.slice(0, 3)"
                         class=" text-cyan-200 bg-[#12aac830] text-sm px-3 py-1 rounded-full">
                         {{permission}}
-                    </span>
+                    </span> -->
                     <span ng-if="group.permission.length > 3"
                         class="bg-[#12aac830] text-cyan-200 text-xs px-2 py-1 rounded-full">
-                        +{{group.permission.length - 3}} more
+                        {{group.permission.length}} Permissions
                     </span>
                 </div>
             </div>
@@ -138,67 +139,6 @@
         </div>
     </div>
 </div>
-
-<!-- Create/Edit Group Modal Template -->
-<script type="text/ng-template" id="groupFormModal">
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
-            <!-- Header -->
-            <div class="p-6 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-800">
-                    {{isEditing ? 'Edit User Group' : 'Create User Group'}}
-                </h3>
-            </div>
-            
-            <!-- Form -->
-            <div class="p-6">
-                <form ng-submit="saveGroup()">
-                    <div class="space-y-4">
-                        <!-- Group Name -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Group Name</label>
-                            <input 
-                                type="text" 
-                                ng-model="formData.name"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Enter group name"
-                                required
-                            >
-                        </div>
-                        
-                        <!-- Description -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                            <textarea 
-                                ng-model="formData.description"
-                                rows="3"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Enter group description"
-                            ></textarea>
-                        </div>
-                    </div>
-                    
-                    <!-- Actions -->
-                    <div class="flex space-x-3 mt-6">
-                        <button 
-                            type="button"
-                            ng-click="closeModal()"
-                            class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button 
-                            type="submit"
-                            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
-                        >
-                            {{isEditing ? 'Update' : 'Create'}} Group
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</script>
 
 <!-- Delete Confirmation Modal Template -->
 <script type="text/ng-template" id="deleteConfirmationModal">

@@ -36,6 +36,7 @@ class AuthAPI
                 throw new Exception("Invalid password.");
             }
 
+            // print_r($user['permission']);
             // Start session
             if (session_status() === PHP_SESSION_NONE) {
                 session_start();

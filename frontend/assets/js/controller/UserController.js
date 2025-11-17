@@ -1,6 +1,6 @@
 app.controller('UserController', [
-    "$scope", "$http", "$compile", "$timeout", "permissionModelController",
-    function ($scope, $http, $compile, $timeout, permissionModelController) {
+    "$scope", "$http", "$compile", "$timeout", "permissionModalController", "createAndEdituserGroupModalController",
+    function ($scope, $http, $compile, $timeout, permissionModalController, createAndEdituserGroupModalController) {
         // Initialize variables
         $scope.loading = true;
         $scope.error = null;
@@ -20,7 +20,6 @@ app.controller('UserController', [
                 method: 'GET'
             }).then(
                 function (response) {
-                    console.log(response);
                     $scope.loading = false;
                     if (response.data && response.data.success) {
                         $scope.userGroups = response.data.data || [];
@@ -61,11 +60,29 @@ app.controller('UserController', [
             );
         };
 
+        // Fetch logged user data
+        $scope.loadLoggedUserData = function () {
+            $http({
+                url: 'API/auth/logged_user',
+                method: 'GET'
+            }).then(function (response) {
+                $scope.theLoggedUser = response.data;
+            }, function (error) {
+                Toast.fire({
+                    type: 'error',
+                    title: 'Error!',
+                    msg: 'Failed to fetch logged user data. Please refresh the page.'
+                });
+                console.error('Failed to fetch looged user data:', error);
+            });
+        }
+
         // Initialize controller
         $scope.init = function () {
             $scope.loadUserGroups();
-            // Initialize permission modal controller
-            $scope.permissionModalCtrl = permissionModelController($scope);
+            $scope.loadLoggedUserData();
+            $scope.permissionModalCtrl = permissionModalController($scope);
+            $scope.createAndEdituserGroupModalCtrl = createAndEdituserGroupModalController($scope);
         };
 
         // Toggle group menu
@@ -75,42 +92,107 @@ app.controller('UserController', [
 
         // Create new group
         $scope.createGroup = function () {
-            $scope.formData = {
-                name: '',
-                description: ''
-            };
-            $scope.isEditing = false;
+            if (!$scope.createAndEdituserGroupModalCtrl) {
+                $scope.createAndEdituserGroupModalCtrl = createAndEdituserGroupModalController($scope);
+            }
+
+            let isEditing = false;
+            $scope.createAndEdituserGroupModalCtrl.init(isEditing);
+
             Toast.popover({
-                type: 'content',
-                title: 'Create User Group',
-                content: 'groupFormModal',
-                size: 'md',
-                buttons: []
+                type: "content",
+                title: "Create User Group",
+                apiConfig: {
+                    endpoint: "create_user_group",
+                    method: "GET",
+                },
+                size: "lg",
+                buttons: [
+                    {
+                        text: "Cancel",
+                        background: "#F44336",
+                        onClick: function () {
+                            $scope.createAndEdituserGroupModalCtrl.close();
+                        }
+                    },
+                    {
+                        text: "Create Group",
+                        background: "#4CAF50",
+                        onClick: function () {
+                            $scope.createAndEdituserGroupModalCtrl.save();
+                        }
+                    }
+                ],
+                buttonPosition: "around",
+                buttonWidth: "full",
+                buttonContainerStyles: "padding-bottom: 1.5rem;"
+            }).then(popoverInstance => {
+                $timeout(() => {
+                    const modal = document.getElementById('create-user-group-modal');
+                    if (modal) {
+                        $compile(modal)($scope);
+                        $scope.$apply();
+                    } else {
+                        console.error('#create-user-group-modal not found');
+                    }
+                }, 150);
             });
         };
 
+
         // Edit group
         $scope.editGroup = function (group) {
-            $scope.formData = {
-                id: group.id,
-                name: group.name,
-                description: group.description
-            };
-            $scope.isEditing = true;
-            $scope.activeGroupMenu = null;
+            if (!$scope.createAndEdituserGroupModalCtrl) {
+                $scope.createAndEdituserGroupModalCtrl = createAndEdituserGroupModalController($scope);
+            }
+
+            let isEditing = true;
+            $scope.createAndEdituserGroupModalCtrl.init(isEditing, group);
+
             Toast.popover({
-                type: 'content',
-                title: 'Edit User Group',
-                content: 'groupFormModal',
-                size: 'md',
-                buttons: []
+                type: "content",
+                title: "Create User Group",
+                apiConfig: {
+                    endpoint: "create_user_group",
+                    method: "GET",
+                },
+                size: "lg",
+                buttons: [
+                    {
+                        text: "Cancel",
+                        background: "#F44336",
+                        onClick: function () {
+                            $scope.createAndEdituserGroupModalCtrl.close();
+                        }
+                    },
+                    {
+                        text: "Save Changes",
+                        background: "#4CAF50",
+                        onClick: function () {
+                            $scope.createAndEdituserGroupModalCtrl.save();
+                        }
+                    }
+                ],
+                buttonPosition: "around",
+                buttonWidth: "full",
+                buttonContainerStyles: "padding-bottom: 1.5rem;"
+            }).then(popoverInstance => {
+                $timeout(() => {
+                    const modal = document.getElementById('create-user-group-modal');
+                    if (modal) {
+                        $compile(modal)($scope);
+                        $scope.$apply();
+                    } else {
+                        console.error('#create-user-group-modal not found');
+                    }
+                }, 150);
             });
         };
 
         $scope.setPermissions = function (group) {
             $scope.selectedGroup = group;
             if (!$scope.permissionModalCtrl) {
-                $scope.permissionModalCtrl = permissionModelController($scope);
+                $scope.permissionModalCtrl = permissionModalController($scope);
             }
 
             // Init permission modules before popover opens
@@ -138,7 +220,6 @@ app.controller('UserController', [
                     if (modal) {
                         $compile(modal)($scope);
                         $scope.$apply();
-                        console.log('Permission modal compiled via apiContent!');
                     } else {
                         console.error('#permission-model not found');
                     }
@@ -280,7 +361,7 @@ app.controller('UserController', [
 
         // Close modals
         $scope.closeModal = $scope.closeDeleteModal = function () {
-            popover.destroyAll();
+            Toast.popover({ type: 'close' });
         };
 
         // Initialize the controller

@@ -355,15 +355,65 @@ function user_id()
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
-
-    return $_SESSION['user_id'] ?? null;
+    return $_SESSION['user'] ?? null;
 }
 
-function getUserRole()
+function user_role()
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    return $_SESSION['role'] ?? null;
+}
+
+function user_role_name()
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    return $_SESSION['role_name'] ?? null;
+}
+
+function user_name()
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    return $_SESSION['user_name'] ?? null;
+}
+
+function getUserRoleID($id)
+{
+    $sql = "SELECT user_group FROM user WHERE id = ?";
+    $statement = db()->prepare($sql);
+    $statement->execute([$id]);
+    $row = $statement->fetch(PDO::FETCH_ASSOC);
+    return $row ? $row['user_group'] : null;
+}
+
+function getLoggedUserRoleName()
 {
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
 
     return $_SESSION['role_name'] ?? null;
+}
+
+function getLoggedUserRoleID()
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    return $_SESSION['role'] ?? null;
+}
+
+function getLoggedUserPermissions()
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    return $_SESSION['permissions'] ?? [];
 }

@@ -24,4 +24,14 @@ class UserAPI
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    public function getLoggedUserAccesses()
+    {
+        $role = getLoggedUserRoleID();
+        $permissions = getLoggedUserPermissions();
+        return json_encode([
+            'role' => $role,
+            'permissions' => $permissions
+        ]);
+    }
 }
