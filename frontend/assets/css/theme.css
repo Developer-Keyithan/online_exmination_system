@@ -48,7 +48,7 @@ input[type="range"],
 input[type="color"],
 input[type="submit"],
 input[type="reset"],
-input[type="button"],
+/* input[type="button"], */
 input[type="image"],
 textarea,
 select {
@@ -242,7 +242,7 @@ select {
 }
 
 .form-input {
-  @apply w-full bg-red-600 border border-gray-600 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none;
+  @apply w-full bg-[#0004] border border-gray-600 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none;
 }
 
 .form-input:disabled {
