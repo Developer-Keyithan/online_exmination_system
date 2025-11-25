@@ -63,12 +63,15 @@ Router::group(['prefix' => 'API'], function () {
     Router::post('/logout', 'AuthAPI@logout');
     Router::post('/user_groups', 'UserGroupAPI@createUserGroup', 'create_user_group', ['auth']);
     Router::post('/user', 'UserAPI@createUser', 'create_user', ['auth']);
+    Router::post('/exams/basic_info', 'ExamAPI@saveExamBasicInfo', 'save_basic_info', ['auth']);
+    Router::post('/questions/add_question', 'QuestionAPI@addQuestion', 'save_question', ['auth']);
 
     Router::get('/users', 'UserAPI@getAllUsersHandler', 'get_all_users', ['auth']);
     Router::get('/user_groups', 'UserGroupAPI@getAllGroups', 'get_all_users_groups', ['auth']);
     Router::get('/user_groups/{id}', 'UserGroupAPI@createUserGroup', 'create_user_group', ['auth']);
     Router::get('/user_groups/{id}/permissions', 'UserGroupAPI@getGroupPermissions', 'get_group_permissions', ['auth']);
     Router::get('/auth/logged_user', 'UserAPI@getLoggedUserAccesses', 'get_logged_user_accesses', ['auth']);
+    Router::get('/exams/{id}', 'ExamAPI@getExamData', 'get_exam', ['auth']);
 
     Router::put('/user_groups/{id}/permissions', 'UserGroupAPI@setPermissions', 'set_group_permissions', ['auth']);
     Router::post('/user_groups/{id}', 'UserGroupAPI@updateUserGroup', 'update_user_group', ['auth']);

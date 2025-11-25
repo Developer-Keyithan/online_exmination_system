@@ -92,11 +92,10 @@ $userGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <!-- Users Table -->
     <div ng-cloak ng-if="!loading && filteredUsers.length > 0" class="">
         <div class="overflow-x-auto">
-            <div class="flex justify-between pt-2">
-                <div class="flex items-center space-x-2 mb-4">
+            <div class="flex flex-wrap mb-4 items-center justify-center md:justify-between pt-2">
+                <div class="flex items-center space-x-2">
                     <span class="text-gray-400 text-sm">Show</span>
-                    <select ng-model="pageSize"
-                        ng-change="changePageSize()" id="pageSizeSelect"
+                    <select ng-model="pageSize" ng-change="changePageSize()" id="pageSizeSelect"
                         class="bg-transparent border border-gray-600 rounded px-2 py-1 text-gray-400">
                         <option ng-repeat="size in pageSizeOptions" value="{{size}}">{{size}}</option>
                     </select>
@@ -111,91 +110,92 @@ $userGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                 </div>
             </div>
-            <table class="w-full bg-[#0004] rounded-lg overflow-hidden">
-                <thead class="bg-[#0006] border-b border-[#fff2]">
-                    <tr>
-                        <!-- <th class="py-3 px-4 text-left font-semibold text-gray-300">
+            <div class="overflow-x-auto">
+                <table class="w-full bg-[#0004] rounded-lg overflow-hidden">
+                    <thead class="bg-[#0006] border-b border-[#fff2]">
+                        <tr>
+                            <!-- <th class="py-3 px-4 text-left font-semibold text-gray-300">
                             <input type="checkbox" class="rounded bg-[#0006] border-[#fff2]">
                         </th> -->
-                        <th class="py-3 px-4 text-left font-semibold text-gray-300 cursor-pointer"
-                            ng-click="sortBy('name')">
-                            User
-                            <i ng-class="{'fas fa-sort-up': sortColumn === 'name' && !sortReverse,
+                            <th class="py-3 px-4 text-left font-semibold text-gray-300 cursor-pointer"
+                                ng-click="sortBy('name')">
+                                User
+                                <i ng-class="{'fas fa-sort-up': sortColumn === 'name' && !sortReverse,
                                 'fas fa-sort-down': sortColumn === 'name' && sortReverse,
                                 'fas fa-sort': sortColumn !== 'name'}" class="text-xs"></i>
-                        </th>
+                            </th>
 
-                        <th class="py-3 px-4 text-left font-semibold text-gray-300 cursor-pointer"
-                            ng-click="sortBy('group_name')">
-                            Group
-                            <i ng-class="{'fas fa-sort-up': sortColumn === 'group_name' && !sortReverse,
+                            <th class="py-3 px-4 text-left font-semibold text-gray-300 cursor-pointer"
+                                ng-click="sortBy('group_name')">
+                                Group
+                                <i ng-class="{'fas fa-sort-up': sortColumn === 'group_name' && !sortReverse,
                                 'fas fa-sort-down': sortColumn === 'group_name' && sortReverse,
                                 'fas fa-sort': sortColumn !== 'group_name'}" class="text-xs"></i>
-                        </th>
+                            </th>
 
-                        <th class="py-3 px-4 text-left font-semibold text-gray-300 cursor-pointer"
-                            ng-click="sortBy('status')">
-                            Status
-                            <i ng-class="{'fas fa-sort-up': sortColumn === 'status' && !sortReverse,
+                            <th class="py-3 px-4 text-left font-semibold text-gray-300 cursor-pointer"
+                                ng-click="sortBy('status')">
+                                Status
+                                <i ng-class="{'fas fa-sort-up': sortColumn === 'status' && !sortReverse,
                                 'fas fa-sort-down': sortColumn === 'status' && sortReverse,
                                 'fas fa-sort': sortColumn !== 'status'}" class="text-xs"></i>
-                        </th>
+                            </th>
 
-                        <th class="py-3 px-4 text-left font-semibold text-gray-300">Last Login</th>
-                        <!-- <th class="py-3 px-4 text-left font-semibold text-gray-300">Actions</th> -->
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="user in paginatedUsers()"
-                        class="border-b border-[#fff1] hover:bg-[#fff1] transition-colors">
-                        <!-- <td class="py-3 px-4">
+                            <th class="py-3 px-4 text-left font-semibold text-gray-300">Last Login</th>
+                            <!-- <th class="py-3 px-4 text-left font-semibold text-gray-300">Actions</th> -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="user in paginatedUsers()"
+                            class="border-b border-[#fff1] hover:bg-[#fff1] transition-colors">
+                            <!-- <td class="py-3 px-4">
                             <input type="checkbox" class="rounded bg-[#0006] border-[#fff2]">
                         </td> -->
-                        <td class="py-3 px-4">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-10 h-10 bg-cyan-600 rounded-full flex items-center justify-center">
-                                    <span class="font-semibold text-white">{{ user.name.charAt(0) }}</span>
+                            <td class="py-3 px-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-cyan-600 rounded-full flex items-center justify-center">
+                                        <span class="font-semibold text-white">{{ user.name.charAt(0) }}</span>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium">{{ user.name }}</p>
+                                        <p class="text-sm text-gray-400">{{ user.email }}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p class="font-medium">{{ user.name }}</p>
-                                    <p class="text-sm text-gray-400">{{ user.email }}</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-3 px-4">
-                            <span class="bg-[#0006] text-cyan-400 px-3 py-1 rounded-full text-sm">
-                                {{ user.group_name }}
-                            </span>
-                        </td>
-                        <td class="py-3 px-4">
-                            <span class="px-3 py-1 rounded-full text-sm font-medium" ng-class="{
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="bg-[#0006] text-cyan-400 px-3 py-1 rounded-full text-sm">
+                                    {{ user.group_name }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="px-3 py-1 rounded-full text-sm font-medium" ng-class="{
                                       'bg-green-500/20 text-green-400': user.status === 'active',
                                       'bg-red-500/20 text-red-400': user.status === 'inactive',
                                       'bg-yellow-500/20 text-yellow-400': user.status === 'suspended'
                                   }">
-                                {{ user.status }}
-                            </span>
-                        </td>
-                        <td class="py-3 px-4 text-gray-400">
-                            {{ user.last_login || 'Never' }}
-                        </td>
-                        <!-- <td class="py-3 px-4">
+                                    {{ user.status }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-gray-400">
+                                {{ user.last_login || 'Never' }}
+                            </td>
+                            <!-- <td class="py-3 px-4">
                             <div class="flex items-center space-x-2"> -->
-                                <!-- Edit -->
-                                <!-- <button ng-click="editUser(user)"
+                            <!-- Edit -->
+                            <!-- <button ng-click="editUser(user)"
                                     class="text-cyan-400 hover:text-cyan-300 transition-colors" title="Edit User">
                                     <i class="fas fa-edit"></i>
                                 </button> -->
 
-                                <!-- Permissions -->
-                                <!-- <button ng-click="managePermissions(user)"
+                            <!-- Permissions -->
+                            <!-- <button ng-click="managePermissions(user)"
                                     class="text-purple-400 hover:text-purple-300 transition-colors"
                                     title="Manage Permissions">
                                     <i class="fas fa-key"></i>
                                 </button> -->
 
-                                <!-- Suspend/Activate -->
-                                <!-- <button ng-if="user.status === 'Active'" ng-click="toggleUserStatus(user)"
+                            <!-- Suspend/Activate -->
+                            <!-- <button ng-if="user.status === 'Active'" ng-click="toggleUserStatus(user)"
                                     class="text-yellow-400 hover:text-yellow-300 transition-colors"
                                     title="Suspend User">
                                     <i class="fas fa-pause"></i>
@@ -205,25 +205,26 @@ $userGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <i class="fas fa-play"></i>
                                 </button> -->
 
-                                <!-- Delete -->
-                                <!-- <button ng-click="deleteUser(user)"
+                            <!-- Delete -->
+                            <!-- <button ng-click="deleteUser(user)"
                                     class="text-red-400 hover:text-red-300 transition-colors" title="Delete User">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         </td> -->
-                    </tr>
-                </tbody>
-            </table>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Pagination -->
-        <div class="flex justify-between items-center p-4 border-t border-[#fff2]">
+        <div class="flex flex-wrap justify-center md:justify-between items-center p-4 border-t border-[#fff2]">
             <div class="text-gray-400 text-sm">
                 Showing {{ (currentPage - 1) * (pageSize === 'All' ? totalUsers : pageSize) + 1 }} to {{ getRangeEnd()
                 }} of {{ totalUsers }} users
             </div>
-            <div class="flex space-x-2">
+            <div class="flex space-x-2 mt-4 md:mt-0">
                 <button ng-click="previousPage()" ng-disabled="currentPage === 1 || pageSize === 'All'"
                     class="px-3 py-1 rounded border border-[#fff2] text-gray-400 hover:bg-[#fff2] transition-colors"
                     ng-class="{'opacity-50 cursor-not-allowed': currentPage === 1 || pageSize === 'All'}">

@@ -680,7 +680,6 @@ app.controller('UserController', [
             $scope.loading = true;
 
             const submitData = $('#add-user-form').serialize();
-            console.log('Submitting User Data:', submitData);
 
             $http({
                 url: 'API/user',

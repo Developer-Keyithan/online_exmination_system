@@ -18,22 +18,22 @@ $this->controller('ExamController');
     </div>
 
     <!-- Progress Steps -->
-    <div class="mb-8">
-        <div class="flex items-center justify-between max-w-4xl mx-auto">
-            <div class="flex items-center" ng-repeat="step in steps" ng-class="{'flex-1': !$last}">
+    <div class="mb-8 flex items-center justify-center">
+        <div class="flex items-center w-full max-w-4xl mx-auto md:mx-24">
+            <div class="flex flex-1 items-center justify-center" ng-repeat="step in steps">
                 <div class="flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors duration-200"
                     ng-class="step.active ? 'bg-cyan-600 border-cyan-600 text-white' : 
                               step.completed ? 'bg-green-500 border-green-500 text-white' : 
                               'border-gray-500 text-gray-500'">
                     <i class="fas" ng-class="step.completed ? 'fa-check' : step.icon"></i>
                 </div>
-                <div class="ml-3" ng-if="!$last">
+                <div class="ml-3 hidden md:block">
                     <div class="text-sm font-medium" ng-class="step.active ? 'text-cyan-400' : 'text-gray-400'">
                         {{step.title}}
                     </div>
                 </div>
             </div>
-            <div class="flex-1 h-1 bg-gray-600 mx-4" ng-if="!$last"></div>
+            <!-- <div class="flex-1 h-1 bg-gray-600 mx-4" ng-if="!$last"></div> -->
         </div>
     </div>
 
@@ -42,13 +42,13 @@ $this->controller('ExamController');
         <div class="bg-[#0004] rounded-lg p-6 border border-gray-600">
             <h2 class="text-xl font-semibold text-gray-100 mb-6">Exam Basic Information</h2>
 
-            <form name="basicInfoForm" novalidate>
+            <form name="basicInfoForm" id="basicInfoForm" novalidate onsubmit="return false">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Exam Title -->
                     <div class="form-group md:col-span-2">
                         <label for="examTitle" class="form-label">Exam Title <span class="text-red-700">*</span></label>
                         <input type="text" id="examTitle" ng-model="examData.title" required class="form-input"
-                            placeholder="Enter exam title">
+                            name="examTitle" placeholder="Enter exam title">
                         <div class="error-message"
                             ng-show="basicInfoForm.$submitted && basicInfoForm.examTitle.$error.required">
                             Exam title is required
@@ -59,7 +59,7 @@ $this->controller('ExamController');
                     <div class="form-group">
                         <label for="examCode" class="form-label">Exam Code <span class="text-red-700">*</span></label>
                         <input type="text" id="examCode" ng-model="examData.code" required class="form-input"
-                            placeholder="e.g., MATH-2024-FINAL">
+                            name="examCode" placeholder="e.g., MATH-2024-FINAL">
                         <div class="error-message"
                             ng-show="basicInfoForm.$submitted && basicInfoForm.examCode.$error.required">
                             Exam code is required
@@ -71,7 +71,7 @@ $this->controller('ExamController');
                         <label for="examDuration" class="form-label">Duration (minutes) <span
                                 class="text-red-700">*</span></label>
                         <input type="number" id="examDuration" ng-model="examData.duration" required min="1"
-                            class="form-input" placeholder="e.g., 120">
+                            name="examDuration" class="form-input" placeholder="e.g., 120">
                         <div class="error-message"
                             ng-show="basicInfoForm.$submitted && basicInfoForm.examDuration.$error.required">
                             Duration is required
@@ -83,7 +83,7 @@ $this->controller('ExamController');
                         <label for="totalMarks" class="form-label">Total Marks <span
                                 class="text-red-700">*</span></label>
                         <input type="number" id="totalMarks" ng-model="examData.total_marks" required min="1"
-                            class="form-input" placeholder="e.g., 100">
+                            name="totalMarks" class="form-input" placeholder="e.g., 100">
                         <div class="error-message"
                             ng-show="basicInfoForm.$submitted && basicInfoForm.totalMarks.$error.required">
                             Total marks is required
@@ -95,7 +95,8 @@ $this->controller('ExamController');
                         <label for="passingMarks" class="form-label">Passing Marks <span
                                 class="text-red-700">*</span></label>
                         <input type="number" id="passingMarks" ng-model="examData.passing_marks" required min="1"
-                            max="{{examData.total_marks}}" class="form-input" placeholder="e.g., 40">
+                            name="passingMarks" max="{{examData.total_marks}}" class="form-input"
+                            placeholder="e.g., 40">
                         <div class="error-message"
                             ng-show="basicInfoForm.$submitted && basicInfoForm.passingMarks.$error.required">
                             Passing marks is required
@@ -109,11 +110,11 @@ $this->controller('ExamController');
                     <div class="form-group md:col-span-2">
                         <label for="examInstructions" class="form-label">Exam Instructions</label>
                         <textarea id="examInstructions" ng-model="examData.instructions" rows="4" class="form-input"
-                            placeholder="Enter exam instructions for candidates..."></textarea>
+                            name="examInstructions" placeholder="Enter exam instructions for candidates..."></textarea>
                     </div>
 
                     <!-- Status -->
-                    <div class="form-group">
+                    <div class="form-group hidden">
                         <label class="form-label">Status</label>
                         <div class="flex space-x-4">
                             <!-- Draft -->
@@ -139,7 +140,6 @@ $this->controller('ExamController');
                             </label>
                         </div>
                     </div>
-
                 </div>
             </form>
         </div>
@@ -147,17 +147,17 @@ $this->controller('ExamController');
 
     <!-- Questions & Sections Management -->
     <div ng-show="currentStep === 2" class="max-w-7xl mx-auto">
-        <div class="bg-[#0004] rounded-lg p-6 border border-gray-600">
-            <div class="flex justify-between items-center mb-6">
+        <div class="md:bg-[#0004] rounded-lg p-0 md:p-6 md:border border-gray-600">
+            <div class="flex flex-wrap justify-between gap-2 items-center mb-6">
                 <h2 class="text-xl font-semibold text-gray-100">Questions & Sections Management</h2>
-                <div class="flex space-x-3">
+                <div class="flex flex-wrap md:flex-row gap-2">
                     <button type="button" ng-click="addNewSection()"
-                        class="bg-cyan-600 hover:bg-cyan-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2">
+                        class="bg-cyan-600 hover:bg-cyan-700 text-white w-full md:w-auto py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2">
                         <i class="fas fa-layer-group"></i>
                         <span>Add Section</span>
                     </button>
                     <button type="button" ng-click="startNewQuestion()"
-                        class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2">
+                        class="bg-green-600 hover:bg-green-700 text-white w-full md:w-auto py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2">
                         <i class="fas fa-question-circle"></i>
                         <span>Create Question</span>
                     </button>
@@ -170,12 +170,11 @@ $this->controller('ExamController');
                 <div class="xl:col-span-1">
                     <div class="bg-[#0006] rounded-lg p-4 border border-gray-600">
                         <h3 class="text-lg font-medium text-gray-100 mb-4">Questions ({{savedQuestions.length}})</h3>
-                        
+
                         <!-- Questions Navigation -->
                         <div class="mb-4">
                             <div class="flex flex-wrap gap-2">
-                                <button 
-                                    ng-repeat="question in savedQuestions track by $index"
+                                <button ng-repeat="question in savedQuestions track by $index"
                                     ng-click="loadQuestionForEditing($index)"
                                     class="w-10 h-10 rounded-lg transition-colors duration-200 flex items-center justify-center text-sm font-medium"
                                     ng-class="currentQuestionIndex === $index 
@@ -183,8 +182,7 @@ $this->controller('ExamController');
                                         : (question.isSaved ? 'bg-green-600 text-white' : 'bg-yellow-600 text-white')">
                                     {{$index + 1}}
                                 </button>
-                                <button 
-                                    ng-click="startNewQuestion()"
+                                <button ng-click="startNewQuestion()"
                                     class="w-10 h-10 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200 flex items-center justify-center">
                                     <i class="fas fa-plus"></i>
                                 </button>
@@ -193,11 +191,9 @@ $this->controller('ExamController');
 
                         <!-- Questions List -->
                         <div class="space-y-2 max-h-96 overflow-y-auto">
-                            <div 
-                                ng-repeat="question in savedQuestions track by $index"
+                            <div ng-repeat="question in savedQuestions track by $index"
                                 ng-click="loadQuestionForEditing($index)"
-                                class="p-3 rounded-lg border cursor-pointer transition-colors duration-200"
-                                ng-class="currentQuestionIndex === $index 
+                                class="p-3 rounded-lg border cursor-pointer transition-colors duration-200" ng-class="currentQuestionIndex === $index 
                                     ? 'bg-cyan-600 border-cyan-600' 
                                     : 'bg-[#0008] border-gray-600 hover:bg-[#000a]'">
                                 <div class="flex justify-between items-start">
@@ -209,12 +205,13 @@ $this->controller('ExamController');
                                                 {{question.isSaved ? 'Saved' : 'Unsaved'}}
                                             </span>
                                         </div>
-                                        <p class="text-sm text-gray-300 truncate">{{question.text || 'No question text'}}</p>
+                                        <p class="text-sm text-gray-300 truncate">{{question.question || 'No question
+                                            text'}}</p>
                                         <div class="flex justify-between items-center mt-2 text-xs text-gray-400">
-                                            <span>{{question.type || 'No type'}}</span>
                                             <span>{{question.marks || 0}} marks</span>
                                         </div>
-                                        <div class="mt-1" ng-if="question.assignedSections && question.assignedSections.length > 0">
+                                        <div class="mt-1"
+                                            ng-if="question.assignedSections && question.assignedSections.length > 0">
                                             <span class="text-xs text-cyan-400">
                                                 Sections: {{getAssignedSectionNames(question)}}
                                             </span>
@@ -236,7 +233,7 @@ $this->controller('ExamController');
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-medium text-gray-100">Sections ({{examData.sections.length}})</h3>
                         </div>
-                        
+
                         <div class="space-y-3 max-h-64 overflow-y-auto">
                             <div ng-repeat="section in examData.sections track by $index"
                                 class="p-3 border border-gray-600 rounded-lg bg-[#0008]">
@@ -273,27 +270,33 @@ $this->controller('ExamController');
                 <!-- Right Column: Question Editor -->
                 <div class="xl:col-span-2">
                     <div class="bg-[#0006] rounded-lg p-6 border border-gray-600">
-                        <div class="flex justify-between items-center mb-6">
+                        <div class="flex flex-wrap justify-between items-center mb-6">
                             <h3 class="text-lg font-medium text-gray-100">
-                                <span ng-if="currentQuestionIndex !== null">Edit Question {{currentQuestionIndex + 1}}</span>
+                                <span ng-if="currentQuestionIndex !== null">Edit Question {{currentQuestionIndex +
+                                    1}}</span>
                                 <span ng-if="currentQuestionIndex === null">Create New Question</span>
-                                <span class="text-sm font-normal text-cyan-400 ml-2" ng-if="currentQuestion && !currentQuestion.isSaved">
+                                <span class="text-sm font-normal text-cyan-400 ml-2"
+                                    ng-if="currentQuestion && !currentQuestion.isSaved">
                                     (Unsaved)
                                 </span>
                             </h3>
-                            <div class="flex space-x-2">
-                                <button type="button" ng-click="saveCurrentQuestion()" ng-disabled="!currentQuestion.text"
-                                    class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50">
+                            <p>Exam ID: {{examID}}</p>
+                            <div class="flex flex-wrap md:flex-row gap-2">
+                                <button type="button" ng-click="saveCurrentQuestion()"
+                                    ng-disabled="!currentQuestion.text"
+                                    class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 w-full md:w-auto rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:opacity-50">
                                     <i class="fas fa-save"></i>
                                     <span>{{currentQuestion.isSaved ? 'Update' : 'Save'}}</span>
                                 </button>
-                                <button type="button" ng-click="assignToSection()" ng-disabled="!currentQuestion.isSaved || examData.sections.length === 0"
-                                    class="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50">
+                                <button type="button" ng-click="assignToSection()"
+                                    ng-disabled="!currentQuestion.isSaved || examData.sections.length === 0"
+                                    class="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 w-full md:w-auto rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:opacity-50">
                                     <i class="fas fa-layer-group"></i>
                                     <span>Assign to Section</span>
                                 </button>
-                                <button type="button" ng-click="deleteCurrentQuestion()" ng-disabled="currentQuestionIndex === null"
-                                    class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50">
+                                <button type="button" ng-click="deleteCurrentQuestion()"
+                                    ng-disabled="currentQuestionIndex === null"
+                                    class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 w-full md:w-auto rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:opacity-50">
                                     <i class="fas fa-trash"></i>
                                     <span>Delete</span>
                                 </button>
@@ -301,176 +304,132 @@ $this->controller('ExamController');
                         </div>
 
                         <!-- Question Editor -->
-                        <div class="space-y-6" ng-if="currentQuestion">
-                            <!-- Question Type -->
-                            <div class="form-group">
-                                <label class="form-label">Question Type <span class="text-red-700">*</span></label>
-                                <select ng-model="currentQuestion.type" required class="form-input" ng-change="onQuestionTypeChange()">
-                                    <option value="multiple_choice">Multiple Choice</option>
-                                    <option value="true_false">True/False</option>
-                                    <option value="descriptive">Descriptive</option>
-                                    <option value="fill_blank">Fill in the Blank</option>
-                                </select>
-                            </div>
-
-                            <!-- Question Text -->
-                            <div class="form-group">
-                                <label class="form-label">Question Text <span class="text-red-700">*</span></label>
-                                <textarea ng-model="currentQuestion.text" required rows="3" class="form-input"
-                                    placeholder="Enter your question here..."></textarea>
-                            </div>
-
-                            <!-- Question Image -->
-                            <div class="form-group">
-                                <label class="form-label">Question Image (Optional)</label>
-                                <div class="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center">
-                                    <div ng-if="!currentQuestion.image">
-                                        <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-2"></i>
-                                        <p class="text-gray-400 mb-2">Drag & drop an image or click to browse</p>
-                                        <input type="file" id="questionImage" accept="image/*" class="hidden" 
-                                            ng-file-select="onQuestionImageSelect($files)">
-                                        <label for="questionImage" 
-                                            class="bg-cyan-600 hover:bg-cyan-700 text-white py-2 px-4 rounded-lg cursor-pointer transition-colors duration-200">
-                                            Browse Files
-                                        </label>
+                        <div class="space-y-4" ng-if="currentQuestion">
+                            <form id="questionForm{{currentQuestion.id || 'New'}}" onsubmit="return false"
+                                enctype="multipart/form-data">
+                                <!-- Exam ID hidden -->
+                                <input type="hidden" name="exam_id" ng-value="examID">
+                                <div class="flex flex-wrap md:flex-row">
+                                    <!-- Question Text -->
+                                    <div class="form-group w-full md:w-2/3">
+                                        <label class="form-label">Question Text <span
+                                                class="text-red-700">*</span></label>
+                                        <textarea ng-model="currentQuestion.question" required rows="5"
+                                            class="form-input" name="question"
+                                            placeholder="Enter your question here..."></textarea>
                                     </div>
-                                    <div ng-if="currentQuestion.image" class="relative inline-block">
-                                        <img ng-src="{{currentQuestion.image}}" alt="Question Image" class="max-w-full max-h-64 rounded-lg">
-                                        <button type="button" ng-click="currentQuestion.image = null"
-                                            class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <!-- Multiple Choice Options -->
-                            <div ng-if="currentQuestion.type === 'multiple_choice'" class="space-y-4">
-                                <label class="form-label">Options <span class="text-red-700">*</span></label>
-                                
-                                <div ng-repeat="option in currentQuestion.options track by $index"
-                                    class="flex items-center space-x-3 p-4 border border-gray-600 rounded-lg bg-[#0008]">
-                                    <input type="radio" ng-model="currentQuestion.correct_answer" value="{{$index}}"
-                                        class="text-cyan-500">
-                                    <div class="flex-1">
-                                        <input type="text" ng-model="option.text" class="form-input mb-2"
-                                            placeholder="Option text {{$index + 1}}">
-                                        <div ng-if="option.image" class="relative inline-block">
-                                            <img ng-src="{{option.image}}" alt="Option Image" class="max-w-32 max-h-32 rounded">
-                                            <button type="button" ng-click="removeOptionImage(option)"
-                                                class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full text-xs">
-                                                <i class="fas fa-times"></i>
-                                            </button>
+                                    <!-- Question Image -->
+                                    <div class="w-full md:w-1/3 md:pl-2">
+                                        <div class="form-group">
+                                            <label class="form-label">Question Image (Optional)</label>
+                                            <div
+                                                class="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center">
+                                                <div ng-if="!currentQuestion.image">
+                                                    <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-2"></i>
+                                                    <p class="text-gray-400 mb-2">Drag & drop an image or click to
+                                                        browse
+                                                    </p>
+                                                    <input type="file" id="questionImage" accept="image/*"
+                                                        class="hidden" name="questionImage"
+                                                        ng-file-select="onQuestionImageSelect($files)">
+                                                    <label for="questionImage"
+                                                        class="bg-cyan-600 hover:bg-cyan-700 text-white py-2 px-4 rounded-lg cursor-pointer transition-colors duration-200">
+                                                        Browse Files
+                                                    </label>
+                                                </div>
+                                                <div ng-if="currentQuestion.image" class="relative inline-block">
+                                                    <img ng-src="{{currentQuestion.image}}" alt="Question Image"
+                                                        class="max-w-full max-h-64 rounded-lg">
+                                                    <button type="button" ng-click="currentQuestion.image = null"
+                                                        class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="flex space-x-2">
-                                        <button type="button" ng-click="uploadOptionImage(option)"
-                                            class="text-purple-400 hover:text-purple-300 transition-colors">
-                                            <i class="fas fa-image"></i>
+                                </div>
+
+                                <!-- Multiple Choice Options -->
+                                <div class="space-y-4">
+                                    <label class="form-label">Options <span class="text-red-700">*</span></label>
+
+                                    <div ng-repeat="option in currentQuestion.options track by $index"
+                                        class="flex items-center space-x-3">
+                                        <label for="option{{$index}}" class="flex space-x-3">
+                                            <input type="radio" id="option{{$index}}" name="answer"
+                                                ng-model="currentQuestion.answer" ng-value="option.op"
+                                                class="text-cyan-500 cursor-pointer">
+                                            <p>{{ option.op }}&#x29;</p>
+                                        </label>
+
+                                        <div class="flex-1">
+                                            <input type="text" ng-model="option.text" class="form-input mb-2"
+                                                name="{{option.op}}" placeholder="Option {{ option.op }} text">
+
+                                            <div id="{{ option.op }}ImgContainer" ng-if="option.image"
+                                                class="relative inline-block">
+                                                <img ng-src="{{option.image}}" class="max-w-32 max-h-32 rounded">
+                                                <button type="button" ng-click="removeOptionImage(option)"
+                                                    class="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full text-xs">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex space-x-2">
+                                            <button type="button" ng-click="uploadOptionImage(option)"
+                                                class="text-purple-400 hover:text-purple-300">
+                                                <i class="fas fa-image"></i>
+                                            </button>
+
+                                            <!-- <button type="button" ng-click="removeOption(currentQuestion, $index)"
+                                                ng-disabled="currentQuestion.options.length <= 2"
+                                                class="text-red-400 hover:text-red-300 disabled:opacity-50">
+                                                <i class="fas fa-times"></i>
+                                            </button> -->
+                                        </div>
+                                    </div>
+
+
+                                    <!-- <div class="flex space-x-3">
+                                        <button type="button" ng-click="addOption(currentQuestion)"
+                                            class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2">
+                                            <i class="fas fa-plus"></i>
+                                            <span>Add Text Option</span>
                                         </button>
-                                        <button type="button" ng-click="removeOption(currentQuestion, $index)"
-                                            ng-disabled="currentQuestion.options.length <= 2"
-                                            class="text-red-400 hover:text-red-300 transition-colors disabled:opacity-50">
-                                            <i class="fas fa-times"></i>
-                                        </button>
+                                    </div> -->
+                                </div>
+                                <!-- Question Metadata -->
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-600">
+                                    <!-- Marks -->
+                                    <div class="form-group">
+                                        <label class="form-label">Marks <span class="text-red-700">*</span></label>
+                                        <input type="number" ng-model="currentQuestion.marks" required min="0.5"
+                                            name="marks" step="0.5" class="form-input" placeholder="Marks">
                                     </div>
                                 </div>
-
-                                <div class="flex space-x-3">
-                                    <button type="button" ng-click="addOption(currentQuestion)"
-                                        class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2">
-                                        <i class="fas fa-plus"></i>
-                                        <span>Add Text Option</span>
-                                    </button>
-                                    <button type="button" ng-click="addImageOption(currentQuestion)"
-                                        class="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2">
-                                        <i class="fas fa-image"></i>
-                                        <span>Add Image Option</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- True/False Options -->
-                            <div ng-if="currentQuestion.type === 'true_false'" class="space-y-3">
-                                <label class="form-label">Correct Answer <span class="text-red-700">*</span></label>
-                                <div class="flex space-x-4">
-                                    <label class="flex items-center space-x-2 cursor-pointer">
-                                        <input type="radio" ng-model="currentQuestion.correct_answer" value="true"
-                                            class="text-cyan-500">
-                                        <span class="text-gray-300">True</span>
-                                    </label>
-                                    <label class="flex items-center space-x-2 cursor-pointer">
-                                        <input type="radio" ng-model="currentQuestion.correct_answer" value="false"
-                                            class="text-cyan-500">
-                                        <span class="text-gray-300">False</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Descriptive Answer -->
-                            <div ng-if="currentQuestion.type === 'descriptive'" class="space-y-3">
-                                <label class="form-label">Model Answer</label>
-                                <textarea ng-model="currentQuestion.model_answer" rows="4" class="form-input"
-                                    placeholder="Provide a model answer for evaluation..."></textarea>
-                            </div>
-
-                            <!-- Fill in the Blank -->
-                            <div ng-if="currentQuestion.type === 'fill_blank'" class="space-y-3">
-                                <label class="form-label">Correct Answer <span class="text-red-700">*</span></label>
-                                <input type="text" ng-model="currentQuestion.correct_answer" required class="form-input"
-                                    placeholder="Enter the correct answer">
-                            </div>
-
-                            <!-- Question Metadata -->
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-600">
-                                <!-- Difficulty Level -->
-                                <div class="form-group">
-                                    <label class="form-label">Difficulty Level</label>
-                                    <select ng-model="currentQuestion.difficulty" class="form-input">
-                                        <option value="easy">Easy</option>
-                                        <option value="medium">Medium</option>
-                                        <option value="hard">Hard</option>
-                                    </select>
-                                </div>
-
-                                <!-- Marks -->
-                                <div class="form-group">
-                                    <label class="form-label">Marks <span class="text-red-700">*</span></label>
-                                    <input type="number" ng-model="currentQuestion.marks" required min="0.5" step="0.5"
-                                        class="form-input" placeholder="Marks">
-                                </div>
-
-                                <!-- Negative Marks -->
-                                <div class="form-group">
-                                    <label class="form-label">Negative Marks</label>
-                                    <input type="number" ng-model="currentQuestion.negative_marks" min="0" step="0.25"
-                                        class="form-input" placeholder="Negative marks">
-                                </div>
-                            </div>
-
-                            <!-- Explanation -->
-                            <div class="form-group">
-                                <label class="form-label">Explanation</label>
-                                <textarea ng-model="currentQuestion.explanation" rows="3" class="form-input"
-                                    placeholder="Add explanation for the answer (optional)..."></textarea>
-                            </div>
+                            </form>
 
                             <!-- Navigation Buttons -->
-                            <div class="flex justify-between pt-4 border-t border-gray-600">
-                                <button type="button" ng-click="previousQuestion()" ng-disabled="currentQuestionIndex === null || currentQuestionIndex === 0"
-                                    class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50">
+                            <div class="flex flex-col md:flex-row gap-2 justify-between">
+                                <button type="button" ng-click="previousQuestion()"
+                                    ng-disabled="currentQuestionIndex === null || currentQuestionIndex === 0"
+                                    class="bg-gray-600 hover:bg-gray-700 text-white w-full md:w-auto py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:opacity-50">
                                     <i class="fas fa-arrow-left"></i>
                                     <span>Previous</span>
                                 </button>
 
                                 <button type="button" ng-click="startNewQuestion()"
-                                    class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2">
+                                    class="bg-blue-600 hover:bg-blue-700 text-white w-full md:w-auto py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2">
                                     <i class="fas fa-plus"></i>
                                     <span>New Question</span>
                                 </button>
 
-                                <button type="button" ng-click="nextQuestion()" ng-disabled="currentQuestionIndex === null || currentQuestionIndex >= savedQuestions.length - 1"
-                                    class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50">
+                                <button type="button" ng-click="nextQuestion()"
+                                    ng-disabled="currentQuestionIndex === null || currentQuestionIndex >= savedQuestions.length - 1"
+                                    class="bg-gray-600 hover:bg-gray-700 text-white w-full md:w-auto py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:opacity-50">
                                     <span>Next</span>
                                     <i class="fas fa-arrow-right"></i>
                                 </button>
@@ -481,10 +440,11 @@ $this->controller('ExamController');
                         <div ng-if="!currentQuestion" class="text-center py-12">
                             <i class="fas fa-question-circle text-gray-500 text-4xl mb-4"></i>
                             <h3 class="text-lg font-medium text-gray-100 mb-2">No Question Selected</h3>
-                            <p class="text-gray-400 mb-6">Select a question from the list or create a new one to start editing.</p>
+                            <p class="text-gray-400 mb-6">Select a question from the list or create a new one to start
+                                editing.</p>
                             <button type="button" ng-click="startNewQuestion()"
                                 class="bg-cyan-600 hover:bg-cyan-700 text-white py-2 px-6 rounded-lg transition-colors duration-200">
-                                Create First Question
+                                {{savedQuestions.length > 0 ? 'Create New Question' : 'Add Question'}}
                             </button>
                         </div>
                     </div>
@@ -685,10 +645,11 @@ $this->controller('ExamController');
     </div>
 
     <!-- Assign to Section Modal -->
-    <div ng-show="showAssignModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+    <div ng-show="showAssignModal"
+        class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
         <div class="bg-[#0006] rounded-lg p-6 border border-gray-600 max-w-md w-full">
             <h3 class="text-lg font-medium text-gray-100 mb-4">Assign Question to Section</h3>
-            
+
             <div class="space-y-4">
                 <div class="form-group">
                     <label class="form-label">Select Section</label>
@@ -722,12 +683,13 @@ $this->controller('ExamController');
     </div>
 
     <!-- Section Editor Modal -->
-    <div ng-show="showSectionModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+    <div ng-show="showSectionModal"
+        class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
         <div class="bg-[#0006] rounded-lg p-6 border border-gray-600 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <h3 class="text-lg font-medium text-gray-100 mb-4">
                 {{editingSectionIndex === null ? 'Create New Section' : 'Edit Section'}}
             </h3>
-            
+
             <div class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Section Title -->
@@ -747,8 +709,8 @@ $this->controller('ExamController');
                     <!-- Questions Count -->
                     <div class="form-group">
                         <label class="form-label">Number of Questions <span class="text-red-700">*</span></label>
-                        <input type="number" ng-model="currentSection.question_count" required min="1" class="form-input"
-                            placeholder="e.g., 10">
+                        <input type="number" ng-model="currentSection.question_count" required min="1"
+                            class="form-input" placeholder="e.g., 10">
                     </div>
 
                     <!-- Marks per Question -->
@@ -796,7 +758,8 @@ $this->controller('ExamController');
                         class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition-colors duration-200">
                         Cancel
                     </button>
-                    <button type="button" ng-click="saveSection()" ng-disabled="!currentSection.title || !currentSection.order"
+                    <button type="button" ng-click="saveSection()"
+                        ng-disabled="!currentSection.title || !currentSection.order"
                         class="bg-cyan-600 hover:bg-cyan-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50">
                         {{editingSectionIndex === null ? 'Create Section' : 'Update Section'}}
                     </button>
@@ -806,23 +769,31 @@ $this->controller('ExamController');
     </div>
 
     <!-- Navigation Buttons -->
-    <div class="flex justify-between mt-8 pt-6 border-t border-gray-600">
+    <div class="flex flex-wrap md:flex-row justify-between gap-2 mt-8 pt-6 border-t border-gray-600">
         <button type="button" ng-click="previousStep()" ng-show="currentStep > 1"
-            class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-6 rounded-lg transition-colors duration-200 flex items-center space-x-2">
+            class="bg-gray-600 hover:bg-gray-700 text-white w-full md:auto py-2 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2">
             <i class="fas fa-arrow-left"></i>
             <span>Previous</span>
         </button>
 
         <div class="flex-1"></div>
 
+        <button type="button" id="basicInfoSubmit" ng-click="saveBasicInfo()" ng-show="currentStep === 1"
+            ng-disabled="basicInfoForm.$invalid"
+            class="bg-green-600 hover:bg-green-700 disabled:bg-green-800 w-full md:auto disabled:cursor-not-allowed text-white py-2 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2">
+            <i class="fas fa-save"></i>
+            <span>Save Basic Info</span>
+        </button>
+
         <button type="button" ng-click="nextStep()" ng-show="currentStep < totalSteps"
-            class="bg-cyan-600 hover:bg-cyan-700 text-white py-2 px-6 rounded-lg transition-colors duration-200 flex items-center space-x-2">
+            class="bg-cyan-600 hover:bg-cyan-700 text-white w-full md:auto py-2 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2">
             <span>Next</span>
             <i class="fas fa-arrow-right"></i>
         </button>
 
-        <button type="button" ng-click="createExam()" ng-show="currentStep === totalSteps" ng-disabled="creatingExam || savedQuestions.length === 0"
-            class="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-lg transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50">
+        <button type="button" ng-click="createExam()" ng-show="currentStep === totalSteps"
+            ng-disabled="creatingExam || savedQuestions.length === 0"
+            class="bg-green-600 hover:bg-green-700 text-white w-full md:auto py-2 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:opacity-50">
             <i class="fas fa-save" ng-class="{'fa-spin animate-spin': creatingExam}"></i>
             <span>{{creatingExam ? 'Creating Exam...' : 'Create Exam'}}</span>
         </button>

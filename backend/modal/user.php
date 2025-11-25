@@ -20,13 +20,13 @@ class User {
             'updated_at' => 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'
         ];
         $this->seeds = [
-            ['id'=>1,'name' => 'Technical','phone'=>'769104866', 'user_group' => 1, 'email' => 'nit@nit.lk', 'password' => password_hash('@nit',PASSWORD_DEFAULT),'status' => 0],
-            ['id'=>2,'name' => 'Super Admin','phone'=>'770000000', 'user_group' => 2, 'email' => 'sadmin@gmail.com', 'password' => password_hash('@nit',PASSWORD_DEFAULT),'status' => 0],
-            ['id'=>3,'name' => 'Admin','phone'=>'770000001', 'user_group' => 3, 'email' => 'admin@gmail.com', 'password' => password_hash('@nit',PASSWORD_DEFAULT),'status' => 0],
-            ['id'=>4,'name' => 'HOD','phone'=>'770000002', 'user_group' => 4, 'email' => 'hod@gmail.com', 'password' => password_hash('@nit',PASSWORD_DEFAULT),'status' => 0],
-            ['id'=>5,'name' => 'Lecturer','phone'=>'770000003', 'user_group' => 5, 'email' => 'lecturer@gmail.com', 'password' => password_hash('@nit',PASSWORD_DEFAULT),'status' => 0],
-            ['id'=>6,'name' => 'Student','phone'=>'770000004', 'user_group' => 6, 'email' => 'student@gmail.com', 'password' => password_hash('@nit',PASSWORD_DEFAULT),'status' => 0],
-            ['id'=>7,'name' => 'Parent','phone'=>'770000005', 'user_group' => 7, 'email' => 'parent@gmail.com', 'password' => password_hash('@nit',PASSWORD_DEFAULT),'status' => 0]
+        //     ['id'=>1,'name' => 'Technical','phone'=>'769104866', 'user_group' => 1, 'email' => 'nit@nit.lk', 'password' => password_hash('@nit',PASSWORD_DEFAULT),'status' => 0],
+        //     ['id'=>2,'name' => 'Super Admin','phone'=>'770000000', 'user_group' => 2, 'email' => 'sadmin@gmail.com', 'password' => password_hash('@nit',PASSWORD_DEFAULT),'status' => 0],
+        //     ['id'=>3,'name' => 'Admin','phone'=>'770000001', 'user_group' => 3, 'email' => 'admin@gmail.com', 'password' => password_hash('@nit',PASSWORD_DEFAULT),'status' => 0],
+        //     ['id'=>4,'name' => 'HOD','phone'=>'770000002', 'user_group' => 4, 'email' => 'hod@gmail.com', 'password' => password_hash('@nit',PASSWORD_DEFAULT),'status' => 0],
+        //     ['id'=>5,'name' => 'Lecturer','phone'=>'770000003', 'user_group' => 5, 'email' => 'lecturer@gmail.com', 'password' => password_hash('@nit',PASSWORD_DEFAULT),'status' => 0],
+        //     ['id'=>6,'name' => 'Student','phone'=>'770000004', 'user_group' => 6, 'email' => 'student@gmail.com', 'password' => password_hash('@nit',PASSWORD_DEFAULT),'status' => 0],
+        //     ['id'=>7,'name' => 'Parent','phone'=>'770000005', 'user_group' => 7, 'email' => 'parent@gmail.com', 'password' => password_hash('@nit',PASSWORD_DEFAULT),'status' => 0]
         ];
         $this->db = db();
     }

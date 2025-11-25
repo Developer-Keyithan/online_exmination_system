@@ -445,3 +445,46 @@ function getUserStatusText($status)
             return 'Unknown';
     }
 }
+
+
+
+
+/**
+ * Dynamic File Upload
+ * @param array $fileData - $_FILES['fieldname'] data
+ * @param string $targetFolder - destination folder
+ * @param string|null $customName - optional custom filename
+ * @return string|null - saved file path or null if no file
+ * @throws Exception on failure
+ */
+function uploadFile($fileData, $targetFolder = 'uploads/questions', $customName = null)
+{
+    if (isset($fileData) && $fileData['error'] === 0) {
+        // Generate file name
+        $filename = $customName ? $customName : generateRandomString(10);
+        $targetPath = 'storage/'. rtrim($targetFolder, '/') . '/' . $filename;
+
+        // Create folder if not exists
+        if (!is_dir($targetFolder))
+            mkdir($targetFolder, 0755, true);
+
+        // Move file
+        if (move_uploaded_file($fileData['tmp_name'], $targetPath)) {
+            return $targetPath;
+        } else {
+            throw new Exception("Failed to upload file: " . $fileData['name']);
+        }
+    }
+    return null; // no file uploaded
+}
+
+
+function generateRandomString($length = 6) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $charactersLength = strlen($characters);
+    $randomString = '';
+    for ($i = 0; $i < $length; $i++) {
+        $randomString .= $characters[rand(0, $charactersLength - 1)];
+    }
+    return $randomString;
+}
