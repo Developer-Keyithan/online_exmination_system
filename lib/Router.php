@@ -100,6 +100,12 @@ class Router
         self::add('PUT', $uri, $action, $name, $middleware);
     }
 
+    public static function patch($uri, $action, $name = null, $middleware = [])
+    {
+        self::add('PATCH', $uri, $action, $name, $middleware);
+    }
+
+
     public static function delete($uri, $action, $name = null, $middleware = [])
     {
         self::add('DELETE', $uri, $action, $name, $middleware);

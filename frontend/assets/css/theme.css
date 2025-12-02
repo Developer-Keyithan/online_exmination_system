@@ -499,11 +499,11 @@ select {
 }
 
 .popover-close {
-  @apply bg-transparent border-none text-xl cursor-pointer text-gray-500 transition-colors duration-200;
+  @apply bg-transparent border-none text-xl cursor-pointer transition-all duration-300;
 }
 
 .popover-close:hover {
-  @apply text-red-700;
+  @apply  rotate-90 text-red-400;
 }
 
 .popover-body {

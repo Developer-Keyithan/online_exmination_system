@@ -1,6 +1,6 @@
 app.controller('ExamController', [
-    "$scope", "$http", "$timeout", "window",
-    function ($scope, $http, $timeout, window) {
+    "$scope", "$http", "$compile", "$timeout", "window", "assignToSectionModalController", "unassignFromSectionModalController",
+    function ($scope, $http, $compile, $timeout, window, assignToSectionModalController, unassignFromSectionModalController) {
 
         // Initialize exam data
         $scope.examData = {
@@ -11,6 +11,7 @@ app.controller('ExamController', [
             passing_marks: 40,
             instructions: '',
             status: 'draft',
+            totalQuestions: 20,
             sections: [],
             start_time: '',
             end_time: '',
@@ -40,6 +41,7 @@ app.controller('ExamController', [
         $scope.savedQuestions = [];
         $scope.currentQuestion = null;
         $scope.currentQuestionIndex = null;
+        $scope.showMoreQuestions = false;
 
         // Section management
         $scope.showAssignModal = false;
@@ -48,9 +50,11 @@ app.controller('ExamController', [
         $scope.editingSectionIndex = null;
         $scope.savedSections = [];
         $scope.currentSection = {};
+        $scope.location = {};
         $scope.showSecondDescription = false;
         $scope.showRemoveSectionModal = false;
         $scope.showUnasignSectionModal = false;
+        $scope.location.exam = getParameterByName('exam');
 
         // Initialize controller
         $scope.init = function () {
@@ -61,14 +65,13 @@ app.controller('ExamController', [
         };
 
         $scope.handleExamCreation = function () {
-            const exam = getParameterByName('exam');
+            const exam = $scope.location.exam
             if (exam && exam !== undefined) {
                 // $scope.creatingExam = false;
                 $http({
                     url: 'API/exams/' + exam,
                     method: 'GET'
                 }).then(function (response) {
-                    console.log(response.data);
                     if (response.data.status === 'success') {
                         $scope.examData = response.data.exam;
                         $scope.examID = response.data.exam.id;
@@ -101,6 +104,14 @@ app.controller('ExamController', [
                 });
             }
 
+        }
+
+        $scope.toggleMoreQuestions = function () {
+            $scope.showMoreQuestions = !$scope.showMoreQuestions;
+        };
+
+        $scope.closePopover = function () {
+            Toast.popover({ type: 'close' })
         }
 
         // Navigation functions
@@ -154,6 +165,19 @@ app.controller('ExamController', [
                         });
                         return false;
                     }
+
+                    const totalCreatedQuestions = $scope.savedQuestions.length;
+                    const totalQuestionsRequired = $scope.examData.total_questions;
+                    if (totalCreatedQuestions < totalQuestionsRequired) {
+                        const remaining = totalQuestionsRequired - totalCreatedQuestions;
+                        Toast.fire({
+                            type: 'error',
+                            title: 'Validation Error!',
+                            msg: `Please create and save all questions. ${remaining} question(s) remaining.`
+                        });
+                        return false;
+                    }
+
                     return true;
 
                 case 3:
@@ -166,8 +190,10 @@ app.controller('ExamController', [
 
         $scope.saveBasicInfo = async function () {
             const formData = $('#basicInfoForm').serialize();
+
+
             $http({
-                url: 'API/exams/basic_info',
+                url: 'API/exams/basic_info' + ($scope.location.exam ? '/' + $scope.location.exam : 'save'),
                 method: 'POST',
                 data: formData
             }).then(function (response) {
@@ -175,40 +201,165 @@ app.controller('ExamController', [
                     Toast.fire({
                         type: 'success',
                         title: 'Success!',
-                        msg: 'Exam basic info saved successfully'
+                        msg: 'Exam basic info ' + ($scope.location.exam ? 'updated' : 'saved') + ' successfully'
                     });
-                    $scope.currentStep = 2;
-                    $scope.examData = response.data.exam;
-                    $scope.examID = response.data.exam.id;
-                    $scope.steps[0].completed = true;
-                    $scope.steps[0].active = false;
-                    $scope.steps[1].active = true;
+                    setTimeout(() => {
+                        window.location.href = 'create_exam?exam=' + response.data.exam.id;
+                    }, 500);
+                    // $scope.currentStep = 2;
+                    // $scope.examData = response.data.exam;
+                    // $scope.examID = response.data.exam.id;
+                    // $scope.steps[0].completed = true;
+                    // $scope.steps[0].active = false;
+                    // $scope.steps[1].active = true;
                 } else {
                     Toast.fire({
                         type: 'error',
                         title: 'Error!',
-                        msg: response.data.message || 'Failed to save exam basic info'
+                        msg: response.data.message || 'Failed to  ' + ($scope.location.exam ? 'update' : 'save') + '  exam basic info'
                     });
+                    $scope.validateCurrentStep()
                 }
             }, function (error) {
-                const errorMsg = error.data?.message || 'Failed to save exam basic info';
+                const errorMsg = error.data?.message || 'Failed to  ' + ($scope.location.exam ? 'update' : 'save') + ' exam basic info';
                 Toast.fire({
                     type: 'error',
                     title: 'Error!',
                     msg: errorMsg
                 });
+                $scope.validateCurrentStep()
                 console.error('API Error:', error);
             })
         }
 
-        // Question management
         $scope.startNewQuestion = function () {
+
+            const totalCreatedQuestions = $scope.savedQuestions.length;
+            const totalQuestionsRequired = $scope.examData.total_questions;
+
+            if (totalCreatedQuestions >= totalQuestionsRequired) {
+                Toast.popover({
+                    type: 'confirm',
+                    title: 'All Questions Created!',
+                    // titleColor: '#0e7490',
+                    content: `
+                        <i class="fa-solid fa-circle-info" style="font-size: 3rem; color: #0e7490"></i><br><br>
+                        <strong>You have created all questions.</strong><br><br>
+                        <ul style="text-align:left; margin-left: 1rem;">
+                            <li>✅ Total questions required: ${totalQuestionsRequired}</li>
+                            <li>📝 Total questions saved: ${totalCreatedQuestions}</li>
+                            <li>⚠️ If you have any unsaved questions, please save them before moving to the next part.</li>
+                            <li>➡️ After saving, you can proceed to the next section of the exam setup.</li>
+                        </ul>
+                        <p style="margin-top:0.5rem; color:#555;">Click "Save & Continue" to save all unsaved questions and move forward, or "Cancel" to stay here.</p>
+                    `,
+                    contentColor: '#fff',
+                    // backgroundColor: '#fff3',
+                    // closeButtonColor: '#dc2626',
+                    options: {
+                        confirm: {
+                            text: 'Save & Continue',
+                            background: '#0e7490',
+                            onConfirm: async function () {
+                                await $scope.saveUnSavedQuestions();
+
+                                $scope.currentQuestion = {
+                                    text: '',
+                                    image: null,
+                                    options: [
+                                        { text: '', order: 1, op: 'A' },
+                                        { text: '', order: 2, op: 'B' },
+                                        { text: '', order: 3, op: 'C' },
+                                        { text: '', order: 4, op: 'D' }
+                                    ],
+                                    correct_answer: null,
+                                    model_answer: '',
+                                    marks: 1,
+                                    isSaved: false,
+                                    assignedSections: []
+                                };
+                                $scope.currentQuestionIndex = null;
+                                $scope.$apply();
+                            }
+                        },
+                        cancel: {
+                            text: 'Cancel',
+                            background: '#dc2626',
+                            onCancel: function () {
+                                $scope.closePopover();
+                            }
+                        }
+                    }
+                });
+                return;
+            }
+
             // Check if current question has unsaved changes
-            if ($scope.currentQuestion && $scope.currentQuestion.text && !$scope.currentQuestion.isSaved) {
-                if (!confirm('You have unsaved changes. Do you want to save before creating a new question?')) {
-                    return;
-                }
-                $scope.saveCurrentQuestion();
+            if ($scope.currentQuestion && $scope.currentQuestion.question && !$scope.currentQuestion.isSaved) {
+
+                Toast.popover({
+                    type: 'confirm',
+                    title: 'Unsaved Changes',
+                    titleColor: '#fb0',
+                    content: '<i class="fa-regular fa-circle-question" style="font-size: 4rem; color: #fb0"></i><br><br>You have unsaved changes. Do you want to save before creating a new question?',
+                    contentColor: '#fb0',
+                    backgroundColor: '#fff3',
+                    closeButtonColor: '#dc2626',
+                    options: {
+                        confirm: {
+                            text: 'Yes, Save',
+                            background: '#0e7490',
+                            onConfirm: async function () {
+                                const response = await $scope.saveCurrentQuestion();
+                                console.log(response)
+                                if (response) {
+                                    $scope.currentQuestion = {
+                                        text: '',
+                                        image: null,
+                                        options: [
+                                            { text: '', order: 1, op: 'A' },
+                                            { text: '', order: 2, op: 'B' },
+                                            { text: '', order: 3, op: 'C' },
+                                            { text: '', order: 4, op: 'D' }
+                                        ],
+                                        correct_answer: null,
+                                        model_answer: '',
+                                        marks: 1,
+                                        isSaved: false,
+                                        assignedSections: []
+                                    };
+                                    $scope.currentQuestionIndex = null;
+                                }
+                            }
+                        },
+                        cancel: {
+                            text: 'No, Cancel',
+                            background: '#dc2626',
+                            onCancel: function () {
+                                $scope.saveUnSavedQuestions();
+                                $scope.currentQuestion = {
+                                    text: '',
+                                    image: null,
+                                    options: [
+                                        { text: '', order: 1, op: 'A' },
+                                        { text: '', order: 2, op: 'B' },
+                                        { text: '', order: 3, op: 'C' },
+                                        { text: '', order: 4, op: 'D' }
+                                    ],
+                                    correct_answer: null,
+                                    model_answer: '',
+                                    marks: 1,
+                                    isSaved: false,
+                                    assignedSections: []
+                                };
+                                $scope.currentQuestionIndex = null;
+                                $scope.$apply();
+                                $scope.closePopover();
+                            }
+                        }
+                    }
+                })
+                return;
             }
 
             $scope.currentQuestion = {
@@ -227,68 +378,10 @@ app.controller('ExamController', [
                 assignedSections: []
             };
             $scope.currentQuestionIndex = null;
+
         };
 
-
-        // $scope.saveCurrentQuestion = function () {
-        //     if (!$scope.currentQuestion.text) {
-        //         Toast.fire({
-        //             type: 'error',
-        //             title: 'Validation Error!',
-        //             msg: 'Please enter question text'
-        //         });
-        //         return;
-        //     }
-
-        //     // Validate multiple choice questions
-        //     const validOptions = $scope.currentQuestion.options.filter(opt => opt.text || opt.image);
-        //     if (validOptions.length < 2) {
-        //         Toast.fire({
-        //             type: 'error',
-        //             title: 'Validation Error!',
-        //             msg: 'Multiple choice questions must have at least 2 options'
-        //         });
-        //         return;
-        //     }
-        //     if ($scope.currentQuestion.correct_answer === null) {
-        //         Toast.fire({
-        //             type: 'error',
-        //             title: 'Validation Error!',
-        //             msg: 'Please select a correct answer'
-        //         });
-        //         return;
-        //     }
-
-
-
-        //     if ($scope.currentQuestionIndex === null) {
-        //         // New question
-        //         $scope.currentQuestion.isSaved = true;
-        //         $scope.currentQuestion.id = 'q' + Date.now();
-        //         $scope.currentQuestion.createdAt = new Date();
-        //         $scope.savedQuestions.push(angular.copy($scope.currentQuestion));
-        //         $scope.currentQuestionIndex = $scope.savedQuestions.length - 1;
-
-        //         Toast.fire({
-        //             type: 'success',
-        //             title: 'Success!',
-        //             msg: 'Question saved successfully'
-        //         });
-        //     } else {
-        //         // Update existing question
-        //         $scope.currentQuestion.isSaved = true;
-        //         $scope.currentQuestion.updatedAt = new Date();
-        //         $scope.savedQuestions[$scope.currentQuestionIndex] = angular.copy($scope.currentQuestion);
-
-        //         Toast.fire({
-        //             type: 'success',
-        //             title: 'Success!',
-        //             msg: 'Question updated successfully'
-        //         });
-        //     }
-        // };
-
-        $scope.saveCurrentQuestion = function () {
+        $scope.saveCurrentQuestion = async function () {
             const formId = 'questionForm' + ($scope.currentQuestion.id || 'New');
             const formElement = document.getElementById(formId);
             if (!formElement) return;
@@ -296,18 +389,18 @@ app.controller('ExamController', [
             // Validation
             if (!$scope.currentQuestion.question) {
                 Toast.fire({ type: 'error', title: 'Validation Error!', msg: 'Please enter question text' });
-                return;
+                return false;
             }
 
             const validOptions = $scope.currentQuestion.options.filter(opt => opt.text || opt.image);
             if (validOptions.length < 2) {
                 Toast.fire({ type: 'error', title: 'Validation Error!', msg: 'At least 2 options are required' });
-                return;
+                return false;
             }
 
             if ($scope.currentQuestion.answer === null || $scope.currentQuestion.answer === undefined) {
                 Toast.fire({ type: 'error', title: 'Validation Error!', msg: 'Please select a correct answer' });
-                return;
+                return false;
             }
 
             // Use FormData instead of serialize
@@ -327,13 +420,14 @@ app.controller('ExamController', [
 
             // API URL
             const apiUrl = $scope.currentQuestion.id ? 'API/questions/edit_question/' + $scope.currentQuestion.id : 'API/questions/add_question';
+            try {
+                const response = await $http.post(apiUrl, formData, {
+                    transformRequest: angular.identity,
+                    headers: { 'Content-Type': undefined } // important for file upload
+                });
 
-            $http.post(apiUrl, formData, {
-                transformRequest: angular.identity,
-                headers: { 'Content-Type': undefined } // important for file upload
-            }).then(function (response) {
                 if (response.data.status === 'success') {
-                    Toast.fire({ type: 'success', title: 'Success!', msg: 'Question saved successfully' });
+                    Toast.fire({ type: 'success', title: 'Success!', msg: response.data.msg || 'Question ' + ($scope.currentQuestion.id ? 'updated' : 'saved') + ' successfully' });
 
                     const updated = response.data.question;
 
@@ -358,24 +452,88 @@ app.controller('ExamController', [
                         $scope.savedQuestions.push(updated);
                         $scope.currentQuestionIndex = $scope.savedQuestions.length - 1;
                     }
+                    $scope.$apply();
+                    return true;
                 } else {
                     Toast.fire({ type: 'error', title: 'Error!', msg: response.data.msg });
+                    return false;
                 }
-            }).catch(function (error) {
+            } catch (error) {
                 Toast.fire({ type: 'error', title: 'Error!', msg: 'Something went wrong' });
                 console.error(error);
-            });
+                return false;
+            };
         };
 
+        $scope.saveUnSavedQuestions = async function () {
+            $scope.savedQuestions = $scope.savedQuestions || [];
 
+            // Check if question already exists
+            const existingIndex = $scope.savedQuestions.findIndex(q => q.question === $scope.currentQuestion.question);
+
+            if (existingIndex === -1) {
+                // Question not found → push new
+                $scope.savedQuestions.push(angular.copy($scope.currentQuestion));
+            } else {
+                const existingQuestion = $scope.savedQuestions[existingIndex];
+
+                // Update only changed options
+                $scope.currentQuestion.options.forEach(currOpt => {
+                    const existingOpt = existingQuestion.options.find(opt => opt.op === currOpt.op);
+                    if (existingOpt) {
+                        if (existingOpt.text !== currOpt.text) existingOpt.text = currOpt.text;
+                        if (existingOpt.image !== currOpt.image) existingOpt.image = currOpt.image;
+                    } else {
+                        existingQuestion.options.push(currOpt);
+                    }
+                });
+
+                // Update other properties
+                existingQuestion.answer = $scope.currentQuestion.answer;
+                existingQuestion.marks = $scope.currentQuestion.marks;
+                existingQuestion.assignedSections = angular.copy($scope.currentQuestion.assignedSections);
+            }
+        };
 
         $scope.loadQuestionForEditing = function (index) {
             // Check if current question has unsaved changes
-            if ($scope.currentQuestion && $scope.currentQuestion.text && !$scope.currentQuestion.isSaved) {
-                if (!confirm('You have unsaved changes. Do you want to save before switching questions?')) {
-                    return;
-                }
-                $scope.saveCurrentQuestion();
+            if ($scope.currentQuestion && $scope.currentQuestion.question && !$scope.currentQuestion.isSaved) {
+                Toast.popover({
+                    type: 'confirm',
+                    title: 'Unsaved Changes',
+                    titleColor: '#fb0',
+                    content: '<i class="fa-regular fa-circle-question" style="font-size: 4rem; color: #fb0"></i><br><br>You have unsaved changes. Do you want to save before switching questions?',
+                    contentColor: '#fb0',
+                    backgroundColor: '#fff3',
+                    closeButtonColor: '#dc2626',
+                    options: {
+                        confirm: {
+                            text: 'Yes, Save!',
+                            background: '#0e7490',
+                            onConfirm: async function () {
+                                const response = await $scope.saveCurrentQuestion();
+                                if (response) {
+                                    $scope.currentQuestion = angular.copy($scope.savedQuestions[index]);
+                                    $scope.currentQuestionIndex = index;
+                                    $scope.$apply();
+                                }
+                            }
+                        },
+                        cancel: {
+                            text: 'No, Cancel',
+                            background: '#dc2626',
+                            onCancel: function () {
+                                // Load the new question without saving
+                                $scope.saveUnSavedQuestions();
+                                $scope.currentQuestion = angular.copy($scope.savedQuestions[index]);
+                                $scope.currentQuestionIndex = index;
+                                $scope.$apply();
+                                $scope.closePopover()
+                            }
+                        }
+                    }
+                })
+                return;
             }
 
             $scope.currentQuestion = angular.copy($scope.savedQuestions[index]);
@@ -397,7 +555,7 @@ app.controller('ExamController', [
                     confirm: {
                         text: 'Yes, Delete!',
                         background: '#dc2626',
-                        onConfirm: function () {
+                        onConfirm: async function () {
                             $http({
                                 url: 'API/questions/delete_question/' + $scope.currentQuestion.id,
                                 method: 'DELETE'
@@ -425,12 +583,78 @@ app.controller('ExamController', [
                     cancel: {
                         text: 'No, Cancel',
                         background: '#0e7490',
-                        onConfirm: function () {
-                            Toast.popover({ type: 'close' });
+                        onCancel: function () {
+                            $scope.closePopover();
                         }
                     }
                 }
             })
+        };
+
+        $scope.removeCurrentQuestionFromExam = function () {
+
+            if (!$scope.currentQuestion || !$scope.currentQuestion.id) {
+                Toast.fire({ type: 'error', title: 'Error!', msg: 'No question selected!' });
+                return;
+            }
+
+            const questionId = $scope.currentQuestion.id;
+            const examId = $scope.location.exam; // exam ID URL இருந்து already எடுத்திருக்கீங்க
+
+            Toast.popover({
+                type: 'confirm',
+                title: 'Remove Question',
+                titleColor: '#fb0',
+                content: '<i class="fa-regular fa-circle-question" style="font-size: 4rem; color: #fb0"></i><br><br>Are you sure you want to remove this question from the exam?',
+                contentColor: '#fb0',
+                backgroundColor: '#fff3',
+                closeButtonColor: '#dc2626',
+                // position: 'top-center',
+                options: {
+                    confirm: {
+                        text: 'Yes, Remove',
+                        background: '#dc2626',
+                        onConfirm: async function () {
+
+                            try {
+                                const response = await $http.patch(
+                                    'API/questions/remove/' + questionId + '?exam_id=' + examId,
+                                );
+
+                                if (response.data.status === 'success') {
+
+                                    // Remove from savedQuestions
+                                    const index = $scope.savedQuestions.findIndex(q => q.id === questionId);
+                                    if (index !== -1) {
+                                        $scope.savedQuestions.splice(index, 1);
+                                    }
+
+                                    // Reset current question
+                                    $scope.currentQuestion = null;
+                                    $scope.currentQuestionIndex = null;
+                                    $scope.$apply();
+
+                                    Toast.fire({ type: 'success', title: 'Success', msg: 'Question removed from exam' });
+
+                                } else {
+                                    Toast.fire({ type: 'error', title: 'Error', msg: response.data.msg });
+                                }
+
+                            } catch (error) {
+                                console.error(error);
+                                Toast.fire({ type: 'error', title: 'Error', msg: 'Something went wrong!' });
+                            }
+                        }
+                    },
+                    cancel: {
+                        text: 'No, Cancel',
+                        background: '#0e7490',
+                        onCancel: function () {
+                            $scope.closePopover()
+                        }
+                    }
+                }
+            });
         };
 
         $scope.previousQuestion = function () {
@@ -495,7 +719,7 @@ app.controller('ExamController', [
                 return;
             }
 
-            const endpoint =  $scope.currentSection.id ? 'API/sections/edit/' + $scope.currentSection.id : 'API/sections/add';
+            const endpoint = $scope.currentSection.id ? 'API/sections/edit/' + $scope.currentSection.id : 'API/sections/add';
             console.log(endpoint);
             $http({
                 url: endpoint,
@@ -531,14 +755,14 @@ app.controller('ExamController', [
         };
 
         $scope.removeSection = function (sectionID) {
-            if ($scope.savedSections.length <= 1) {
-                Toast.fire({
-                    type: 'error',
-                    title: 'Error!',
-                    msg: 'Cannot delete the last section'
-                });
-                return;
-            }
+            // if ($scope.savedSections.length <= 1) {
+            //     Toast.fire({
+            //         type: 'error',
+            //         title: 'Error!',
+            //         msg: 'Cannot delete the last section'
+            //     });
+            //     return;
+            // }
 
             Toast.popover({
                 type: 'confirm',
@@ -584,7 +808,7 @@ app.controller('ExamController', [
                         text: 'No, Cancel',
                         background: '#0e7490',
                         onConfirm: function () {
-                            Toast.popover({ type: 'close' });
+                            $scope.closePopover();
                         }
                     }
                 }
@@ -592,13 +816,11 @@ app.controller('ExamController', [
         };
 
         $scope.updateSectionQuestionCounts = function () {
-            console.log($scope.savedSections);
             $scope.savedSections.forEach(section => {
                 section.assignedQuestions = $scope.savedQuestions.filter(q =>
                     q.assignedSections && q.assignedSections.includes(section.id)
                 ).length;
             });
-            console.log($scope.savedSections);
         };
 
         // Open Assign Modal
@@ -621,182 +843,63 @@ app.controller('ExamController', [
                 return;
             }
 
-            // 🔥 FIXED
-            $scope.currentQuestionId = $scope.currentQuestion.id;
-            $scope.assignSectionId = null;
-
-            $scope.showAssignModal = true;
-        };
-
-        // Confirm Assignment
-        $scope.confirmAssignToSection = function () {
-
-            const sectionId = parseInt($scope.assignSectionId);
-            const questionId = parseInt($scope.currentQuestionId);
-
-            const section = $scope.savedSections.find(s => s.id === sectionId);
-            const question = $scope.savedQuestions.find(q => q.id === questionId);
-
-            // Section full?
-            if (section.assignedQuestions >= section.question_count) {
-                Toast.fire({
-                    type: 'error',
-                    title: 'Error!',
-                    msg: 'This section reached its limit (' + section.question_count + ' questions)'
-                });
-                return;
+            if (!$scope.assigningModalCtrl) {
+                $scope.assigningModalCtrl = assignToSectionModalController($scope);
             }
-
-            // Ensure array exists
-            if (!Array.isArray(question.assignedSections)) {
-                question.assignedSections = [];
-            }
-
-            // Already assigned check
-            if (question.assignedSections.includes(sectionId)) {
-                Toast.fire({
-                    type: 'info',
-                    title: 'Info',
-                    msg: 'Question already assigned to this section'
-                });
-                $scope.showAssignModal = false;
-                return;
-            }
-
-            // API CALL
-            $http({
-                url: 'API/questions/assign_to_section/' + questionId,
-                method: 'POST',
-                data: $('#assign_question_to_section_form').serialize()
-            }).then(function (response) {
-
-                if (response.data.status === 'success') {
-
-                    question.assignedSections.push(sectionId);
-
-                    const qIndex = $scope.savedQuestions.findIndex(q => q.id === questionId);
-                    $scope.savedQuestions[qIndex] = angular.copy(question);
-
-                    $scope.updateSectionQuestionCounts();
-
-                    Toast.fire({
-                        type: 'success',
-                        title: 'Success!',
-                        msg: 'Question assigned successfully'
-                    });
-
-                    $scope.showAssignModal = false;
-
-                } else {
-                    Toast.fire({
-                        type: 'error',
-                        title: 'Error',
-                        msg: 'Failed to assign question'
-                    });
-                }
-
-            }, function () {
-                Toast.fire({
-                    type: 'error',
-                    title: 'Error',
-                    msg: 'Failed to assign question'
-                });
+            $scope.assigningModalCtrl.init($scope.currentQuestion.id)
+            // $scope.showAssignModal = true;
+            Toast.popover({
+                type: 'apiContent',
+                title: 'Assigning question "' + ($scope.currentQuestionIndex + 1) + '" to a section',
+                apiConfig: {
+                    endpoint: 'assign_to_section',
+                    method: 'GET'
+                },
+                backgroundColor: '#0009',
+                position: 'center'
+            }).then(popoverInstance => {
+                $timeout(() => {
+                    const modal = document.getElementById('assign_to_section_modal');
+                    if (modal) {
+                        $compile(modal)($scope);
+                        $(modal).find('.select2').select2()
+                        $scope.$apply();
+                    } else {
+                        console.error('#assign_to_section_modal not found');
+                    }
+                }, 150);
             });
-
         };
 
         // Open Unssign Modal
         $scope.openUnassignSectionModal = function (questionID) {
-            const question = $scope.savedQuestions.find(q => q.id === questionID);
 
-            if (!question) {
-                console.error("Question not found");
-                return;
+            if (!$scope.unassigningModalCtrl) {
+                $scope.unassigningModalCtrl = unassignFromSectionModalController($scope);
             }
+            $scope.unassigningModalCtrl.init(questionID)
 
-            // Ensure assignedSections exists
-            if (!Array.isArray(question.assignedSections)) {
-                question.assignedSections = [];
-            }
-
-            // Filter only those sections assigned to this question
-            $scope.selectedQuestionAssignedSections = $scope.savedSections
-                .filter(section => question.assignedSections.includes(section.id));
-
-            // Save question ID
-            $scope.unassignQuestion = questionID;
-
-            // Open UNASSIGN modal (not Assign modal)
-            $scope.showUnasignSectionModal = true;
-
-            // console.log("Unassign modal opened for:", question);
-            console.log($scope.selectedQuestionAssignedSections);
-        };
-
-        $scope.confirmUnassignSection = function () {
-
-            const questionId = $scope.unassignQuestion;
-
-            // Get the question
-            const question = $scope.savedQuestions.find(q => q.id === questionId);
-            if (!question) {
-                Toast.fire({ type: 'error', title: 'Error', msg: 'Question not found' });
-                return;
-            }
-
-            // Ensure list exists
-            if (!Array.isArray(question.assignedSections) || question.assignedSections.length === 0) {
-                Toast.fire({ type: 'error', title: 'Error', msg: 'This question is not assigned to any section' });
-                return;
-            }
-
-            // Selected section ID to unassign
-            const sectionId = parseInt($scope.unassignSectionId);
-
-            if (!sectionId) {
-                Toast.fire({ type: 'error', title: 'Error', msg: 'Please select a section' });
-                return;
-            }
-
-            // Check if assigned
-            if (!question.assignedSections.includes(sectionId)) {
-                Toast.fire({ type: 'info', title: 'Info', msg: 'This question is not assigned to selected section' });
-                return;
-            }
-
-            $http({
-                url: 'API/questions/unassign_section/' + questionId,
-                method: 'POST',
-                data: $('#remove_question_to_section_form').serialize()
-            }).then(function (response) {
-
-                if (response.data.status === 'success') {
-                    // Remove sectionId from assignedSections array
-                    question.assignedSections = question.assignedSections.filter(id => id !== sectionId);
-
-                    // Update savedQuestions UI list
-                    const qIndex = $scope.savedQuestions.findIndex(q => q.id === questionId);
-                    $scope.savedQuestions[qIndex] = angular.copy(question);
-
-                    // Update section counts
-                    $scope.updateSectionQuestionCounts();
-
-                    Toast.fire({
-                        type: 'success',
-                        title: 'Success',
-                        msg: 'Section unassigned successfully'
-                    });
-
-                    $scope.showUnassignModal = false;
-
-                } else {
-                    Toast.fire({ type: 'error', title: 'Error', msg: 'Failed to unassign section' });
-                }
-
-                $scope.showUnasignSectionModal = false;
-
-            }, function () {
-                Toast.fire({ type: 'error', title: 'Error', msg: 'Failed to unassign section' });
+            // $scope.showUnasignSectionModal = true;
+            Toast.popover({
+                type: 'apiContent',
+                title: 'Unassigning question "' + ($scope.currentQuestionIndex + 1) + '" from a section',
+                apiConfig: {
+                    endpoint: 'unassign_section',
+                    method: 'GET'
+                },
+                // backgroundColor: '#fff1',
+                position: 'center'
+            }).then(popoverInstance => {
+                $timeout(() => {
+                    const modal = document.getElementById('remove_section_modal');
+                    if (modal) {
+                        $compile(modal)($scope);
+                        $(modal).find('.select2').select2()
+                        $scope.$apply();
+                    } else {
+                        console.error('#remove_section_modal not found');
+                    }
+                }, 150);
             });
         };
 

@@ -56,7 +56,7 @@ $this->controller('ExamController');
                     </div>
 
                     <!-- Exam Code -->
-                    <div class="form-group">
+                    <div class="form-group md:col-span-2">
                         <label for="examCode" class="form-label">Exam Code <span class="text-red-700">*</span></label>
                         <input type="text" id="examCode" ng-model="examData.code" required class="form-input"
                             name="examCode" placeholder="e.g., MATH-2024-FINAL">
@@ -75,6 +75,18 @@ $this->controller('ExamController');
                         <div class="error-message"
                             ng-show="basicInfoForm.$submitted && basicInfoForm.examDuration.$error.required">
                             Duration is required
+                        </div>
+                    </div>
+
+                    <!-- Total number of questions -->
+                    <div class="form-group">
+                        <label for="totalQuestions" class="form-label">Total questions <span
+                                class="text-red-700">*</span></label>
+                        <input type="number" id="totalQuestions" ng-model="examData.total_questions" required min="1"
+                            name="totalQuestions" class="form-input" placeholder="e.g., 20">
+                        <div class="error-message"
+                            ng-show="basicInfoForm.$submitted && basicInfoForm.totalQuestions.$error.required">
+                            Number of total question is required
                         </div>
                     </div>
 
@@ -174,18 +186,48 @@ $this->controller('ExamController');
                         <!-- Questions Navigation -->
                         <div class="mb-4">
                             <div class="flex flex-wrap gap-2">
-                                <button ng-repeat="question in savedQuestions track by $index"
+
+                                <!-- 1) FIRST 8 QUESTIONS -->
+                                <button ng-repeat="question in savedQuestions.slice(0,8) track by $index"
                                     ng-click="loadQuestionForEditing($index)"
-                                    class="w-10 h-10 rounded-lg transition-colors duration-200 flex items-center justify-center text-sm font-medium"
+                                    class="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-all duration-300"
                                     ng-class="currentQuestionIndex === $index 
                                         ? 'bg-cyan-600 text-white' 
-                                        : (question.isSaved ? 'bg-green-600 text-white' : 'bg-yellow-600 text-white')">
+                                        : (question.isSaved ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-yellow-600 text-white hover:bg-yellow-700')">
                                     {{$index + 1}}
                                 </button>
+
+                                <!-- 3) EXTRA QUESTIONS – SHOW ONLY WHEN EXPANDED -->
+                                <button ng-if="showMoreQuestions"
+                                    ng-repeat="question in savedQuestions.slice(8) track by $index"
+                                    ng-click="loadQuestionForEditing($index + 8)"
+                                    class="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-all duration-300"
+                                    ng-class="currentQuestionIndex === ($index + 8)
+                                        ? 'bg-cyan-600 text-white' 
+                                        : (question.isSaved ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-yellow-600 text-white hover:bg-yellow-700')">
+                                    {{$index + 9}}
+                                </button>
+
+                                <!-- 2) IF SHOWING MORE → SHOW "HIDE MORE" BUTTON BEFORE ADD -->
+                                <button ng-if="savedQuestions.length > 8 && showMoreQuestions"
+                                    ng-click="toggleMoreQuestions()"
+                                    class="w-10 h-10 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold transition-all duration-300">
+                                    -{{ savedQuestions.length - 8 }}
+                                </button>
+
+                                <!-- 4) MORE BUTTON – ONLY IF NOT EXPANDED -->
+                                <button ng-if="savedQuestions.length > 8 && !showMoreQuestions"
+                                    ng-click="toggleMoreQuestions()"
+                                    class="w-10 h-10 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold transition-all duration-300">
+                                    +{{ savedQuestions.length - 8 }}
+                                </button>
+
+                                <!-- 5) ADD NEW QUESTION BUTTON (ALWAYS LAST) -->
                                 <button ng-click="startNewQuestion()"
-                                    class="w-10 h-10 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200 flex items-center justify-center">
+                                    class="w-10 h-10 rounded-lg bg-blue-600 hover:bg-blue-700 text-white">
                                     <i class="fas fa-plus"></i>
                                 </button>
+
                             </div>
                         </div>
 
@@ -274,7 +316,7 @@ $this->controller('ExamController');
                 <!-- Right Column: Question Editor -->
                 <div class="xl:col-span-2">
                     <div class="bg-[#0006] rounded-lg p-6 border border-gray-600">
-                        <div class="flex flex-wrap justify-between items-center mb-6">
+                        <div class="flex flex-wrap gap-2 justify-between items-center mb-6">
                             <h3 class="text-lg font-medium text-gray-100">
                                 <span ng-if="currentQuestionIndex !== null">Edit Question {{currentQuestionIndex +
                                     1}}</span>
@@ -284,25 +326,27 @@ $this->controller('ExamController');
                                     (Unsaved)
                                 </span>
                             </h3>
-                            <p>Exam ID: {{examID}}</p>
                             <div class="flex flex-wrap md:flex-row gap-2">
                                 <button type="button" ng-click="saveCurrentQuestion()"
+                                    title="{{currentQuestion.isSaved ? 'Update' : 'Save'}} this question"
                                     ng-disabled="!currentQuestion.question"
                                     class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 w-full md:w-auto rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:opacity-50">
                                     <i class="fas fa-save"></i>
                                     <span>{{currentQuestion.isSaved ? 'Update' : 'Save'}}</span>
                                 </button>
                                 <button type="button" ng-click="assignToSection()"
+                                    title="Assign this question to a section"
                                     ng-disabled="!currentQuestion.isSaved || savedSections.length === 0"
                                     class="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 w-full md:w-auto rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:opacity-50">
                                     <i class="fas fa-layer-group"></i>
                                     <span>Assign to Section</span>
                                 </button>
-                                <button type="button" ng-click="deleteCurrentQuestion()"
+                                <button type="button" ng-click="removeCurrentQuestionFromExam()"
+                                    title="Remove this question from this exam"
                                     ng-disabled="currentQuestionIndex === null"
                                     class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 w-full md:w-auto rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:opacity-50">
                                     <i class="fas fa-trash"></i>
-                                    <span>Delete</span>
+                                    <span>Remove</span>
                                 </button>
                             </div>
                         </div>
@@ -647,87 +691,6 @@ $this->controller('ExamController');
         </div>
     </div>
 
-    <!-- Assign to Section Modal -->
-    <div ng-show="showAssignModal" id="assignModal"
-        ng-click="closeModalFromOutside($event, 'assignModal', 'showAssignModal')"
-        class="fixed inset-0 bg-black bg-opacity-75 backdrop-blur flex items-center justify-center z-[9999999] p-4">
-        <div class="relative bg-[#fff1] rounded-lg p-6 border border-gray-600 max-w-md w-full">
-            <i ng-click="showAssignModal = false; showSecondDescription = false"
-                class="fas fa-close absolute top-3 right-3 hover:rotate-90 hover:text-red-400 transition-all duration-300 cursor-pointer"></i>
-            <h3 class="text-lg font-medium text-gray-100 mb-4">Assign Question to Section</h3>
-            <div class="space-y-4">
-                <form id="assign_question_to_section_form" onsubmit="return false" class="form-group">
-                    <label class="form-label">Select Section</label>
-                    <select ng-model="assignSectionId" class="form-input select2" style="width: 100%;"
-                        name="new_section_id">
-                        <option value="">-- Select a Section --</option>
-                        <option ng-repeat="section in savedSections" value="{{section.id}}">
-                            Section: {{section.title}}
-                        </option>
-                    </select>
-                </form>
-
-                <div class="bg-yellow-600 bg-opacity-20 border border-yellow-600 rounded-lg p-3">
-                    <p class="text-yellow-400 text-sm">
-                        <i class="fas fa-exclamation-triangle mr-2"></i>
-                        This question will be added to the selected section and count towards its question limit.
-                    </p>
-                </div>
-
-                <div class="flex justify-end space-x-3">
-                    <button type="button" ng-click="showAssignModal = false"
-                        class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition-colors duration-200">
-                        Cancel
-                    </button>
-                    <button type="button" ng-click="confirmAssignToSection()" ng-disabled="!assignSectionId"
-                        class="bg-cyan-600 hover:bg-cyan-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50">
-                        Assign to Section
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div ng-show="showUnasignSectionModal" id="removeSectionModal"
-        ng-click="closeModalFromOutside($event, 'removeSectionModal', 'showUnasignSectionModal')"
-        class="fixed inset-0 bg-black bg-opacity-75 backdrop-blur flex items-center justify-center z-[9999999] p-4">
-        <div class="relative bg-[#fff1] rounded-lg p-6 border border-gray-600 max-w-md w-full">
-            <i ng-click="showUnasignSectionModal = false; showSecondDescription = false"
-                class="fas fa-close absolute top-3 right-3 hover:rotate-90 hover:text-red-400 transition-all duration-300 cursor-pointer"></i>
-            <h3 class="text-lg font-medium text-gray-100 mb-4">Remove Question from Section</h3>
-            <div class="space-y-4">
-                <form id="remove_question_to_section_form" onsubmit="return false" class="form-group">
-                    <label class="form-label">Select Section</label>
-                    <select ng-model="unassignSectionId" class="form-input select2" style="width: 100%;"
-                        name="remove_section_id">
-                        <option value="">-- Select a Section --</option>
-                        <option ng-repeat="section in selectedQuestionAssignedSections" value="{{section.id}}">
-                            Section: {{section.title}}
-                        </option>
-                    </select>
-                </form>
-
-                <div class="bg-yellow-600 bg-opacity-20 border border-yellow-600 rounded-lg p-3">
-                    <p class="text-yellow-400 text-sm">
-                        <i class="fas fa-exclamation-triangle mr-2"></i>
-                        This question will be removed from the selected section.
-                    </p>
-                </div>
-
-                <div class="flex justify-end space-x-3">
-                    <button type="button" ng-click="showUnassignModal = false"
-                        class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition-colors duration-200">
-                        Cancel
-                    </button>
-                    <button type="button" ng-click="confirmUnassignSection()" ng-disabled="!unassignSectionId"
-                        class="bg-cyan-600 hover:bg-cyan-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50">
-                        Remove From Section
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Section Editor Modal -->
     <div ng-show="showSectionModal" id="sectionModal"
         ng-click="closeModalFromOutside($event, 'sectionModal', 'showSectionModal', ['showSecondDescription'])"
@@ -805,11 +768,18 @@ $this->controller('ExamController');
 
         <div class="flex-1"></div>
 
-        <button type="button" id="basicInfoSubmit" ng-click="saveBasicInfo()" ng-show="currentStep === 1"
-            ng-disabled="basicInfoForm.$invalid"
+        <button type="button" id="basicInfoSubmit" ng-click="saveBasicInfo()"
+            ng-show="currentStep === 1 && !location.exam" ng-disabled="basicInfoForm.$invalid"
             class="bg-green-600 hover:bg-green-700 disabled:bg-green-800 w-full md:w-auto disabled:cursor-not-allowed text-white py-2 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2">
             <i class="fas fa-save"></i>
             <span>Save Basic Info</span>
+        </button>
+
+        <button type="button" id="basicInfoSubmit" ng-click="saveBasicInfo()"
+            ng-show="currentStep === 1 && location.exam"
+            class="bg-green-600 hover:bg-green-700 disabled:bg-green-800 w-full md:w-auto disabled:cursor-not-allowed text-white py-2 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2">
+            <i class="fas fa-save"></i>
+            <span>Update Basic Info</span>
         </button>
 
         <button type="button" ng-click="nextStep()" ng-show="currentStep < totalSteps"

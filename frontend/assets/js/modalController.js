@@ -325,7 +325,7 @@ app.factory("permissionModalController", [
                                 result[moduleKey].permissions[permKey] = perm.label;
                             }
                         }
-                    } 
+                    }
                     // else {
                     //     result[moduleKey] = {
                     //         name: module.name,
@@ -646,6 +646,274 @@ app.factory("deleteUserGroupModalController", [
                 },
                 close: function () {
                     Toast.popover({ type: "close" });
+                }
+            };
+        };
+    }
+]);
+
+// Assign to section modal controller
+app.factory("assignToSectionModalController", [
+    "API_URL",
+    "window",
+    "jQuery",
+    "$http",
+    "$sce",
+    "$rootScope",
+    "$compile",
+    "$timeout",
+    function (
+        API_URL,
+        window,
+        $,
+        $http,
+        $sce,
+        $rootScope,
+        $compile,
+        $timeout
+    ) {
+        return function ($scope) {
+
+            const initAssigningToSectionModal = (questionId) => {
+                $scope.assignSectionId = null;
+                $scope.currentQuestionId = questionId;
+            }
+
+            // Confirm Assignment
+            const assignToSection = () => {
+                const sectionId = parseInt($scope.assignSectionId);
+                const questionId = parseInt($scope.currentQuestionId);
+
+                const section = $scope.savedSections.find(s => s.id === sectionId);
+                const question = $scope.savedQuestions.find(q => q.id === questionId);
+
+                // Section full?
+                if (section.assignedQuestions >= section.question_count) {
+                    Toast.fire({
+                        type: 'error',
+                        title: 'Error!',
+                        msg: 'This section reached its limit (' + section.question_count + ' questions)'
+                    });
+                    return;
+                }
+
+                // Ensure array exists
+                if (!Array.isArray(question.assignedSections)) {
+                    question.assignedSections = [];
+                }
+
+                // Already assigned check
+                if (question.assignedSections.includes(sectionId)) {
+                    Toast.fire({
+                        type: 'info',
+                        title: 'Info',
+                        msg: 'Question already assigned to this section'
+                    });
+                    $scope.showAssignModal = false;
+                    return;
+                }
+
+                // API CALL
+                $http({
+                    url: 'API/questions/assign_to_section/' + questionId,
+                    method: 'POST',
+                    data: $('#assign_question_to_section_form').serialize()
+                }).then(function (response) {
+
+                    if (response.data.status === 'success') {
+
+                        question.assignedSections.push(sectionId);
+
+                        const qIndex = $scope.savedQuestions.findIndex(q => q.id === questionId);
+                        $scope.savedQuestions[qIndex] = angular.copy(question);
+
+                        $scope.updateSectionQuestionCounts();
+                        $scope.closePopover();
+
+                        Toast.fire({
+                            type: 'success',
+                            title: 'Success!',
+                            msg: 'Question assigned successfully'
+                        });
+
+                        $scope.showAssignModal = false;
+
+                    } else {
+                        Toast.fire({
+                            type: 'error',
+                            title: 'Error',
+                            msg: response.data.msg || 'Failed to assign question'
+                        });
+                    }
+
+                }, function (error) {
+                    Toast.fire({
+                        type: 'error',
+                        title: 'Error',
+                        msg: error.data.msg || 'Failed to assign question'
+                    });
+                });
+
+            };
+
+            $scope.confirmAssignToSection = () => {
+                assignToSection();
+            }
+
+            $scope.cancelAssignToSection = () => {
+                Toast.popover({ type: "close" });
+                $scope.showAssignModal = false;
+            }
+
+            return {
+                init: function (questionID) {
+                    initAssigningToSectionModal(questionID);
+                },
+                confirmAssigning: function () {
+                    assignToSection();
+                },
+                close: function () {
+                    Toast.popover({ type: "close" });
+                }
+            };
+        };
+    }
+]);
+
+// Unassign from section modal controller
+app.factory("unassignFromSectionModalController", [
+    "API_URL",
+    "window",
+    "jQuery",
+    "$http",
+    "$sce",
+    "$rootScope",
+    "$compile",
+    "$timeout",
+    function (
+        API_URL,
+        window,
+        $,
+        $http,
+        $sce,
+        $rootScope,
+        $compile,
+        $timeout
+    ) {
+        return function ($scope) {
+
+            const initAssigningToSectionModal = (questionID) => {
+                const question = $scope.savedQuestions.find(q => q.id === questionID);
+
+                if (!question) {
+                    console.error("Question not found");
+                    return;
+                }
+
+                // Ensure assignedSections exists
+                if (!Array.isArray(question.assignedSections)) {
+                    question.assignedSections = [];
+                }
+
+                // Filter only those sections assigned to this question
+                $scope.selectedQuestionAssignedSections = $scope.savedSections
+                    .filter(section => question.assignedSections.includes(section.id));
+
+                // Save question ID
+                $scope.unassignQuestion = questionID;
+            }
+
+            // Confirm Unassignment
+            const unassignSection = () => {
+                const questionId = $scope.unassignQuestion;
+
+                // Get the question
+                const question = $scope.savedQuestions.find(q => q.id === questionId);
+                if (!question) {
+                    Toast.fire({ type: 'error', title: 'Error', msg: 'Question not found' });
+                    return;
+                }
+
+                // Ensure list exists
+                if (!Array.isArray(question.assignedSections) || question.assignedSections.length === 0) {
+                    Toast.fire({ type: 'error', title: 'Error', msg: 'This question is not assigned to any section' });
+                    return;
+                }
+
+                // Selected section ID to unassign
+                const sectionId = parseInt($scope.unassignSectionId);
+
+                if (!sectionId) {
+                    Toast.fire({ type: 'error', title: 'Error', msg: 'Please select a section' });
+                    return;
+                }
+
+                // Check if assigned
+                if (!question.assignedSections.includes(sectionId)) {
+                    Toast.fire({ type: 'info', title: 'Info', msg: 'This question is not assigned to selected section' });
+                    return;
+                }
+
+                $http({
+                    url: 'API/questions/unassign_section/' + questionId,
+                    method: 'POST',
+                    data: $('#remove_question_to_section_form').serialize()
+                }).then(function (response) {
+
+                    if (response.data.status === 'success') {
+                        // Remove sectionId from assignedSections array
+                        question.assignedSections = question.assignedSections.filter(id => id !== sectionId);
+
+                        // Update savedQuestions UI list
+                        const qIndex = $scope.savedQuestions.findIndex(q => q.id === questionId);
+                        $scope.savedQuestions[qIndex] = angular.copy(question);
+
+                        // Update section counts
+                        $scope.updateSectionQuestionCounts();
+                        $scope.closePopover();
+                        Toast.fire({
+                            type: 'success',
+                            title: 'Success',
+                            msg: 'Section unassigned successfully'
+                        });
+
+                        $scope.showUnassignModal = false;
+
+                    } else {
+                        Toast.fire({ type: 'error', title: 'Error', msg: 'Failed to unassign section' });
+                    }
+
+                    $scope.showUnasignSectionModal = false;
+
+                }, function () {
+                    Toast.fire({ type: 'error', title: 'Error', msg: 'Failed to unassign section' });
+                });
+            };
+
+            const closeUnassingModal = () => {
+                Toast.popover({ type: "close" });
+                $scope.showUnassignModal = false;
+                $scope.selectedQuestionAssignedSections = null;
+                $scope.unassignQuestion = null;
+            }
+
+            $scope.confirmUnassignSection = () => {
+                unassignSection();
+            }
+
+            $scope.closeUnassingModal = () => {
+                closeUnassingModal();
+            }
+
+            return {
+                init: function (questionID) {
+                    initAssigningToSectionModal(questionID);
+                },
+                confirmUnassigning: function () {
+                    unassignSection();
+                },
+                close: function () {
+                    closeUnassingModal();
                 }
             };
         };

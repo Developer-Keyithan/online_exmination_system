@@ -104,53 +104,61 @@ function adjustToastPositions(position) {
 
 // Show toast function with position-based animations
 export function toast(type, title, message, position = 'top-right', toastTime = 5) {
-    // Create toast element
     const toast = document.createElement('div');
     toast.className = `toast-card toast-${type} toast-${position}`;
 
-    // Set toast content
     toast.innerHTML = `
-                <div class="toast-icon">
-                    ${getIcon(type)}
-                </div>
-                <div class="flex flex-col gap-1 flex-grow">
-                    <h1 class="toast-title">${title}</h1>
-                    <p>${message}</p>
-                </div>
-                <div class="toast-close">
-                    <i class="fas fa-times"></i>
-                </div>
-                <div class="toast-progress">
-                    <div class="toast-progress-bar"></div>
-                </div>
-            `;
+        <div class="toast-icon">${getIcon(type)}</div>
+        <div class="flex flex-col gap-1 flex-grow">
+            <h1 class="toast-title">${title}</h1>
+            <p>${message}</p>
+        </div>
+        <div class="toast-close"><i class="fas fa-times"></i></div>
+        <div class="toast-progress"><div class="toast-progress-bar"></div></div>
+    `;
 
-    // Add to container
     document.body.appendChild(toast);
 
-    // Calculate position offset for stacking
     const offset = calculateToastOffset(position, toast);
     applyPositionOffset(toast, position, offset);
-
-    // Add to active toasts tracking
     activeToasts[position].push({ element: toast, offset: offset });
 
-    // Animate in
     setTimeout(() => toast.classList.add('show'), 10);
 
-    // Set up auto dismiss
-    const dismissTimeout = setTimeout(() => dismissToast(toast, position), toastTime * 1000);
+    const progressBar = toast.querySelector('.toast-progress-bar');
+    progressBar.style.transform = 'scaleX(1)'; // start full
+    progressBar.style.transformOrigin = 'left';
 
-    // Set up progress bar animation
+    let startTime = Date.now();
+    let remaining = toastTime * 1000;
+
+    // trigger animation
     setTimeout(() => {
-        const progressBar = toast.querySelector('.toast-progress-bar');
-        if (progressBar) {
-            progressBar.style.transform = 'scaleX(0)';
-            progressBar.style.transition = `transform ${toastTime}s linear`;
-        }
-    }, 10);
+        progressBar.style.transition = `transform ${remaining / 1000}s linear`;
+        progressBar.style.transform = 'scaleX(0)'; // animate to 0
+    }, 50);
 
-    // Set up close button
+    let dismissTimeout = setTimeout(() => dismissToast(toast, position), remaining);
+
+    function pauseProgress() {
+        clearTimeout(dismissTimeout);
+        const elapsed = Date.now() - startTime;
+        remaining -= elapsed;
+        progressBar.style.transition = 'none';
+        const scale = remaining / (toastTime * 1000);
+        progressBar.style.transform = `scaleX(${scale})`;
+    }
+
+    function resumeProgress() {
+        startTime = Date.now();
+        progressBar.style.transition = `transform ${remaining / 1000}s linear`;
+        progressBar.style.transform = 'scaleX(0)';
+        dismissTimeout = setTimeout(() => dismissToast(toast, position), remaining);
+    }
+
+    toast.addEventListener('mouseenter', pauseProgress);
+    toast.addEventListener('mouseleave', resumeProgress);
+
     toast.querySelector('.toast-close').addEventListener('click', () => {
         clearTimeout(dismissTimeout);
         dismissToast(toast, position);
@@ -158,6 +166,7 @@ export function toast(type, title, message, position = 'top-right', toastTime = 
 
     return toast;
 }
+
 
 // Dismiss toast function with position-based animations
 function dismissToast(toast, position) {

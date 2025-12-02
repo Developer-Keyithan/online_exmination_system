@@ -82,23 +82,27 @@ const PHPAPILoader = {
 // Simplified Popover system with automatic API fetching for any content type
 let lastPopupInstance = null;
 export const popup = {
+    popupInstances: [],
     async show(options) {
         const overlay = document.createElement('div');
         overlay.className = 'popover-overlay';
         document.body.appendChild(overlay);
 
         const popover = document.createElement('div');
-        const positionClass = options.type === 'content' ? 'top-center' : 'center';
+        const positionClass = (options.type === 'content' && !options.position) ? 'top-center' : (options.type === 'content' && options.position) ? options.position : options.position ? options.position : 'center';
 
         // Fixed responsive width classes - removed my-4 from all sizes
-        const sizeClass = options.size === 'xs' ? 'max-w-xs w-[calc(100%-2rem)] md:w-full' :
-            options.size === 'sm' ? 'max-w-sm w-[calc(100%-2rem)] md:w-full' :
-                options.size === 'md' ? 'max-w-md w-[calc(100%-2rem)] md:w-full' :
-                    options.size === 'lg' ? 'max-w-lg w-[calc(100%-2rem)] md:w-full' :
-                        options.size === 'xl' ? 'max-w-xl w-[calc(100%-2rem)] md:w-full' :
-                            options.size === 'xxl' ? 'max-w-2xl w-[calc(100%-2rem)] md:w-full' :
-                                options.size === 'full' ? 'max-w-full w-[calc(100%-2rem)] md:w-[calc(100%-3rem)]' :
-                                    'max-w-md w-[calc(100%-2rem)] md:w-full';
+        const sizeClass = (typeof options.size === 'number') ? `w-[${options.size}px]` :
+            options.size === 'xs' ? 'max-w-xs w-[calc(100%-2rem)] md:w-full' :
+                options.size === 'sm' ? 'max-w-sm w-[calc(100%-2rem)] md:w-full' :
+                    options.size === 'md' ? 'max-w-md w-[calc(100%-2rem)] md:w-full' :
+                        options.size === 'lg' ? 'max-w-lg w-[calc(100%-2rem)] md:w-full' :
+                            options.size === 'xl' ? 'max-w-xl w-[calc(100%-2rem)] md:w-full' :
+                                options.size === 'xxl' ? 'max-w-2xl w-[calc(100%-2rem)] md:w-full' :
+                                    options.size === 'full' ? 'max-w-full w-[calc(100%-2rem)] md:w-[calc(100%-3rem)]' :
+                                        options.size === 'auto' ? 'w-[calc(100%-2rem)] md:w-full' :
+                                            'max-w-md w-[calc(100%-2rem)] md:w-full';
+
 
         popover.className = `popover-content  ${positionClass} ${sizeClass}`;
         popover.style.background = options.backgroundColor || '#0003';
@@ -296,9 +300,6 @@ export const popup = {
             });
         });
 
-
-
-
         const handleKeydown = (e) => {
             if (e.key === 'Escape') {
                 if (options.onCancel) options.onCancel();
@@ -354,7 +355,6 @@ export const popup = {
             originalClose();
         };
 
-
         lastPopupInstance = {
             close: enhancedClose,
             element: popover,
@@ -381,6 +381,8 @@ export const popup = {
                 }
             }
         };
+
+        this.popupInstances.push(lastPopupInstance);
         return lastPopupInstance;
     },
 
@@ -449,8 +451,10 @@ export const popup = {
         }
     },
 
-    error({ title, titleColor, content, options = { confirm: { text: 'OK', background: '#3498db', color: '#fff', onConfirm: null }, size: 'md',
-        buttonPosition: 'center', buttonWidth: 'fit', buttonContainerClass: '', buttonContainerStyles: '', backgroundColor: '#0003' } }) {
+    error({ title, titleColor, content, options = {
+        confirm: { text: 'OK', background: '#3498db', color: '#fff', onConfirm: null }, size: 'md',
+        buttonPosition: 'center', buttonWidth: 'fit', buttonContainerClass: '', buttonContainerStyles: '', backgroundColor: '#0003', position
+    } }) {
         return this.show({
             type: 'info',
             title,
@@ -470,7 +474,8 @@ export const popup = {
             buttonWidth: options.buttonWidth,
             buttonContainerClass: options.buttonContainerClass,
             buttonContainerStyles: options.buttonContainerStyles,
-            backgroundColor: options.backgroundColor || '#0003'
+            backgroundColor: options.backgroundColor || '#0003',
+            position: options.position
         });
     },
 
@@ -486,7 +491,7 @@ export const popup = {
 
     info({ title, titleColor = '#3498db', content = { text, color: '#3498db' }, size = 'md', options = {
         confirm: { text: 'OK', background: '#3498db', color: '#fff', onConfirm: null },
-        buttonPosition: 'center', buttonWidth: 'fit', buttonContainerClass: '', buttonContainerStyles: '', backgroundColor: '#0003'
+        buttonPosition: 'center', buttonWidth: 'fit', buttonContainerClass: '', buttonContainerStyles: '', backgroundColor: '#0003', position
     } }) {
         return this.show({
             type: 'info',
@@ -503,14 +508,15 @@ export const popup = {
             buttonWidth: options.buttonWidth,
             buttonContainerClass: options.buttonContainerClass,
             buttonContainerStyles: options.buttonContainerStyles,
-            backgroundColor: options.backgroundColor || '#0003'
+            backgroundColor: options.backgroundColor || '#0003',
+            position: options.position
         });
     },
 
     confirm({ title, titleColor, content = { text, color: '#f59e0b' }, size = 'md', options = {
         confirm: { text: 'Ok, confirm', background: '#f44336', color: '#fff', onConfirm: null },
         cancel: { text: 'No, Cancel', background: '#4CAF50', color: '#fff', onCancel: null },
-        buttonPosition: 'center', buttonWidth: 'fit', buttonContainerClass: '', buttonContainerStyles: '', backgroundColor: '#0003'
+        buttonPosition: 'center', buttonWidth: 'fit', buttonContainerClass: '', buttonContainerStyles: '', backgroundColor: '#0003', position
     } }) {
         return this.show({
             type: 'confirm',
@@ -532,10 +538,11 @@ export const popup = {
             buttonContainerClass: options.buttonContainerClass,
             buttonContainerStyles: options.buttonContainerStyles,
             backgroundColor: options.backgroundColor || '#0003',
+            position: options.position
         });
     },
 
-    content({ title, titleColor, content, buttons = [], apiConfig = null, size = 'md', buttonPosition = 'center', buttonWidth = 'fit', buttonContainerClass = '', buttonContainerStyles = '' }) {
+    content({ title, titleColor, content, buttons = [], apiConfig = null, size = 'md', buttonPosition = 'center', buttonWidth = 'fit', buttonContainerClass = '', buttonContainerStyles = '', backgroundColor = '#0003', position }) {
         return this.show({
             type: 'content',
             title: title || 'Content Popover',
@@ -547,12 +554,14 @@ export const popup = {
             btnPosition: buttonPosition,
             buttonWidth: buttonWidth,
             buttonContainerClass,
-            buttonContainerStyles
+            buttonContainerStyles,
+            backgroundColor,
+            position
         });
     },
 
-    success({ title, titleColor, content = { text, color: '#4CAF50' }, 
-        options = { confirmText: 'OK', onConfirm: null, buttonPosition: 'center', buttonWidth: 'fit', buttonContainerClass: '', buttonContainerStyles: '', backgroundColor: '#0003' }, size = 'md' }) {
+    success({ title, titleColor, content = { text, color: '#4CAF50' },
+        options = { confirmText: 'OK', onConfirm: null, buttonPosition: 'center', buttonWidth: 'fit', buttonContainerClass: '', buttonContainerStyles: '', backgroundColor: '#0003', position }, size = 'md' }) {
         return this.show({
             type: 'success',
             title: title || 'Success!',
@@ -566,12 +575,13 @@ export const popup = {
             buttonWidth: options.buttonWidth,
             buttonContainerClass: options.buttonContainerClass,
             buttonContainerStyles: options.buttonContainerStyles,
-            backgroundColor: options.backgroundColor || '#0003'
+            backgroundColor: options.backgroundColor || '#0003',
+            position: options.position
         });
     },
 
     // Universal API content loader
-    apiContent({ title, titleColor, endpoint, method = 'GET', data = null, buttons = [], size = 'lg', buttonPosition = 'center', buttonWidth = 'fit', buttonContainerClass = '', buttonContainerStyles = '', backgroundColor = '#0003' }) {
+    apiContent({ title, titleColor, endpoint, method = 'GET', data = null, buttons = [], size = 'lg', buttonPosition = 'center', buttonWidth = 'fit', buttonContainerClass = '', buttonContainerStyles = '', backgroundColor = '#0003', position }) {
         return this.content({
             title,
             titleColor: titleColor || '#fff',
@@ -582,17 +592,20 @@ export const popup = {
             buttonWidth,
             buttonContainerClass,
             buttonContainerStyles,
-            backgroundColor
+            backgroundColor,
+            position
         });
     },
 
     // Cleanup method to remove all popovers
     destroyAll() {
-        document.querySelectorAll('.popover-overlay, .popover-content').forEach(el => {
-            if (document.body.contains(el)) {
-                document.body.removeChild(el);
+        this.popupInstances.forEach(instance => {
+            if (instance && typeof instance.close === 'function') {
+                instance.close();
             }
         });
+
+        this.popupInstances.length = 0;
     }
 
 };
