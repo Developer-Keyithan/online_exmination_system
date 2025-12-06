@@ -310,24 +310,28 @@ class ExamAPI
             ];
         }
 
-        $statment = $this->db->prepare("SELECT id, schedule_type, start_time, shuffle_questions, shuffle_options, immediate_results, retake, max_attempts, enable_proctoring, full_screen_mode, disable_copy_paste FROM exam_settings WHERE exam_id = ?");
+        $statment = $this->db->prepare("SELECT id, schedule_type, start_time, shuffle_questions, shuffle_options, immediate_results, retake, max_attempts, enable_proctoring, full_screen_mode, disable_copy_paste, disable_right_click FROM exam_settings WHERE exam_id = ?");
         $statment->execute([$id]);
         $settings = $statment->fetch(PDO::FETCH_ASSOC);
 
-        $settings_data = [
-            'id' => $settings['id'] + 0,
-            'schedule_type' => $settings['schedule_type'],
-            'start_time' => $settings['start_time'] != null ? str_replace(" ", "T", $settings['start_time']) : null,
-            'shuffle_questions' => $settings['shuffle_questions'] == 1,
-            'shuffle_options' => $settings['shuffle_options'] == 1,
-            'immediate_results' => $settings['immediate_results'] == 1,
-            'retake' => $settings['retake'] == 1,
-            'max_attempts' => $settings['max_attempts'] != null ? $settings['max_attempts'] + 0 : 1,
-            'enable_proctoring' => $settings['enable_proctoring'] == 1,
-            'full_screen_mode' => $settings['full_screen_mode'] == 1,
-            'disable_copy_paste' => $settings['disable_copy_paste'] == 1,
-            'isDone' => true
-        ];
+        $settings_data = [];
+        if ($settings) {
+            $settings_data = [
+                'id' => $settings['id'] + 0,
+                'schedule_type' => $settings['schedule_type'],
+                'start_time' => $settings['start_time'] != null ? str_replace(" ", "T", $settings['start_time']) : null,
+                'shuffle_questions' => $settings['shuffle_questions'] == 1 ? true : false,
+                'shuffle_options' => $settings['shuffle_options'] == 1 ? true : false,
+                'immediate_results' => $settings['immediate_results'] == 1 ? true : false,
+                'retake' => $settings['retake'] == 1 ? true : false,
+                'max_attempts' => $settings['max_attempts'] != null ? $settings['max_attempts'] + 0 : 1,
+                'enable_proctoring' => $settings['enable_proctoring'] == 1 ? true : false,
+                'full_screen_mode' => $settings['full_screen_mode'] == 1 ? true : false,
+                'disable_copy_paste' => $settings['disable_copy_paste'] == 1 ? true : false,
+                'disable_right_click' => $settings['disable_right_click'] == 1 ? true : false,
+                'isDone' => true
+            ];
+        }
 
         usort($questions, function ($a, $b) {
             return strtotime($a['created_at']) - strtotime($b['created_at']);
@@ -359,9 +363,10 @@ class ExamAPI
             $enable_proctoring = isset($_POST['enableProctoring']) ? 1 : 0;
             $full_screen_mode = isset($_POST['fullScreenMode']) ? 1 : 0;
             $disable_copy_paste = isset($_POST['disableCopyPaste']) ? 1 : 0;
+            $disable_right_click = isset($_POST['disableRightClick']) ? 1 : 0;
 
-            $statement = $this->db->prepare("INSERT INTO exam_settings (exam_id, schedule_type, start_time, shuffle_questions, shuffle_options, immediate_results, retake, max_attempts, enable_proctoring, full_screen_mode, disable_copy_paste) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? )");
-            $statement->execute([$exam_id, $schedule_type, $start_date_time, $shuffle_questions, $shuffle_options, $immediate_results, $retake, $max_attempts, $enable_proctoring, $full_screen_mode, $disable_copy_paste]);
+            $statement = $this->db->prepare("INSERT INTO exam_settings (exam_id, schedule_type, start_time, shuffle_questions, shuffle_options, immediate_results, retake, max_attempts, enable_proctoring, full_screen_mode, disable_copy_paste, disable_right_click) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?, ? )");
+            $statement->execute([$exam_id, $schedule_type, $start_date_time, $shuffle_questions, $shuffle_options, $immediate_results, $retake, $max_attempts, $enable_proctoring, $full_screen_mode, $disable_copy_paste, $disable_right_click]);
             $setting_id = $this->db->lastInsertId();
 
             $settings_data = [
@@ -376,7 +381,8 @@ class ExamAPI
                 'max_attempts' => $max_attempts,
                 'enable_proctoring' => $enable_proctoring == 1 ? true : false,
                 'full_screen_mode' => $full_screen_mode == 1 ? true : false,
-                'disable_copy_paste' => $disable_copy_paste == 1 ? true : false
+                'disable_copy_paste' => $disable_copy_paste == 1 ? true : false,
+                'disable_right_click' => $disable_right_click == 1 ? true : false
             ];
 
             return json_encode([
@@ -429,14 +435,13 @@ class ExamAPI
                 'allowRetake' => 'retake',
                 'enableProctoring' => 'enable_proctoring',
                 'fullScreenMode' => 'full_screen_mode',
-                'disableCopyPaste' => 'disable_copy_paste'
+                'disableCopyPaste' => 'disable_copy_paste',
+                'disableRightClick' => 'disable_right_click',
             ];
 
             foreach ($booleanFields as $key => $column) {
-                if (isset($data[$key])) {
-                    $fields[] = "$column = ?";
-                    $values[] = $data[$key] ? 1 : 0;
-                }
+                $fields[] = "$column = ?";
+                $values[] = isset($data[$key]) && $data[$key] ? 1 : 0;
             }
 
             $fields[] = "max_attempts = ?";
@@ -482,4 +487,280 @@ class ExamAPI
         }
     }
 
+    public function getExamDataForAttempt($id)
+    {
+        try {
+            $statement = $this->db->prepare("SELECT * FROM exam_info WHERE id = ?");
+            $statement->execute([$id]);
+            $exam = $statement->fetch(PDO::FETCH_ASSOC);
+
+            if (!$exam) {
+                throw new Exception("Exam not found");
+            }
+
+            $statement = $this->db->prepare("SELECT * FROM questions WHERE JSON_CONTAINS(exam_ids, JSON_QUOTE(?))");
+            $statement->execute([$id]);
+            $questions = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            if (!$questions) {
+                throw new Exception('No questions found for this exam');
+            }
+
+            $statement = $this->db->prepare("SELECT * FROM sections WHERE exam_id = ?");
+            $statement->execute([$id]);
+            $sections = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            $statement = $this->db->prepare("SELECT * FROM exam_settings WHERE exam_id = ?");
+            $statement->execute([$id]);
+            $settings = $statement->fetch(PDO::FETCH_ASSOC);
+
+            $finalSections = [];
+
+            // Preload existing sections from DB
+            foreach ($sections as $section) {
+                $finalSections[$section['id']] = [
+                    'id' => $section['id'],
+                    'examID' => $id + 0,
+                    'description' => $section['s_des'] ?? '',
+                    'secondDescription' => $section['s_s_des'] ?? '',
+                    'questions' => []
+                ];
+            }
+
+            // Sort questions by created_at
+            usort($questions, function ($a, $b) {
+                return strtotime($a['created_at']) - strtotime($b['created_at']);
+            });
+
+            foreach ($questions as $question) {
+                $section_ids = $question['section_ids'] ? json_decode($question['section_ids'], true) : [];
+                $code = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+
+                $optionsKeys = ['a', 'b', 'c', 'd'];
+                $options = [];
+                foreach ($optionsKeys as $order => $key) {
+                    $options[] = [
+                        'text' => $question[$key] ?? '',
+                        'image' => $question[$key . '_img'] ?? null,
+                        'order' => $order + 1,
+                        'op' => strtoupper($key)
+                    ];
+                }
+
+                $qData = [
+                    'id' => $question['id'],
+                    'question' => $question['question'],
+                    'marks' => $question['marks'],
+                    'created_at' => $question['created_at'],
+                    'created_by' => $question['created_by'],
+                    'options' => $options,
+                    'answer' => $question['answer'] ?? null
+                ];
+
+                if (!empty($section_ids)) {
+                    foreach ($section_ids as $secId) {
+                        if (isset($finalSections[$secId])) {
+                            $finalSections[$secId]['questions'][] = $qData;
+                        } else {
+                            $tempId = 'temp_' . $code;
+                            $finalSections[$tempId] = [
+                                'id' => $tempId,
+                                'questions' => [$qData],
+                                'examID' => $id + 0,
+                                'description' => '',
+                                'secondDescription' => '',
+                            ];
+                        }
+                    }
+                } else {
+                    $tempId = 'temp_' . $code;
+                    $finalSections[$tempId] = [
+                        'id' => $tempId,
+                        'questions' => [$qData],
+                        'examID' => $id + 0,
+                        'description' => '',
+                        'secondDescription' => '',
+                    ];
+                }
+            }
+
+            $exam_info = [
+                'id' => $id + 0,
+                'code' => $exam['code'],
+                'title' => $exam['title'],
+                'total_marks' => $exam['total_marks'] + 0,
+                'total_questions' => $exam['total_num_of_ques'] + 0,
+                'duration' => $exam['duration'] + 0,
+                'instructions' => $exam['instructions'],
+                'passing_marks' => $exam['passing_marks'] + 0,
+                'status' => $exam['status'] == 0 ? 'draft' : 'published',
+            ];
+
+            $settings_info = [
+                'id' => $settings['id'] + 0,
+                'schedule_type' => $settings['schedule_type'],
+                'start_time' => $settings['start_time'] != null ? str_replace(" ", "T", $settings['start_time']) : null,
+                'shuffle_questions' => $settings['shuffle_questions'] == 1 ? true : false,
+                'shuffle_options' => $settings['shuffle_options'] == 1 ? true : false,
+                'immediate_results' => $settings['immediate_results'] == 1 ? true : false,
+                'retake' => $settings['retake'] == 1 ? true : false,
+                'max_attempts' => $settings['max_attempts'] != null ? $settings['max_attempts'] + 0 : 1,
+                'enable_proctoring' => $settings['enable_proctoring'] == 1 ? true : false,
+                'full_screen_mode' => $settings['full_screen_mode'] == 1 ? true : false,
+                'disable_copy_paste' => $settings['disable_copy_paste'] == 1 ? true : false,
+                'disable_right_click' => $settings['disable_right_click'] == 1 ? true : false
+            ];
+
+            $finalSections = array_values($finalSections);
+            return json_encode([
+                'status' => 'success',
+                'exam_info' => $exam_info,
+                'sections' => $finalSections,
+                'settings' => $settings_info
+            ]);
+
+        } catch (Exception $e) {
+            return json_encode([
+                'status' => 'error',
+                'msg' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function getExamDataForPreview($id)
+    {
+        try {
+            $statement = $this->db->prepare("SELECT * FROM exam_info WHERE id = ?");
+            $statement->execute([$id]);
+            $exam = $statement->fetch(PDO::FETCH_ASSOC);
+
+            if (!$exam) {
+                throw new Exception("Exam not found");
+            }
+
+            $statement = $this->db->prepare("SELECT * FROM questions WHERE JSON_CONTAINS(exam_ids, JSON_QUOTE(?))");
+            $statement->execute([$id]);
+            $questions = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            if (!$questions) {
+                throw new Exception('No questions found for this exam');
+            }
+
+            $statement = $this->db->prepare("SELECT * FROM sections WHERE exam_id = ?");
+            $statement->execute([$id]);
+            $sections = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            $statement = $this->db->prepare("SELECT * FROM exam_settings WHERE exam_id = ?");
+            $statement->execute([$id]);
+            $settings = $statement->fetch(PDO::FETCH_ASSOC);
+
+            $finalSections = [];
+
+            foreach ($sections as $index => $section) {
+                $finalSections[] = [
+                    'id' => (int) $section['id'],
+                    'exam_id' => (int) $id,
+                    'title' => $section['title'] ?? '',
+                    'description' => $section['s_des'] ?? '',
+                    'second_description' => $section['s_s_des'] ?? '',
+                    'order' => $index + 1,
+                    'questions' => []
+                ];
+            }
+
+            // Create a mapping of section IDs for quick lookup
+            $sectionIds = array_column($finalSections, 'id');
+
+            $finalQuestions = [];
+            foreach ($questions as $question) {
+                $optionsKeys = ['a', 'b', 'c', 'd'];
+                $options = [];
+                foreach ($optionsKeys as $order => $key) {
+                    $options[] = [
+                        'id' => $key, // Use lowercase for consistency
+                        'text' => $question[$key] ?? '',
+                        'image' => $question[$key . '_img'] ?? null,
+                        'order' => $order + 1,
+                        'op' => strtoupper($key)
+                    ];
+                }
+
+                // Get section IDs from the question (assuming there's a section_ids field)
+                // If not, you may need to query a separate table for question-section relationships
+                $sectionIdsForQuestion = [];
+
+                // If your questions table has a section_ids JSON field:
+                if (isset($question['section_ids'])) {
+                    $sectionIdsJson = json_decode($question['section_ids'], true);
+                    if (is_array($sectionIdsJson)) {
+                        $sectionIdsForQuestion = array_map('intval', $sectionIdsJson);
+                    }
+                }
+
+                // OR if you have a separate question_sections table, query it:
+                // $stmt = $this->db->prepare("SELECT section_id FROM question_sections WHERE question_id = ?");
+                // $stmt->execute([$question['id']]);
+                // $sectionIdsForQuestion = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+                $qData = [
+                    'id' => (int) $question['id'],
+                    'question' => $question['question'],
+                    'marks' => (int) $question['marks'],
+                    'created_at' => $question['created_at'],
+                    'created_by' => $question['created_by'],
+                    'options' => $options,
+                    'correctAnswer' => strtolower($question['answer'] ?? 'a'), // Default to 'a' if empty
+                    'sectionIds' => $sectionIdsForQuestion, // Add section IDs
+                    'type' => $question['type'] ?? 'multiple_choice',
+                    'difficulty' => $question['difficulty'] ?? 'medium',
+                    'image' => $question['image'] ?? null
+                ];
+
+                $finalQuestions[] = $qData;
+            }
+
+            $exam_info = [
+                'id' => (int) $id,
+                'code' => $exam['code'],
+                'title' => $exam['title'],
+                'total_marks' => (int) $exam['total_marks'],
+                'total_questions' => (int) $exam['total_num_of_ques'],
+                'duration' => (int) $exam['duration'],
+                'instructions' => $exam['instructions'],
+                'passing_marks' => (int) $exam['passing_marks'],
+                'status' => $exam['status'] == 0 ? 'draft' : 'published',
+            ];
+
+            $settings_info = [
+                'id' => (int) $settings['id'],
+                'schedule_type' => $settings['schedule_type'],
+                'start_time' => $settings['start_time'] ? str_replace(" ", "T", $settings['start_time']) : null,
+                'end_time' => $settings['start_time'] ? str_replace(" ", "T", $settings['start_time']) : null,
+                'shuffle_questions' => $settings['shuffle_questions'] == 1,
+                'shuffle_options' => $settings['shuffle_options'] == 1,
+                'show_results_immediately' => $settings['immediate_results'] == 1, // Note: renamed for consistency
+                'allow_retake' => $settings['retake'] == 1,
+                'max_attempts' => $settings['max_attempts'] ? (int) $settings['max_attempts'] : 1,
+                'enable_proctoring' => $settings['enable_proctoring'] == 1,
+                'full_screen_mode' => $settings['full_screen_mode'] == 1,
+                'disable_copy_paste' => $settings['disable_copy_paste'] == 1,
+                'disable_right_click' => $settings['disable_right_click'] == 1,
+                'allow_navigation' =>  true // Add if exists
+            ];
+
+            return json_encode([
+                'status' => 'success',
+                'exam_info' => $exam_info,
+                'sections' => $finalSections,
+                'questions' => $finalQuestions,
+                'settings' => $settings_info
+            ]);
+
+        } catch (Exception $e) {
+            return json_encode([
+                'status' => 'error',
+                'msg' => $e->getMessage()
+            ]);
+        }
+    }
 }

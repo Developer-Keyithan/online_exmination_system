@@ -237,7 +237,7 @@ function renderMenuOptions($menu, $collapse, $level = 0)
                     </div>
 
                 <?php else: ?>
-                    <a href="<?= $item['url'] ?>"
+                    <a href="<?= BASE_URL. '/' .$item['url'] ?>"
                         class="flex items-center gap-3 p-2 <?= $activeClass ?> transition-all duration-200">
                         <span
                             class="list-icon text-lg text-white <?php echo $collapse ? 'md:ml-2 group-hover:ml-0' : ''; ?>"><?= $item['icon'] ?></span>

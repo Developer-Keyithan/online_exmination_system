@@ -23,6 +23,7 @@ app.controller('ExamController', [
             enable_proctoring: false,
             full_screen_mode: false,
             disable_copy_paste: false,
+            disable_right_click: false,
             schedule_type: 'scheduled',
             isSettingsDone: false
         };
@@ -115,6 +116,7 @@ app.controller('ExamController', [
                                 $scope.examData.enable_proctoring = settings.enable_proctoring;
                                 $scope.examData.full_screen_mode = settings.full_screen_mode;
                                 $scope.examData.disable_copy_paste = settings.disable_copy_paste;
+                                $scope.examData.disable_right_click = settings.disable_right_click;
                                 $scope.examData.isSettingsDone = settings.isDone;
                             }
 
@@ -1377,7 +1379,7 @@ app.controller('ExamController', [
             }
 
             const formData = $('#exam_settings_form').serialize();
-            const restEndpoint = $scope.examData.setting_id ? '/' + $scope.examData.setting_id : '';
+            const restEndpoint = $scope.examData.setting_id ? '/' + $scope.location.exam : '';
             const response = await $http({
                 url: `API/exams/settings${restEndpoint}`,
                 method: 'POST',

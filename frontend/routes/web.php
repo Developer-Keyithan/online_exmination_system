@@ -21,6 +21,8 @@ Router::group(['middleware' => ['auth']], function () {
     Router::get('/exams', 'PageAPI@exams', 'all_exams', ['auth']);
     Router::get('/create_exam', 'PageAPI@createExam', 'create_exam', ['auth']);
     Router::get('/my_exams', 'PageAPI@myExams', 'my_exams', ['auth']);
+    Router::get('/preview/{id}', 'PageAPI@previewExam', 'exam', ['auth']);
+    Router::get('/attempt/{hased_rest_url}', 'PageAPI@attemptExam', 'attempt_exam', ['auth']);
 
     // 🔹 Qestions
     Router::get('/questions', 'PageAPI@questionBank', 'question_bank', ['auth']);
@@ -79,6 +81,7 @@ Router::group(['prefix' => 'API'], function () {
     Router::get('/user_groups/{id}/permissions', 'UserGroupAPI@getGroupPermissions', 'get_group_permissions', ['auth']);
     Router::get('/auth/logged_user', 'UserAPI@getLoggedUserAccesses', 'get_logged_user_accesses', ['auth']);
     Router::get('/exams/{id}', 'ExamAPI@getExamData', 'get_exam', ['auth']);
+    Router::get('/exam/data/{id}', 'ExamAPI@getExamDataForPreview', 'get_exam', ['auth']);
 
     Router::put('/user_groups/{id}/permissions', 'UserGroupAPI@setPermissions', 'set_group_permissions', ['auth']);
     Router::post('/user_groups/{id}', 'UserGroupAPI@updateUserGroup', 'update_user_group', ['auth']);

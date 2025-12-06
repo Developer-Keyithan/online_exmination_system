@@ -72,7 +72,7 @@ app.filter('formatDateTime', function () {
     if (isNaN(dt)) return datetimeStr;
 
     var day = String(dt.getDate()).padStart(2, '0');
-    var monthNum = String(dt.getMonth() + 1).padStart(2,'0');
+    var monthNum = String(dt.getMonth() + 1).padStart(2, '0');
     var year = dt.getFullYear();
 
     var hours24 = dt.getHours();
@@ -80,14 +80,14 @@ app.filter('formatDateTime', function () {
     var minutes = String(dt.getMinutes()).padStart(2, '0');
     var seconds = String(dt.getSeconds()).padStart(2, '0');
     var ampm = hours24 >= 12 ? 'PM' : 'AM';
-    var hours12Str = String(hours12).padStart(2,'0');
-    var hours24Str = String(hours24).padStart(2,'0');
+    var hours12Str = String(hours12).padStart(2, '0');
+    var hours24Str = String(hours24).padStart(2, '0');
 
     // Month names
-    var shortMonthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    var fullMonthNames  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    var shortMonthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    var fullMonthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     var shortMonth = shortMonthNames[dt.getMonth()];
-    var fullMonth  = fullMonthNames[dt.getMonth()];
+    var fullMonth = fullMonthNames[dt.getMonth()];
 
     // Replace longer tokens first
     return format
@@ -149,6 +149,24 @@ app.filter('remainingTime', function () {
     return days + ` day${days > 1 ? 's' : ''} remaining`;
   };
 });
+// .filter('formatDateTime', function () {
+//   return function (dateString) {
+//     if (!dateString) return '';
+//     const date = new Date(dateString);
+//     return date.toLocaleString('en-US', {
+//       year: 'numeric',
+//       month: 'short',
+//       day: 'numeric',
+//       hour: '2-digit',
+//       minute: '2-digit'
+//     });
+//   };
+// })
+app.filter('letterIndex', function () {
+  return function (index) {
+    return String.fromCharCode(65 + index); // A, B, C, D...
+  };
+})
 app.run([
   "$rootScope",
   function ($rootScope) {

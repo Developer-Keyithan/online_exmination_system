@@ -30,8 +30,16 @@
                                     </li>
 
                                     <?php
-                                    // Dynamic breadcrumb using currentNav() and its parents
-                                    $breadcrumbs = explode('/', currentNav()); // if you use slashes in URL paths
+                                    $current = currentNav();
+
+                                    if (strpos($current, 'preview') === 0) {
+                                        $breadcrumbs = ['preview'];
+                                    } elseif (strpos($current, 'attempt') === 0) {
+                                        $breadcrumbs = []; // empty array to skip loop
+                                    } else {
+                                        $breadcrumbs = explode('/', $current);
+                                    }
+
                                     $path = '';
                                     foreach ($breadcrumbs as $index => $crumb):
                                         $path .= $crumb;
@@ -60,12 +68,12 @@
                         <?php endif; ?>
                     </div>
                 </div>
-
             <?php endif; ?>
             <!-- load dynamic content -->
             <?= $this->section('content') ?>
         </div>
-        <?php if (currentNav() != 'login') include 'layouts/footer.php' ?>
+        <?php if (currentNav() != 'login')
+            include 'layouts/footer.php' ?>
         </div>
         <!-- end body -->
     </body>

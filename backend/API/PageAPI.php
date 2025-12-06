@@ -74,6 +74,14 @@ class PageAPI
     {
         return view('exams.my', ['title' => 'My Exams']);
     }
+    public function previewExam($id)
+    {
+        return view('exams.preview', ['title' => 'Preview Exam', 'exam_id' => $id]);
+    }
+    public function attemptExam($hash)
+    {
+        return view('exams.attempt', ['title' => 'Attempt Exam', 'rest_url_hash' => $hash]);
+    }
 
     public function questionBank()
     {

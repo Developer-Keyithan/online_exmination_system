@@ -191,7 +191,7 @@ $this->controller('ExamController');
                             <div>
                                 <div class="text-sm text-gray-400 mb-1">Questions Created</div>
                                 <div class="text-lg font-semibold text-white">
-                                    {{createdQuestionsCount}}/{{neededQuestionsCount}}
+                                    {{createdQuestionsCount}} / {{neededQuestionsCount}}
                                 </div>
                             </div>
                             <div class="w-8 h-8 rounded-full flex items-center justify-center"
@@ -240,9 +240,9 @@ $this->controller('ExamController');
                                 <div class="text-sm text-gray-400 mb-1">Sections Completed</div>
                                 <div class="text-lg font-semibold text-white">
                                     <span ng-if="totalSectionsCount > 0">
-                                        {{ completedSectionsCount }}/{{ totalSectionsCount }}
+                                        {{ completedSectionsCount }} / {{ totalSectionsCount }}
                                     </span>
-                                    <span ng-if="totalSectionsCount === 0">0/0</span>
+                                    <span ng-if="totalSectionsCount === 0">0 / 0</span>
                                 </div>
                             </div>
                             <div class="w-8 h-8 rounded-full flex items-center justify-center"
@@ -863,11 +863,21 @@ $this->controller('ExamController');
                         <span class="text-gray-300">Disable Copy/Paste</span>
                     </label>
                 </div>
+
+                <!-- Disable Right Click -->
+                <div class="form-group">
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" ng-model="examData.disable_right_click"
+                            ng-change="examData.isSettingsDone = false" id="disableRightClick" name="disableRightClick"
+                            required class="rounded bg-[#0006] border-gray-600 text-cyan-500 focus:ring-cyan-500">
+                        <span class="text-gray-300">Disable Right Click</span>
+                    </label>
+                </div>
             </div>
         </form>
     </div>
 
-    <!-- Review & Create Section -->
+    <!-- Review Exam Config -->
     <div ng-show="currentStep === 4" class="max-w-4xl mx-auto">
         <div class="bg-[#0004] rounded-lg p-6 border border-gray-600">
             <h2 class="text-xl font-semibold text-gray-100 mb-6">Review Exam Details</h2>
@@ -939,23 +949,24 @@ $this->controller('ExamController');
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
                             <strong class="text-gray-400">Schedule Type:</strong>
-                            <span class="text-gray-100">{{examData.schedule_type}}</span>
+                            <span class="text-gray-100 capitalize">{{examData.schedule_type}}</span>
                         </div>
                         <div ng-if="examData.schedule_type === 'scheduled'">
                             <strong class="text-gray-400">Start Date/Time:</strong>
-                            <span class="text-gray-100">{{examData.start_time | formatDateTime:'DD MMM YYYY - HH:mm'}}</span>
+                            <span class="text-gray-100">{{examData.start_time | formatDateTime:'DD MMM YYYY -
+                                HH:mm'}}</span>
                         </div>
                         <div>
                             <strong class="text-gray-400">Shuffle Questions:</strong>
-                            <span class="text-gray-100">{{examData.shuffle_questions ? 'Yes' : 'No'}}</span>
+                            <span class="font-medium text-sm py-1 px-4 rounded-full" ng-class="examData.shuffle_questions ? 'bg-green-900/50 text-green-300' : 'bg-gray-700 text-gray-300'">{{examData.shuffle_questions ? 'Yes' : 'No'}}</span>
                         </div>
                         <div>
                             <strong class="text-gray-400">Shuffle Options:</strong>
-                            <span class="text-gray-100">{{examData.shuffle_options ? 'Yes' : 'No'}}</span>
+                            <span class="font-medium text-sm py-1 px-4 rounded-full" ng-class="examData.shuffle_options ? 'bg-green-900/50 text-green-300' : 'bg-gray-700 text-gray-300'">{{examData.shuffle_options ? 'Yes' : 'No'}}</span>
                         </div>
                         <div>
                             <strong class="text-gray-400">Allow Retake:</strong>
-                            <span class="text-gray-100">{{examData.allow_retake ? 'Yes' : 'No'}}</span>
+                            <span class="font-medium text-sm py-1 px-4 rounded-full" ng-class="examData.allow_retake ? 'bg-green-900/50 text-green-300' : 'bg-gray-700 text-gray-300'">{{examData.allow_retake ? 'Yes' : 'No'}}</span>
                         </div>
                         <div ng-if="examData.allow_retake">
                             <strong class="text-gray-400">Retake Attempts:</strong>
@@ -963,20 +974,24 @@ $this->controller('ExamController');
                         </div>
                         <div>
                             <strong class="text-gray-400">Show Results:</strong>
-                            <span class="text-gray-100">{{examData.show_results_immediately ? 'Immediately' :
-                                'Later'}}</span>
+                            <span class="font-medium text-sm py-1 px-4 rounded-full text-blue-300" ng-class="examData.show_results_immediately ? 'bg-green-900/50 text-green-300' : 'bg-blue-900/50 text-blue-300'">{{examData.show_results_immediately ? 'Immediately' :
+                                'After Exam'}}</span>
                         </div>
                         <div>
                             <strong class="text-gray-400">Proctoring:</strong>
-                            <span class="text-gray-100">{{examData.enable_proctoring ? 'Enabled' : 'Disabled'}}</span>
+                            <span class="font-medium text-sm py-1 px-4 rounded-full" ng-class="examData.enable_proctoring ? 'bg-green-900/50 text-green-300' : 'bg-gray-700 text-gray-300'">{{examData.enable_proctoring ? 'Enabled' : 'Disabled'}}</span>
                         </div>
                         <div>
                             <strong class="text-gray-400">Full Screen Mode:</strong>
-                            <span class="text-gray-100">{{examData.full_screen_mode ? 'Enabled' : 'Disabled'}}</span>
+                            <span class="font-medium text-sm py-1 px-4 rounded-full" ng-class="examData.full_screen_mode ? 'bg-green-900/50 text-green-300' : 'bg-gray-700 text-gray-300'">{{examData.full_screen_mode ? 'Enabled' : 'Disabled'}}</span>
                         </div>
                         <div>
                             <strong class="text-gray-400">Disable Copy/Paste:</strong>
-                            <span class="text-gray-100">{{examData.disable_copy_paste ? 'Yes' : 'No'}}</span>
+                            <span class="font-medium text-sm py-1 px-4 rounded-full" ng-class="examData.disable_copy_paste ? 'bg-green-900/50 text-green-300' : 'bg-gray-700 text-gray-300'">{{examData.disable_copy_paste ? 'Yes' : 'No'}}</span>
+                        </div>
+                        <div>
+                            <strong class="text-gray-400">Disable Right Click:</strong>
+                            <span class="font-medium text-sm py-1 px-4 rounded-full" ng-class="examData.disable_right_click ? 'bg-green-900/50 text-green-300' : 'bg-gray-700 text-gray-300'">{{examData.disable_right_click ? 'Yes' : 'No'}}</span>
                         </div>
                     </div>
                 </div>
@@ -1027,12 +1042,11 @@ $this->controller('ExamController');
             <span>{{creatingExam ? 'Creating Exam...' : 'Create Exam'}}</span>
         </button> -->
 
-        <button type="button" ng-click="previewExam()" ng-show="currentStep === totalSteps"
-            ng-disabled="creatingExam || createdQuestionsCount === 0"
+        <a href="<?php echo BASE_URL . '/preview/'?>{{ location.exam }}" ng-show="currentStep === 4"
             class="bg-green-600 hover:bg-green-700 text-white w-full md:w-auto py-2 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:opacity-50">
             <i class="fas fa-save" ng-class="{'fa-spin animate-spin': creatingExam}"></i>
             <span>Preview Exam</span>
-        </button>
+        </a>
     </div>
 </div>
 

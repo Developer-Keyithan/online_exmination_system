@@ -61,7 +61,14 @@ function getParameterByName(name, url) {
     return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
 
-// Make function usable everywhere
+function getIdFromUrl( indexFromEnd = 1, url) {
+    var fullUrl = url || window.location.href;
+    var pathParts = new URL(fullUrl).pathname.split('/').filter(Boolean);
+    var idIndex = pathParts.length - indexFromEnd;
+    return pathParts[idIndex] || null;
+}
+
 window.getParameterByName = getParameterByName;
+window.getIdFromUrl = getIdFromUrl;
 //Initialize Select2 Elements
 $('.select2').select2()
