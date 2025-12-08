@@ -345,8 +345,7 @@
                                         {{section.questions.length || 0}} Q
                                     </span>
                                 </div>
-                                <p class="text-xs text-gray-400 mt-1 truncate">{{section.description || 'No
-                                    description'}}</p>
+                                <p class="text-xs text-gray-400 mt-1 truncate">{{section.title}}</p>
                             </div>
                         </div>
                     </div>
@@ -402,6 +401,10 @@
 
                     <!-- Questions List -->
                     <div class="space-y-4">
+                        <div ng-if="activeSection && activeSection.description" class="bg-[#0004] rounded-lg p-6 border border-gray-600">
+                            <p class="text-white">{{activeSection.description || ''}}</p><br>
+                            <p class="text-white">{{activeSection.second_description || ''}}</p>
+                        </div>
                         <div ng-repeat="question in getCurrentPageQuestions() track by $index"
                             class="bg-[#0004] rounded-lg p-6 border border-gray-600">
                             <div ng-show="editingQuestionId !== question.id">

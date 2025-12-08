@@ -666,7 +666,8 @@ class ExamAPI
                     'description' => $section['s_des'] ?? '',
                     'second_description' => $section['s_s_des'] ?? '',
                     'order' => $index + 1,
-                    'questions' => []
+                    'questions' => [],
+                    'created_at' => $section['created_at'] ?? '',
                 ];
             }
 

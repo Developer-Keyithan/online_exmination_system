@@ -6,7 +6,7 @@ app.controller('ExamPreviewController', [
         $scope.dropdownOpen = false;
         $scope.questionsDisplayMode = 'all';
         $scope.editingQuestionId = null;
-        $scope.selectedOptionIndex = null;
+        $scope.organaizedSections = [];
 
         // Initialize arrays to prevent undefined errors
         $scope.allQuestions = [];
@@ -124,8 +124,10 @@ app.controller('ExamPreviewController', [
                 }
 
                 question.sectionNames = sectionNames.join(', ');
+                $scope.organaizedSections = $scope.sections;
             });
         };
+
         // Calculate totals
         $scope.calculateTotals = function () {
             if (!$scope.allQuestions || $scope.allQuestions.length === 0) {
@@ -321,6 +323,68 @@ app.controller('ExamPreviewController', [
             $scope.editingQuestionId = null;
         };
 
+        // Process questions and nest them in sections
+        $scope.getSectionaizedQuestions = function () {
+            // Reset section questions
+            if (!$scope.sections) return;
+
+            $scope.sections.forEach(function (section) {
+                section.questions = [];
+            });
+
+            // If no questions, return
+            if (!$scope.allQuestions || $scope.allQuestions.length === 0) return;
+
+            // Assign questions to sections
+            $scope.allQuestions.forEach(function (question) {
+                // Get section names for display
+                let sectionNames = [];
+                let hasSectionIds = false;
+
+                if (question.sectionIds && question.sectionIds.length > 0) {
+                    hasSectionIds = true;
+                    question.sectionIds.forEach(function (sectionId) {
+                        let section = $scope.sections.find(function (s) {
+                            return s.id === sectionId;
+                        });
+
+                        if (section) {
+                            sectionNames.push(section.title);
+
+                            // Add question to section
+                            section.questions = section.questions || [];
+                            if (!section.questions.find(q => q.id === question.id)) {
+                                section.questions.push(question);
+                            }
+                        }
+                    });
+                }
+
+                if (!question.sectionIds || (question.sectionIds && question.sectionIds.length === 0)) {
+                    hasSectionIds = false;
+                    let section = {
+                        description: '',
+                        exam_id: 1,
+                        id: 6,
+                        order: $scope.organaizedSections.length + 1,
+                        questions: [],
+                        second_description: "",
+                        title: ""
+                    }
+
+                    if (section) {
+                        // Add question to section
+                        section.questions = section.questions || [];
+                        if (!section.questions.find(q => q.id === question.id)) {
+                            section.questions.push(question);
+                        }
+                    }
+                }
+
+                question.sectionNames = sectionNames.join(', ');
+            })
+        }
+
         // Question page navigation
         $scope.goToQuestionPage = function (pageIndex) {
             $scope.currentQuestionPage = pageIndex;
@@ -356,6 +420,7 @@ app.controller('ExamPreviewController', [
                     $scope.questionsDisplayMode = 'all';
                     $scope.getCurrentPageQuestions();
                     $scope.updateQuestionsDisplay();
+                    $scope.getSectionaizedQuestions();
                 }
             }
         };
@@ -555,4 +620,5 @@ app.controller('ExamPreviewController', [
 
         // Initialize on load
         $scope.init();
-    }]);
+    }
+]);
