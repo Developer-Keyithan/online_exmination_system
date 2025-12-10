@@ -448,7 +448,7 @@ app.controller('ExamAttemptController', [
             alert('Exam submitted successfully! You will be redirected to results page.');
             
             // In real app, redirect to results
-            // $window.location.href = '/exam/results/123';
+            // window.location.href = window.baseUrl + '/exam/results/123';
         }, 1500);
     };
     

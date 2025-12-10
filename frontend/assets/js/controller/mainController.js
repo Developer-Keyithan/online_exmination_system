@@ -100,12 +100,12 @@ app.controller('mainController', ["$scope", "$http", function ($scope, $http) {
     // Logout with $http
     logout.on('click', function (e) {
         e.preventDefault();
-        $http.post('API/logout').then(function (response) {
+        $http.post(window.baseUrl + '/API/logout').then(function (response) {
             const data = response.data;
             if (data.status === 'success') {
                 Toast.fire({ type: 'success', title: 'Logout', msg: data.msg });
                 setTimeout(function () {
-                    window.location.href = 'login';
+                    window.location.href = window.baseUrl + '/login';
                 }, 1000);
             }
         }, function (error) {

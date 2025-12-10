@@ -396,7 +396,7 @@ app.factory("permissionModalController", [
                 }
 
                 $http({
-                    url: 'API/user_groups/' + $scope.selectedGroup.id + '/permissions',
+                    url: window.baseUrl + '/API/user_groups/' + $scope.selectedGroup.id + '/permissions',
                     method: 'GET'
                 }).then(
                     function (response) {
@@ -438,7 +438,7 @@ app.factory("permissionModalController", [
                 const selectedPerms = Object.keys($scope.selectedPermissions).filter(key => $scope.selectedPermissions[key]);
 
                 $http({
-                    url: 'API/user_groups/' + $scope.selectedGroup.id + '/permissions',
+                    url: window.baseUrl + '/API/user_groups/' + $scope.selectedGroup.id + '/permissions',
                     method: 'PUT',
                     data: { permissions: selectedPerms }
                 }).then(
@@ -545,8 +545,8 @@ app.factory("createAndEdituserGroupModalController", [
                 $scope.isSaving = true;
 
                 const apiUrl = $scope.isEditing
-                    ? `API/user_groups/${$scope.group.id}`
-                    : 'API/user_groups';
+                    ? `${window.baseUrl}/API/user_groups/${$scope.group.id}`
+                    : window.baseUrl + '/API/user_groups';
                 const method = $scope.isEditing ? 'POST' : 'POST';
                 console.log("Saving to URL:", apiUrl, "with method:", method);
 
@@ -613,7 +613,7 @@ app.factory("deleteUserGroupModalController", [
 
             $scope.deleteUserGroup = function () {
                 $http({
-                    url: 'API/user_groups/' + $scope.groupToDelete.id,
+                    url: window.baseUrl + '/API/user_groups/' + $scope.groupToDelete.id,
                     method: 'DELETE'
                 }).then(
                     function (response) {
@@ -693,7 +693,7 @@ app.factory("sectionEditorModalController", [
                     return;
                 }
 
-                const endpoint = $scope.currentSection.id ? 'API/sections/edit/' + $scope.currentSection.id : 'API/sections/add';
+                const endpoint = $scope.currentSection.id ? window.baseUrl + '/API/sections/edit/' + $scope.currentSection.id : window.baseUrl + '/API/sections/add';
                 await $http({
                     url: endpoint,
                     method: 'POST',
@@ -813,7 +813,7 @@ app.factory("assignToSectionModalController", [
 
                 // API CALL
                 $http({
-                    url: 'API/questions/assign_to_section/' + questionId,
+                    url: window.baseUrl + '/API/questions/assign_to_section/' + questionId,
                     method: 'POST',
                     data: $('#assign_question_to_section_form').serialize()
                 }).then(function (response) {
@@ -954,7 +954,7 @@ app.factory("unassignFromSectionModalController", [
                 }
 
                 $http({
-                    url: 'API/questions/unassign_section/' + questionId,
+                    url: window.baseUrl + '/API/questions/unassign_section/' + questionId,
                     method: 'POST',
                     data: $('#remove_question_to_section_form').serialize()
                 }).then(function (response) {

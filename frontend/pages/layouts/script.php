@@ -146,7 +146,7 @@
             logout.addEventListener('click', function (e) {
                 e.preventDefault();
 
-                fetch('API/logout', {
+                fetch(window.baseUrl + '/API/logout', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -160,7 +160,7 @@
                                 Toast.fire({ type: 'success', title: 'Logout', msg: data.msg });
                             }
                             setTimeout(function () {
-                                window.location.href = 'login';
+                                window.location.href = window.baseUrl + '/login';
                             }, 1000);
                         }
                     })

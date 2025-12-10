@@ -1346,14 +1346,6 @@
             <span>Next</span>
             <i class="fas fa-arrow-right"></i>
         </button>
-
-        <!-- Publish Button on Last Step -->
-        <button ng-click="publishExam()"
-            ng-show="currentStep === 5 && isReadyToPublish() && examData.status !== 'published'"
-            class="px-6 py-2 bg-green-600 text-white rounded-lg font-medium flex items-center space-x-2 hover:bg-green-700 transition-colors duration-200">
-            <i class="fas fa-paper-plane"></i>
-            <span>Publish Exam</span>
-        </button>
     </div>
 </div>
 

@@ -5,59 +5,62 @@ Router::get('/login', 'PageAPI@login', 'login');
 
 Router::group(['middleware' => ['auth']], function () {
 
+    // 🔹 404 Page Not Found
+    Router::get('/404', 'PageAPI@notFound', 'not_found');
+
     // 🔹 Dashboard
-    Router::get('/dashboard', 'PageAPI@dashboard', 'dashboard', ['auth']);
+    Router::get('/dashboard', 'PageAPI@dashboard', 'dashboard');
 
     // 🔹 Courses
-    Router::get('/courses', 'PageAPI@courses', 'all_courses', ['auth']);
-    Router::get('/add_course', 'PageAPI@addCourse', 'add_course', ['auth']);
-    Router::get('/my_courses', 'PageAPI@myCourses', 'my_courses', ['auth']);
+    Router::get('/courses', 'PageAPI@courses', 'all_courses');
+    Router::get('/add_course', 'PageAPI@addCourse', 'add_course');
+    Router::get('/my_courses', 'PageAPI@myCourses', 'my_courses');
 
     // 🔹 Lectures
-    Router::get('/lectures', 'PageAPI@lectures', 'all_lectures', ['auth']);
-    Router::get('/my_lectures', 'PageAPI@myLectures', 'my_lectures', ['auth']);
+    Router::get('/lectures', 'PageAPI@lectures', 'all_lectures');
+    Router::get('/my_lectures', 'PageAPI@myLectures', 'my_lectures');
 
     // 🔹 Exams
-    Router::get('/exams', 'PageAPI@exams', 'all_exams', ['auth']);
-    Router::get('/create_exam', 'PageAPI@createExam', 'create_exam', ['auth']);
-    Router::get('/my_exams', 'PageAPI@myExams', 'my_exams', ['auth']);
-    Router::get('/preview/{id}', 'PageAPI@previewExam', 'exam', ['auth']);
-    Router::get('/attempt/{hased_rest_url}', 'PageAPI@attemptExam', 'attempt_exam', ['auth']);
+    Router::group(['prefix' => 'exam'], function () {
+        Router::get('/all', 'PageAPI@exams', 'all_exams');
+        Router::get('/create', 'PageAPI@createExam', 'create_exam');
+        Router::get('/edit/{exam_id}', 'PageAPI@editExam', 'edit_exam');
+        Router::get('/my/{user_id}', 'PageAPI@myExams', 'my_exams');
+        Router::get('/preview/{exam_id}', 'PageAPI@previewExam', 'exam');
+        Router::get('/attempt/{hased_rest_url}', 'PageAPI@attemptExam', 'attempt_exam');
+    });
 
-    // 🔹 Qestions
-    Router::get('/questions', 'PageAPI@questionBank', 'question_bank', ['auth']);
-    Router::get('/question_bank', 'PageAPI@questionBank', 'question_bank', ['auth']);
-    Router::get('/my_questions', 'PageAPI@myQuestions', 'my_questions', ['auth']);
-    Router::get('/create_questions', 'PageAPI@createQuestions', 'create_questions', ['auth']);
+    // 🔹 Questions
+    Router::get('/questions', 'PageAPI@questionBank', 'question_bank');
+    Router::get('/my_questions', 'PageAPI@myQuestions', 'my_questions');
+    Router::get('/create_questions', 'PageAPI@createQuestions', 'create_questions');
 
-    // 🔹 Past-Papers
-    Router::get('/past_papers', 'PageAPI@pastPapers', 'past_papers', ['auth']);
+    // 🔹 Past Papers
+    Router::get('/past_papers', 'PageAPI@pastPapers', 'past_papers');
 
     // 🔹 Results
-    Router::get('/results', 'PageAPI@results', 'all_results', ['auth']);
-    Router::get('/my_results', 'PageAPI@myResults', 'my_results', ['auth']);
+    Router::get('/results', 'PageAPI@results', 'all_results');
+    Router::get('/my_results', 'PageAPI@myResults', 'my_results');
 
     // 🔹 Attendance
-    Router::get('/attendance', 'PageAPI@attendance', 'view_attendance', ['auth']);
-    Router::get('/mark_attendance', 'PageAPI@markAttendance', 'mark_attendance', ['auth']);
-    Router::get('/my_attendance', 'PageAPI@myAttendance', 'my_attendance', ['auth']);
+    Router::get('/attendance', 'PageAPI@attendance', 'view_attendance');
+    Router::get('/mark_attendance', 'PageAPI@markAttendance', 'mark_attendance');
+    Router::get('/my_attendance', 'PageAPI@myAttendance', 'my_attendance');
 
     // 🔹 Notifications
-    Router::get('/notifications', 'PageAPI@notifications', 'notifications', ['auth']);
+    Router::get('/notifications', 'PageAPI@notifications', 'notifications');
 
     // 🔹 User Management
-    Router::get('/users', 'PageAPI@users', 'users_list', ['auth']);
-    Router::get('/add_user', 'PageAPI@addUser', 'users_add', ['auth']);
-    Router::get('/user_group', 'PageAPI@userGroup', 'user_group', ['auth']);
+    Router::get('/users', 'PageAPI@users', 'users_list');
+    Router::get('/add_user', 'PageAPI@addUser', 'users_add');
+    Router::get('/user_group', 'PageAPI@userGroup', 'user_group');
 
     // 🔹 Reports
-    Router::get('/exam_reports', 'PageAPI@examReports', 'exam_reports', ['auth']);
-    Router::get('/student_performance', 'PageAPI@studentPerformance', 'student_performance', ['auth']);
+    Router::get('/exam_reports', 'PageAPI@examReports', 'exam_reports');
+    Router::get('/student_performance', 'PageAPI@studentPerformance', 'student_performance');
 
     // 🔹 Settings
-    Router::get('/settings', 'PageAPI@settings', 'settings', ['auth']);
-    // Router::group(['prefix' => 'admin', 'middleware' => ['auth']], function() {
-    // Router::get('/dashboard', 'DashboardAPI@dashboard', 'dashboard');
+    Router::get('/settings', 'PageAPI@settings', 'settings');
 });
 
 Router::group(['prefix' => 'API'], function () {
@@ -85,7 +88,7 @@ Router::group(['prefix' => 'API'], function () {
 
     Router::put('/user_groups/{id}/permissions', 'UserGroupAPI@setPermissions', 'set_group_permissions', ['auth']);
     Router::post('/user_groups/{id}', 'UserGroupAPI@updateUserGroup', 'update_user_group', ['auth']);
-    Router::patch('/questions/remove/{id}', 'QuestionAPI@removeQuestionFromExam',  'remove_question', ['auth']);
+    Router::patch('/questions/remove/{id}', 'QuestionAPI@removeQuestionFromExam', 'remove_question', ['auth']);
     Router::post('/exams/settings/{id}', 'ExamAPI@editExamSettings', 'edit_exam_settings', ['auth']);
     Router::post('/publish_exam/{id}', 'ExamAPI@publishExam', 'publish_exam', ['auth']);
     Router::post('/unpublish_exam/{id}', 'ExamAPI@unpublishExam', 'unpublish_exam', ['auth']);

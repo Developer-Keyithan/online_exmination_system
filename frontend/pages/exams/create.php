@@ -878,14 +878,14 @@ $this->controller('ExamController');
                 </div>
 
                 <!-- Enable Proctoring -->
-                <div class="form-group">
+                <!-- <div class="form-group">
                     <label class="flex items-center space-x-3 cursor-pointer">
                         <input type="checkbox" ng-model="examData.enable_proctoring"
                             ng-change="isPastStartTime() ? examData.isSettingsDone = true : examData.isSettingsDone = false" id="enableProctoring" name="enableProctoring"
                             required class="rounded bg-[#0006] border-gray-600 text-cyan-500 focus:ring-cyan-500">
                         <span class="text-gray-300">Enable Proctoring</span>
                     </label>
-                </div>
+                </div> -->
 
                 <!-- Full Screen Mode -->
                 <div class="form-group">
@@ -1030,12 +1030,12 @@ $this->controller('ExamController');
                                 ? 'Immediately' :
                                 'After Exam'}}</span>
                         </div>
-                        <div class="flex flex-row justify-between items-center">
+                        <!-- <div class="flex flex-row justify-between items-center">
                             <strong class="text-gray-400">Proctoring:</strong>
                             <span class="font-medium text-sm py-1 px-4 rounded-full"
                                 ng-class="examData.enable_proctoring ? 'bg-green-900/50 text-green-300' : 'bg-gray-700 text-gray-300'">{{examData.enable_proctoring
                                 ? 'Enabled' : 'Disabled'}}</span>
-                        </div>
+                        </div> -->
                         <div class="flex flex-row justify-between items-center">
                             <strong class="text-gray-400">Full Screen Mode:</strong>
                             <span class="font-medium text-sm py-1 px-4 rounded-full"
@@ -1103,7 +1103,7 @@ $this->controller('ExamController');
             <span>{{creatingExam ? 'Creating Exam...' : 'Create Exam'}}</span>
         </button> -->
 
-        <a href="<?php echo BASE_URL . '/preview/' ?>{{ location.exam }}" ng-show="currentStep === 4"
+        <a href="<?php echo BASE_URL . '/exam/preview/' ?>{{ location.exam }}" ng-show="currentStep === 4"
             class="bg-green-600 hover:bg-green-700 text-white w-full md:w-auto py-2 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:opacity-50">
             <i class="fas fa-save" ng-class="{'fa-spin animate-spin': creatingExam}"></i>
             <span>Preview Exam</span>

@@ -24,7 +24,7 @@ app.controller('AuthController', [
                 const formData = $('#login-form').serialize();
                 $http({
                     method: 'POST',
-                    url: 'API/login',
+                    url: window.baseUrl + '/API/login',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     data: formData
                 }).then(function (response) {
@@ -40,9 +40,9 @@ app.controller('AuthController', [
 
                         setTimeout(() => {
                             if (redirect) {
-                                window.location.href = decodeURIComponent(redirect);
+                                window.location.href = window.baseUrl +  decodeURIComponent(redirect);
                             } else {
-                                window.location.href = 'dashboard';
+                                window.location.href = window.baseUrl + '/dashboard';
                             }
                         }, 1000);
                     } else if (data.status === 'error') {

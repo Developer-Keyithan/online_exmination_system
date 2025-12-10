@@ -61,7 +61,8 @@ app.controller('ExamController', [
         $scope.isAllQuestionsAreSaved = false;
         $scope.isAllSectionsAreCompleted = false;
         $scope.isAllQuestionsAndSectionsAreCompleted = false;
-        $scope.location.exam = getParameterByName('exam');
+        // $scope.location.exam = getParameterByName('exam');
+        $scope.location.exam = getIdFromUrl();
 
         // Initialize controller
         $scope.init = function () {
@@ -73,7 +74,7 @@ app.controller('ExamController', [
             if (exam && exam !== undefined) {
                 // $scope.creatingExam = false;
                 await $http({
-                    url: 'API/exams/' + exam,
+                    url: window.baseUrl + '/API/exams/' + exam,
                     method: 'GET'
                 }).then(async function (response) {
                     if (response.data.status === 'success') {
@@ -108,6 +109,7 @@ app.controller('ExamController', [
                                 $scope.examData.setting_id = settings.id;
                                 $scope.examData.schedule_type = settings.schedule_type;
                                 $scope.examData.start_time = settings.start_time ? new Date(settings.start_time) : null;
+                                $scope.examData.original_start_time = settings.start_time ? new Date(settings.start_time) : null;
                                 $scope.examData.shuffle_questions = settings.shuffle_questions;
                                 $scope.examData.shuffle_options = settings.shuffle_options;
                                 $scope.examData.show_results_immediately = settings.immediate_results;
@@ -264,8 +266,17 @@ app.controller('ExamController', [
                 return;
             }
 
+            if ($scope.isExamComplete()) {
+                Toast.fire({
+                    type: 'error',
+                    title: 'Validation Error!',
+                    msg: 'The exam has already completed. You cannot change the basic information now.'
+                })
+                return;
+            }
+
             $http({
-                url: 'API/exams/basic_info' + ($scope.location.exam ? '/' + $scope.location.exam : 'save'),
+                url: window.baseUrl + '/API/exams/basic_info' + ($scope.location.exam ? '/' + $scope.location.exam : 'save'),
                 method: 'POST',
                 data: formData
             }).then(function (response) {
@@ -276,7 +287,7 @@ app.controller('ExamController', [
                         msg: 'Exam basic info ' + ($scope.location.exam ? 'updated' : 'saved') + ' successfully'
                     });
                     setTimeout(() => {
-                        window.location.href = 'create_exam?exam=' + response.data.exam.id;
+                        window.location.href = window.baseUrl + '/create_exam?exam=' + response.data.exam.id;
                     }, 500);
                 } else {
                     Toast.fire({
@@ -457,6 +468,16 @@ app.controller('ExamController', [
                 })
                 return;
             }
+
+            if ($scope.isExamComplete()) {
+                Toast.fire({
+                    type: 'error',
+                    title: 'Validation Error!',
+                    msg: 'The exam has already completed. You cannot save the question now.'
+                })
+                return;
+            }
+
             const formId = 'questionForm' + ($scope.currentQuestion.id || 'New');
             const formElement = document.getElementById(formId);
             if (!formElement) return;
@@ -494,7 +515,7 @@ app.controller('ExamController', [
             }
 
             // API URL
-            const apiUrl = $scope.currentQuestion.id ? 'API/questions/edit_question/' + $scope.currentQuestion.id : 'API/questions/add_question';
+            const apiUrl = $scope.currentQuestion.id ? window.baseUrl + '/API/questions/edit_question/' + $scope.currentQuestion.id : window.baseUrl + '/API/questions/add_question';
             try {
                 const response = await $http.post(apiUrl, formData, {
                     transformRequest: angular.identity,
@@ -705,7 +726,7 @@ app.controller('ExamController', [
                         background: '#dc2626',
                         onConfirm: async function () {
                             $http({
-                                url: 'API/questions/delete_question/' + $scope.currentQuestion.id,
+                                url: window.baseUrl + '/API/questions/delete_question/' + $scope.currentQuestion.id,
                                 method: 'DELETE'
                             }).then(function (response) {
                                 if (response.data.status === 'success') {
@@ -782,7 +803,7 @@ app.controller('ExamController', [
                                     const examId = $scope.location.exam;
                                     try {
                                         const response = await $http.patch(
-                                            'API/questions/remove/' + questionId + '?exam_id=' + examId,
+                                            window.baseUrl + '/API/questions/remove/' + questionId + '?exam_id=' + examId,
                                         );
 
                                         if (response.data.status === 'success') {
@@ -857,7 +878,7 @@ app.controller('ExamController', [
                         onConfirm: async function () {
                             try {
                                 const response = await $http.patch(
-                                    'API/questions/remove/' + questionId + '?exam_id=' + examId,
+                                    window.baseUrl + '/API/questions/remove/' + questionId + '?exam_id=' + examId,
                                 );
 
                                 if (response.data.status === 'success') {
@@ -994,7 +1015,7 @@ app.controller('ExamController', [
                         background: '#dc2626',
                         onConfirm: function () {
                             $http({
-                                url: 'API/sections/delete/' + sectionID,
+                                url: window.baseUrl + '/API/sections/delete/' + sectionID,
                                 method: 'DELETE'
                             }).then(function (response) {
                                 if (response.data.status === 'success') {
@@ -1238,7 +1259,7 @@ app.controller('ExamController', [
                 try {
                     const response = await $http({
                         method: 'POST',
-                        url: 'API/questions/add_question',
+                        url: window.baseUrl + '/API/questions/add_question',
                         data: formData,
                         headers: { 'Content-Type': undefined }
                     });
@@ -1379,11 +1400,30 @@ app.controller('ExamController', [
                 return false;
             }
 
+            if ($scope.isExamComplete()) {
+                Toast.fire({
+                    type: 'error',
+                    title: 'Validation Error!',
+                    msg: 'Since the exam has already completed, you cannot save the exam settings.'
+                })
+                return false;
+            }
+
             if ($scope.examData.schedule_type === 'scheduled' && !$scope.examData.start_time) {
                 Toast.fire({
                     type: 'error',
                     title: 'Validation Error!',
                     msg: 'Please select a start time.'
+                });
+                return false;
+            }
+
+            if (
+                $scope.examData.schedule_type === 'scheduled' && $scope.examData.start_time && new Date($scope.examData.start_time) < new Date()) {
+                Toast.fire({
+                    type: 'error',
+                    title: 'Validation Error!',
+                    msg: 'Start time cannot be earlier than the current time.'
                 });
                 return false;
             }
@@ -1409,7 +1449,7 @@ app.controller('ExamController', [
             const formData = $('#exam_settings_form').serialize();
             const restEndpoint = $scope.examData.setting_id ? '/' + $scope.location.exam : '';
             const response = await $http({
-                url: `API/exams/settings${restEndpoint}`,
+                url: `${window.baseUrl}/API/exams/settings${restEndpoint}`,
                 method: 'POST',
                 data: formData
             })
@@ -1469,10 +1509,28 @@ app.controller('ExamController', [
             if ($scope.examData.schedule_type === 'anytime') {
                 return true;
             }
-            const startTime = $scope.examData.start_time;
+            const startTime = $scope.examData.original_start_time;
             const now = new Date();
             const examStart = new Date(startTime);
             return now >= examStart;
+        }
+
+        // Check is exam complete
+        $scope.isExamComplete = () => {
+            if ($scope.examData.schedule_type === 'anytime') {
+                return false;
+            }
+
+            const now = new Date();
+            const examStart = new Date($scope.examData.original_start_time);
+            const examDurationMinutes = parseInt($scope.examData.duration);
+
+            // Calculate exam end time
+            const examEnd = new Date(examStart.getTime() + examDurationMinutes * 60000);
+            console.log(now >= examEnd)
+
+            // Return true if current time is after exam end
+            return now >= examEnd;
         }
 
         // Initialize the controller

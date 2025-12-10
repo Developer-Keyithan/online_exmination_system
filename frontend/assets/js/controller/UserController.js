@@ -41,7 +41,7 @@ app.controller('UserController', [
             $scope.error = null;
 
             $http({
-                url: 'API/user_groups',
+                url: window.baseUrl + '/API/user_groups',
                 method: 'GET'
             }).then(
                 function (response) {
@@ -69,7 +69,7 @@ app.controller('UserController', [
         // Load available permissions from API
         $scope.loadPermissions = function () {
             $http({
-                url: 'API/permissions',
+                url: window.baseUrl + '/API/permissions',
                 method: 'GET'
             }).then(
                 function (response) {
@@ -88,7 +88,7 @@ app.controller('UserController', [
         // Fetch logged user data
         $scope.loadLoggedUserData = function () {
             $http({
-                url: 'API/auth/logged_user',
+                url: window.baseUrl + '/API/auth/logged_user',
                 method: 'GET'
             }).then(function (response) {
                 $scope.theLoggedUser = response.data;
@@ -274,7 +274,7 @@ app.controller('UserController', [
         // View members
         $scope.viewMembers = function (group) {
             $http({
-                url: 'API/user-groups/' + group.id + '/members',
+                url: window.baseUrl + '/API/user-groups/' + group.id + '/members',
                 method: 'GET'
             }).then(
                 function (response) {
@@ -342,7 +342,7 @@ app.controller('UserController', [
         $scope.loadUsers = function () {
             $scope.loading = true;
 
-            $http.get('API/users', {
+            $http.get(window.baseUrl + '/API/users', {
                 params: {
                     filter: $scope.selectedGroup || null,
                     status: $scope.selectedStatus || null
@@ -682,7 +682,7 @@ app.controller('UserController', [
             const submitData = $('#add-user-form').serialize();
 
             $http({
-                url: 'API/user',
+                url: window.baseUrl + '/API/user',
                 method: 'POST',
                 data: submitData
             }).then(

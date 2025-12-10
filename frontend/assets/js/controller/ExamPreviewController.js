@@ -254,6 +254,16 @@ app.controller('ExamPreviewController', [
                 })
                 return;
             }
+
+            if (isExamComplete()) {
+                Toast.fire({
+                    type: 'error',
+                    title: 'Exam completed',
+                    msg: 'You cannot edit questions after the exam is completed'
+                });
+                return;
+            }
+
             $scope.editingQuestionId = id;
             let question = $scope.allQuestions.find(q => q.id === id);
             question.correctAnswer = question.correctAnswer.toUpperCase();
@@ -695,7 +705,6 @@ app.controller('ExamPreviewController', [
             $scope.getCurrentPreviewPageSections();
             $scope.updatePreviewQuestionsDisplay();
             $scope.updatePreviewQuestionPagination();
-            console.log($scope.currentPreviewPageSections)
         };
 
         // Question page navigation
@@ -735,7 +744,7 @@ app.controller('ExamPreviewController', [
             $scope.step2Completed = $scope.totalQuestions > 0;
             $scope.step3Completed = $scope.areSettingsValid();
             $scope.step4Completed = $scope.step1Completed && $scope.step2Completed && $scope.step3Completed;
-            $scope.step5Completed = $scope.examData && $scope.examData.status === 'published';
+            $scope.step5Completed = $scope.examData && ($scope.examData.status === 'published' || $scope.examData.status === 'scheduled');
             if ($scope.currentStep === 4) {
                 $scope.initializeStep4();
             }
@@ -899,9 +908,30 @@ app.controller('ExamPreviewController', [
 
         // Check is start time passed
         function isPastStartTime(startTime) {
+            if ($scope.examData.schedule_type === 'anytime') {
+                return true;
+            }
             const now = new Date();
             const examStart = new Date(startTime);
             return now >= examStart;
+        }
+
+        // Check is exam complete
+        function isExamComplete() {
+            if ($scope.examData.schedule_type === 'anytime') {
+                return false;
+            }
+
+            const now = new Date();
+            const examStart = new Date($scope.examData.start_time);
+            const examDurationMinutes = parseInt($scope.examData.duration);
+            
+            // Calculate exam end time
+            const examEnd = new Date(examStart.getTime() + examDurationMinutes * 60000);
+            console.log(now >= examEnd)
+
+            // Return true if current time is after exam end
+            return now >= examEnd;
         }
 
         // Unpublish exam
@@ -914,6 +944,15 @@ app.controller('ExamPreviewController', [
             //     });
             //     return;
             // }
+
+            if (isExamComplete()) {
+                Toast.fire({
+                    type: 'error',
+                    title: 'Cannot Unpublish',
+                    msg: 'Exam has already completed.'
+                });
+                return;
+            }
 
             const now = new Date();
             const examStart = new Date($scope.examData.start_time);

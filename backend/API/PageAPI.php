@@ -6,13 +6,10 @@ class PageAPI
 
     public function __construct()
     {
-        // Already on login page → skip redirect
         $currentRoute = $_SERVER['REQUEST_URI'] ?? '/';
-        $encodedUrl = urlencode($currentRoute);
 
-        // User not logged in AND not already at /login
-        if (!Auth::isLoggedIn() && !str_contains($currentRoute, 'login')) {
-
+        // Skip login redirect if already on login page OR 404 page
+        if ( !Auth::isLoggedIn() && !str_contains($currentRoute, 'login') && !str_contains($currentRoute, '/404') ) {
             $encodedUrl = rawurlencode($currentRoute);
 
             $router = Router::getInstance();
@@ -24,8 +21,6 @@ class PageAPI
         }
     }
 
-
-
     public function login()
     {
         if (Auth::isLoggedIn()) {
@@ -34,14 +29,13 @@ class PageAPI
         return view('auth.login', ['title' => 'User Login']);
     }
 
+    public function notFound() {
+         return view('not_found.not_found', ['title' => '404 Page Not Found']);
+    }
+
     public function dashboard()
     {
         return view('dashboard', ['title' => 'Dashboard']);
-    }
-
-    public function createExam()
-    {
-        return view('exams.create', ['title' => 'Create Exam']);
     }
 
     public function courses()
@@ -69,6 +63,14 @@ class PageAPI
     public function exams()
     {
         return view('exams.all', ['title' => 'All Exams']);
+    }
+    public function createExam()
+    {
+        return view('exams.create', ['title' => 'Create Exam']);
+    }
+    public function editExam()
+    {
+        return view('exams.create', ['title' => 'Edit Exam']);
     }
     public function myExams()
     {
