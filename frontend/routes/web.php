@@ -28,7 +28,7 @@ Router::group(['middleware' => ['auth']], function () {
         Router::get('/my', 'PageAPI@myExams', 'my_exams');
         Router::get('/preview/{exam_id}', 'PageAPI@previewExam', 'exam');
         Router::get('/attempt/{id}/register', 'PageAPI@examAttemptRegister', 'exam_register_for_students', ['auth']);
-        Router::get('/attempt/{hased_rest_url}', 'PageAPI@attemptExam', 'attempt_exam');
+        Router::get('/{hased_rest_url}/attempt/{id}', 'PageAPI@attemptExam', 'attempt_exam');
         Router::get('/results/{exam_id}', 'PageAPI@examResults', 'exam_results');
     });
 
@@ -80,6 +80,7 @@ Router::group(['prefix' => 'API'], function () {
     Router::post('/exams/settings', 'ExamAPI@saveExamSettings', 'save_exam_settings', ['auth']);
     Router::post('/exam/registration/{id}', 'ExamAPI@saveExamRegistrationData', 'save_exam_registration_data', ['auth']);
     Router::post('/exam/{exam_id}/attempt/{attempt_id}/question/{question_id}/answer', 'ExamAPI@saveExamAnswer', 'save_exam_answer', ['auth']);
+    Router::post('/exam/register', 'ExamAPI@registerExam', 'register_exam', ['auth']);
 
     Router::post('/sections/edit/{id}', 'SectionAPI@updateSection', 'adit_section', ['auth']);
     Router::post('/sections/add', 'SectionAPI@addSection', 'add_section', ['auth']);
@@ -104,8 +105,10 @@ Router::group(['prefix' => 'API'], function () {
     Router::get('/exam/data/{exam_id}', 'ExamAPI@getExamDataForPreview', 'get_exam', ['auth']);
     Router::get('/exam/registration/{exam_id}', 'ExamAPI@getExamRegistrationData', 'get_exam_registration_data', ['auth']);
     Router::get('/exam/register/{exam_id}', 'ExamAPI@configRegistration', 'config_registration', ['auth']);
+    Router::get('/exam/attempt/meta_data/{exam_id}', 'ExamAPI@getExamMetaData', 'get_exam_meta_data_for_attempt', ['auth']);
     Router::get('/exam/attempt/{exam_id}', 'ExamAPI@getExamDataForAttempt', 'get_exam_data_for_attempt', ['auth']);
     Router::get('/exam/{exam_id}', 'ExamAPI@getExamData', 'get_exam', ['auth']);
+    Router::get('/exam/eligibility/{exam_id}', 'ExamAPI@checkExamEligibility', 'check_exam_eligibility', ['auth']);
 
     Router::get('/session', 'AuthAPI@getSession', 'get_session', ['auth']);
 

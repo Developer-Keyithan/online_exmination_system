@@ -40,11 +40,11 @@ app.controller('mainController', ["$scope", "$http", function ($scope, $http) {
 
     // Rotate arrow when checkbox checked
     $(document).on('change', 'input[type="checkbox"].peer', function () {
-        const arrow = $(this).next('label').find('.fa-chevron-right');
+        const arrow = $(this).next('label').find('.fa-chevron-down');
         if ($(this).is(':checked')) {
-            arrow.addClass('rotate-90');
+            arrow.addClass('rotate-180');
         } else {
-            arrow.removeClass('rotate-90');
+            arrow.removeClass('rotate-180');
         }
     });
 

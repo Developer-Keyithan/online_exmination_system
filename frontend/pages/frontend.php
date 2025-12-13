@@ -12,7 +12,8 @@
         <div class="w-full">
         <?php if (currentNav() != 'login' && currentNav() != '404')
         include 'layouts/header.php'; ?>
-        <div class="w-full <?php echo (currentNav() == 'login') ? 'p-0' : ((currentNav() == '404') ? 'p-0' : 'p-4') ?>" <?= $this->getController() ? 'ng-controller="' . $this->getController() . '"' : '' ?>>
+        <div class="w-full <?php echo (currentNav() == 'login') ? 'p-0' : ((currentNav() == '404') ? 'p-0' : 'p-4') ?>"
+            <?= $this->getController() ? 'ng-controller="' . $this->getController() . '"' : '' ?>>
             <?php if (currentNav() != 'login' && currentNav() != '404'): ?>
                 <div class="mt-3 mb-4 rounded-lg">
                     <div class="flex flex-row justify-between">
@@ -33,13 +34,14 @@
                                     </li>
 
                                     <?php
-                                    $current = currentNav(); 
+                                    $current = currentNav();
                                     $breadcrumbs = explode('/', $current);
 
-                                    // Remove numeric crumbs (like IDs)
+                                    // Remove numeric crumbs AND crumbs longer than 50 characters
                                     $breadcrumbs = array_filter($breadcrumbs, function ($crumb) {
-                                        return !is_numeric($crumb);
+                                        return !is_numeric($crumb) && strlen($crumb) <= 50;
                                     });
+
 
                                     $path = '';
                                     foreach ($breadcrumbs as $index => $crumb):
@@ -63,7 +65,7 @@
                                                     </a> -->
                                                     <span class="ml-1 text-gray-500">
                                                         <?php echo ucwords(str_replace('_', ' ', $crumb)) ?>
-                                                </span>
+                                                    </span>
                                                 <?php endif; ?>
                                             </div>
                                         </li>

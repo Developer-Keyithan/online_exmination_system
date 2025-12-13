@@ -549,153 +549,6 @@ class ExamAPI
         }
     }
 
-    public function getExamDataForAttempt($id)
-    {
-        try {
-            // Fetch Exam Info
-            $statement = $this->db->prepare("SELECT * FROM exam_info WHERE id = ?");
-            $statement->execute([$id]);
-            $exam = $statement->fetch(PDO::FETCH_ASSOC);
-
-            if (!$exam) {
-                throw new Exception("Exam not found");
-            }
-
-            // Fetch Questions
-            $statement = $this->db->prepare("SELECT * FROM questions WHERE JSON_CONTAINS(exam_ids, JSON_QUOTE(?))");
-            $statement->execute([$id]);
-            $questions = $statement->fetchAll(PDO::FETCH_ASSOC);
-
-            if (!$questions) {
-                throw new Exception('No questions found for this exam');
-            }
-
-            // Fetch Sections
-            $statement = $this->db->prepare("SELECT * FROM sections WHERE exam_id = ?");
-            $statement->execute([$id]);
-            $sections = $statement->fetchAll(PDO::FETCH_ASSOC);
-
-            // Fetch Exam Settings
-            $statement = $this->db->prepare("SELECT * FROM exam_settings WHERE exam_id = ?");
-            $statement->execute([$id]);
-            $settings = $statement->fetch(PDO::FETCH_ASSOC);
-
-            $finalSections = [];
-
-            foreach ($sections as $section) {
-                $finalSections[] = [
-                    'id' => $section['id'],
-                    'examID' => $id + 0,
-                    'description' => $section['s_des'] ?? '',
-                    'secondDescription' => $section['s_s_des'] ?? '',
-                    'questions' => []
-                ];
-            }
-
-            // Sort questions by created_at ASC
-            usort($questions, function ($a, $b) {
-                return strtotime($a['created_at']) - strtotime($b['created_at']);
-            });
-
-            $finalQuestions = [];
-            foreach ($questions as $question) {
-                $options = [];
-                $o = 0;
-                foreach (['a', 'b', 'c', 'd'] as $order => $key) {
-                    $options[] = [
-                        'text' => $question[$key] ?? '',
-                        'image' => $question[$key . '_img'] ?? null,
-                        'order' => $order + 1,
-                        'op' => strtoupper($key)
-                    ];
-                }
-
-                $qData = [
-                    'id' => $question['id'],
-                    'order' => $o++,
-                    'question' => $question['question'],
-                    'marks' => $question['marks'] + 0,
-                    'options' => $options,
-                    'grid' => $question['grid'] + 0,
-                    'sectionIds' => $question['section_ids'] ? array_map('intval', json_decode($question['section_ids'], true)) : [],
-                ];
-
-                $finalQuestions[] = $qData;
-            }
-
-            $status = $exam['status'];
-            $schedule_type = $settings['schedule_type'];
-
-            $start_time = $settings['start_time'] ? strtotime($settings['start_time']) : null;
-            $start_time_ts = $settings['start_time'] ? strtotime($settings['start_time']) : null;
-            $duration_minutes = $exam['duration'] + 0;
-            $end_time = $start_time_ts ? $start_time_ts + ($duration_minutes * 60) : null;
-
-
-            $current_time = time();
-
-            if ($status == 0) {
-                $finalStatus = 'draft';
-            } else if ($status == 2) {
-                $finalStatus = 'canceled';
-            } else if ($status == 1 && $schedule_type == 'anytime') {
-                $finalStatus = 'active';
-            } else if ($status == 1 && $schedule_type == 'scheduled') {
-
-                if ($start_time > $current_time) {
-                    $finalStatus = 'upcoming';
-                } else if ($current_time >= $start_time && $current_time <= $end_time) {
-                    $finalStatus = 'active';
-                } else if ($current_time > $end_time) {
-                    $finalStatus = 'completed';
-                }
-            }
-
-            // ---------------------------
-            // MERGE DATA (DUMMY FORMAT)
-            // ---------------------------
-            $mergedData = [
-                'id' => $exam['id'] + 0,
-                'title' => $exam['title'],
-                'code' => $exam['code'],
-
-                'duration' => $exam['duration'] + 0,
-                'total_questions' => $exam['total_num_of_ques'] + 0,
-                'total_marks' => $exam['total_marks'] + 0,
-                'passing_marks' => $exam['passing_marks'] + 0,
-
-                'schedule_type' => $settings['schedule_type'],
-                'start_time' => $settings['start_time'] ? str_replace(" ", "T", $settings['start_time']) : null,
-
-                'instructions' => $exam['instructions'],
-
-                'shuffle_questions' => $settings['shuffle_questions'] == 1,
-                'shuffle_options' => $settings['shuffle_options'] == 1,
-                'full_screen_mode' => $settings['full_screen_mode'] == 1,
-                'disable_copy_paste' => $settings['disable_copy_paste'] == 1,
-                'disable_right_click' => $settings['disable_right_click'] == 1,
-                'show_results_immediately' => $settings['immediate_results'] == 1,
-                'allow_retake' => $settings['retake'] == 1,
-                'max_attempts' => $settings['max_attempts'] ? $settings['max_attempts'] + 0 : 1,
-
-                'status' => $finalStatus
-            ];
-
-            return json_encode([
-                'status' => 'success',
-                'exam_info' => $mergedData,
-                'sections' => $finalSections,
-                'questions' => $finalQuestions
-            ]);
-
-        } catch (Exception $e) {
-            return json_encode([
-                'status' => 'error',
-                'msg' => $e->getMessage()
-            ]);
-        }
-    }
-
     public function getExamDataForPreview($id)
     {
         try {
@@ -978,6 +831,197 @@ class ExamAPI
         }
     }
 
+    public function registerExam()
+    {
+        try {
+            $exam_id = $_POST['exam_id'];
+            $user_id = $_POST['student_id'];
+            $current_date = date('Y-m-d H:i:s');
+            $terms_accepted = isset($_POST['agree_terms']) ? 1 : 0;
+
+            $stmt = $this->db->prepare("SELECT * FROM exam_registration WHERE exam_id = ? AND student_id = ?");
+            $stmt->execute([$exam_id, $user_id]);
+            $found = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($found) {
+                $reg_data = [];
+                $reg_data['date'] = $found['registration_date'];
+                $reg_data['status'] = $found['status'];
+                $reg_data['attempts'] = $found['attempts_count'];
+                $stmt = $this->db->prepare("SELECT url FROM exam_attempts WHERE exam_id = ? AND student_id = ? AND registration_id = ?");
+                $stmt->execute([$exam_id, $user_id, $found['id']]);
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                return json_encode([
+                    'status' => 'success',
+                    'msg' => 'You have already registered for this exam.',
+                    'existingRegistration' => $reg_data,
+                    'url' => $result['url'],
+                    'code' => 'ALREADY_REGI'
+                ]);
+            }
+
+            $stmt = $this->db->prepare("SELECT reg_no FROM exam_registration ORDER BY id DESC LIMIT 1");
+            $stmt->execute();
+
+            $last = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $lastNumber = 0;
+            if ($last && !empty($last['reg_no'])) {
+                $lastNumber = (int) str_replace('EX_REG_', '', $last['reg_no']);
+            }
+
+            $reg_no = 'EX_REG_' . str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+
+            $stmt = $this->db->prepare("INSERT INTO exam_registration (exam_id, student_id, reg_no, registration_date, terms_accepted) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$exam_id, $user_id, $reg_no, $current_date, $terms_accepted]);
+            $registration_id = $this->db->lastInsertId();
+
+            // Generate a unique 180-character URL for this attempt
+            do {
+                $url = bin2hex(random_bytes(90)); // 180 characters
+                $stmt = $this->db->prepare("SELECT COUNT(*) as count FROM exam_attempts WHERE url = ?");
+                $stmt->execute([$url]);
+                $exists = $stmt->fetch(PDO::FETCH_ASSOC)['count'] > 0;
+            } while ($exists);
+
+            $stmt = $this->db->prepare("INSERT INTO exam_attempts (registration_id , exam_id, student_id, url) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$registration_id, $exam_id, $user_id, $url]);
+
+            return json_encode([
+                'status' => 'success',
+                'msg' => 'Exam registered successfully.',
+                'registration_id' => $reg_no,
+                'url' => $url
+            ]);
+        } catch (Exception $e) {
+            return json_encode([
+                'status' => 'error',
+                'msg' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function checkExamEligibility($exam_id)
+    {
+        try {
+            $user = user_id();
+
+            $stmt = $this->db->prepare("SELECT ei.*, es.schedule_type, es.start_time, es.max_attempts FROM exam_info ei LEFT JOIN exam_settings es ON ei.id = es.exam_id WHERE ei.id = ?");
+            $stmt->execute([$exam_id]);
+            $exam = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$exam) {
+                return json_encode([
+                    'status' => 'error',
+                    'msg' => 'Exam not found.',
+                    'code' => 'EXAM_NOT_FOUND'
+                ]);
+            }
+
+            // Exam status check
+            if ($exam['status'] == 0) {
+                return json_encode([
+                    'status' => 'error',
+                    'msg' => 'Exam is not published yet.',
+                    'code' => 'EXAM_NOT_PUBLISHED'
+                ]);
+            } elseif ($exam['status'] == 2) {
+                return json_encode([
+                    'status' => 'error',
+                    'msg' => 'Exam has been canceled.',
+                    'code' => 'EXAM_CANCELED'
+                ]);
+            }
+
+            // Schedule type check
+            $currentDateTime = date('Y-m-d H:i:s');
+            if ($exam['schedule_type'] == 'scheduled' && !empty($exam['start_time'])) {
+                $start_timestamp = strtotime($exam['start_time']);
+                $end_timestamp = $start_timestamp + (!empty($exam['duration']) ? $exam['duration'] * 60 : 0);
+                $exam['end_date'] = date('Y-m-d H:i:s', $end_timestamp);
+
+                if ($currentDateTime < $exam['start_time']) {
+                    return json_encode([
+                        'status' => 'error',
+                        'msg' => 'Exam has not started yet.',
+                        'code' => 'EXAM_NOT_STARTED'
+                    ]);
+                }
+
+                if (!empty($exam['duration']) && $currentDateTime > $exam['end_date']) {
+                    return json_encode([
+                        'status' => 'error',
+                        'msg' => 'Exam has ended.',
+                        'code' => 'EXAM_ENDED'
+                    ]);
+                }
+            }
+
+            // Registration check
+            $stmt = $this->db->prepare("SELECT * FROM exam_registration WHERE exam_id = ? AND student_id = ?");
+            $stmt->execute([$exam_id, $user]);
+            $register = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$register) {
+                return json_encode([
+                    'status' => 'error',
+                    'msg' => 'You are not registered for this exam.',
+                    'code' => 'NOT_REGISTERED'
+                ]);
+            }
+
+            // Fetch attempts ordered by ID
+            $stmt = $this->db->prepare("SELECT * FROM exam_attempts WHERE exam_id = ? AND student_id = ? AND registration_id = ? ORDER BY id ASC");
+            $stmt->execute([$exam_id, $user, $register['id']]);
+            $attempts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $total_attempts = count($attempts) - 1;
+
+            // Check max attempts
+            if ($total_attempts >= $exam['max_attempts']) {
+                return json_encode([
+                    'status' => 'error',
+                    'msg' => 'You have exceeded the maximum number of attempts for this exam.',
+                    'code' => 'MAX_ATTEMPTS_EXCEEDED'
+                ]);
+            }
+
+            // Update attempts statuses
+            foreach ($attempts as $index => $attempt) {
+                if ($index == 0) {
+                    $status = 'started';
+                } elseif ($index == $total_attempts - 1) {
+                    $status = ($currentDateTime > $exam['end_date']) ? 'completed' : 'in_progress';
+                } else {
+                    $status = 'in_progress';
+                }
+
+                $stmt = $this->db->prepare("UPDATE exam_attempts SET status = ? WHERE id = ?");
+                $stmt->execute([$status, $attempt['id']]);
+            }
+
+            // Increment attempts_count
+            $stmt = $this->db->prepare("UPDATE exam_registration SET attempts_count = attempts_count + 1 WHERE id = ?");
+            $stmt->execute([$register['id']]);
+
+            return json_encode([
+                'status' => 'success',
+                'data' => [
+                    'reg_no' => $register['reg_no'],
+                    'total_attempts' => $register['attempts_count'] + 1,
+                ],
+                'isEligible' => true
+            ]);
+
+        } catch (Exception $e) {
+            return json_encode([
+                'status' => 'error',
+                'msg' => $e->getMessage(),
+                'code' => 'SERVER_ERROR'
+            ]);
+        }
+    }
+
     public function configRegistration($exam_id)
     {
         try {
@@ -1080,6 +1124,312 @@ class ExamAPI
         }
     }
 
+    public function getExamMetaData($id)
+    {
+        try {
+            // Fetch Exam Info
+            $statement = $this->db->prepare("SELECT * FROM exam_info WHERE id = ?");
+            $statement->execute([$id]);
+            $exam = $statement->fetch(PDO::FETCH_ASSOC);
+
+            if (!$exam) {
+                throw new Exception("Exam not found");
+            }
+
+            // Fetch Questions
+            $statement = $this->db->prepare("SELECT * FROM questions WHERE JSON_CONTAINS(exam_ids, JSON_QUOTE(?))");
+            $statement->execute([$id]);
+            $questions = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            if (!$questions) {
+                throw new Exception('No questions found for this exam');
+            }
+
+            // Fetch Sections
+            $statement = $this->db->prepare("SELECT * FROM sections WHERE exam_id = ?");
+            $statement->execute([$id]);
+            $sections = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            // Fetch Exam Settings
+            $statement = $this->db->prepare("SELECT * FROM exam_settings WHERE exam_id = ?");
+            $statement->execute([$id]);
+            $settings = $statement->fetch(PDO::FETCH_ASSOC);
+
+            $finalSections = [];
+
+            foreach ($sections as $section) {
+                $finalSections[] = [
+                    'id' => $section['id'],
+                    'examID' => $id + 0,
+                    'description' => $section['s_des'] ?? '',
+                    'secondDescription' => $section['s_s_des'] ?? '',
+                    'questions' => []
+                ];
+            }
+
+            // Sort questions by created_at ASC
+            usort($questions, function ($a, $b) {
+                return strtotime($a['created_at']) - strtotime($b['created_at']);
+            });
+
+            $finalQuestions = [];
+            foreach ($questions as $question) {
+                $options = [];
+                $o = 0;
+                foreach (['a', 'b', 'c', 'd'] as $order => $key) {
+                    $options[] = [
+                        'text' => $question[$key] ?? '',
+                        'image' => $question[$key . '_img'] ?? null,
+                        'order' => $order + 1,
+                        'op' => strtoupper($key)
+                    ];
+                }
+
+                $qData = [
+                    'id' => $question['id'],
+                    'order' => $o++,
+                    'question' => $question['question'],
+                    'marks' => $question['marks'] + 0,
+                    'options' => $options,
+                    'grid' => $question['grid'] + 0,
+                    'sectionIds' => $question['section_ids'] ? array_map('intval', json_decode($question['section_ids'], true)) : [],
+                ];
+
+                $finalQuestions[] = $qData;
+            }
+
+            $status = $exam['status'];
+            $schedule_type = $settings['schedule_type'];
+
+            $start_time = $settings['start_time'] ? strtotime($settings['start_time']) : null;
+            $start_time_ts = $settings['start_time'] ? strtotime($settings['start_time']) : null;
+            $duration_minutes = $exam['duration'] + 0;
+            $end_time = $start_time_ts ? $start_time_ts + ($duration_minutes * 60) : null;
+
+            $current_time = time();
+
+            if ($status == 0) {
+                $finalStatus = 'draft';
+            } else if ($status == 2) {
+                $finalStatus = 'canceled';
+            } else if ($status == 1 && $schedule_type == 'anytime') {
+                $finalStatus = 'active';
+            } else if ($status == 1 && $schedule_type == 'scheduled') {
+
+                if ($start_time > $current_time) {
+                    $finalStatus = 'upcoming';
+                } else if ($current_time >= $start_time && $current_time <= $end_time) {
+                    $finalStatus = 'active';
+                } else if ($current_time > $end_time) {
+                    $finalStatus = 'completed';
+                }
+            }
+
+            $stmt = $this->db->prepare("SELECT id, attempts_count FROM exam_registration WHERE exam_id = ?AND student_id = ?");
+            $stmt->execute([$exam['id'], user_id()]);
+            $registration = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $stmt = $this->db->prepare("SELECT started_at, status as attempt_status FROM exam_attempts WHERE exam_id = ? AND student_id = ? AND registration_id = ? ORDER BY id ASC");
+            $stmt->execute([$exam['id'], user_id(), $registration['id']]);
+            $attempts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $isAlredyTaken = false;
+            $isCompleted = false;
+            $isAbandoned = false;
+            $isProgress = false;
+            foreach ($attempts as $att) {
+
+                if ($att['attempt_status'] !== 'not_started') {
+                    $isAlreadyTaken = true;
+                }
+
+                if ($att['attempt_status'] === 'in_progress') {
+                    $isProgress = true;
+                }
+                
+                if ($att['attempt_status'] === 'completed') {
+                    $isCompleted = true;
+                    $isProgress = false;
+                    break;
+                }
+
+                $lastAttempt = end($attempts);
+                if ($lastAttempt['attempt_status'] === 'abandoned') {
+                    $isAbandoned = true;
+                }
+
+            }
+            // ---------------------------
+            // MERGE DATA (DUMMY FORMAT)
+            // ---------------------------
+            $mergedData = [
+                'id' => $exam['id'] + 0,
+                'title' => $exam['title'],
+                'code' => $exam['code'],
+
+                'duration' => $exam['duration'] + 0,
+                'total_questions' => $exam['total_num_of_ques'] + 0,
+                'total_marks' => $exam['total_marks'] + 0,
+
+                'schedule_type' => $settings['schedule_type'],
+                'start_time' => $settings['start_time'] ? str_replace(" ", "T", $settings['start_time']) : null,
+                'started_at' => $attempts[0]['started_at'] ? str_replace(" ", "T", $attempts[0]['started_at']) : null,
+
+                'instructions' => $exam['instructions'],
+
+                'allow_retake' => $settings['retake'] == 1,
+                'max_attempts' => $settings['max_attempts'] ? $settings['max_attempts'] + 0 : 1,
+
+                'status' => $finalStatus,
+                'isAlredyTaken' => $isAlredyTaken,
+                'isProgress' => $isProgress,
+                'isAbandoned' => $isAbandoned,
+                'isCompleted' => $isCompleted,
+                'total_attempts' => count($attempts)
+            ];
+
+            return json_encode([
+                'status' => 'success',
+                'exam_info' => $mergedData,
+            ]);
+
+        } catch (Exception $e) {
+            return json_encode([
+                'status' => 'error',
+                'msg' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function getExamDataForAttempt($id)
+    {
+        try {
+            // Fetch Exam Info
+            $statement = $this->db->prepare("SELECT * FROM exam_info WHERE id = ?");
+            $statement->execute([$id]);
+            $exam = $statement->fetch(PDO::FETCH_ASSOC);
+
+            if (!$exam) {
+                throw new Exception("Exam not found");
+            }
+
+            // Fetch Questions
+            $statement = $this->db->prepare("SELECT * FROM questions WHERE JSON_CONTAINS(exam_ids, JSON_QUOTE(?))");
+            $statement->execute([$id]);
+            $questions = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            if (!$questions) {
+                throw new Exception('No questions found for this exam');
+            }
+
+            // Fetch Sections
+            $statement = $this->db->prepare("SELECT * FROM sections WHERE exam_id = ?");
+            $statement->execute([$id]);
+            $sections = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            // Fetch Exam Settings
+            $statement = $this->db->prepare("SELECT * FROM exam_settings WHERE exam_id = ?");
+            $statement->execute([$id]);
+            $settings = $statement->fetch(PDO::FETCH_ASSOC);
+
+            $finalSections = [];
+
+            foreach ($sections as $section) {
+                $finalSections[] = [
+                    'id' => $section['id'],
+                    'examID' => $id + 0,
+                    'description' => $section['s_des'] ?? '',
+                    'secondDescription' => $section['s_s_des'] ?? '',
+                    'questions' => []
+                ];
+            }
+
+            // Sort questions by created_at ASC
+            usort($questions, function ($a, $b) {
+                return strtotime($a['created_at']) - strtotime($b['created_at']);
+            });
+
+            $finalQuestions = [];
+            foreach ($questions as $question) {
+                $options = [];
+                $o = 0;
+                foreach (['a', 'b', 'c', 'd'] as $order => $key) {
+                    $options[] = [
+                        'text' => $question[$key] ?? '',
+                        'image' => $question[$key . '_img'] ?? null,
+                        'order' => $order + 1,
+                        'op' => strtoupper($key)
+                    ];
+                }
+
+                $qData = [
+                    'id' => $question['id'],
+                    'order' => $o++,
+                    'question' => $question['question'],
+                    'marks' => $question['marks'] + 0,
+                    'options' => $options,
+                    'grid' => $question['grid'] + 0,
+                    'sectionIds' => $question['section_ids'] ? array_map('intval', json_decode($question['section_ids'], true)) : [],
+                ];
+
+                $finalQuestions[] = $qData;
+            }
+
+            $status = $exam['status'];
+            $schedule_type = $settings['schedule_type'];
+
+            $start_time = $settings['start_time'] ? strtotime($settings['start_time']) : null;
+            $start_time_ts = $settings['start_time'] ? strtotime($settings['start_time']) : null;
+            $duration_minutes = $exam['duration'] + 0;
+            $end_time = $start_time_ts ? $start_time_ts + ($duration_minutes * 60) : null;
+
+            $current_time = time();
+
+            if ($status == 0) {
+                $finalStatus = 'draft';
+            } else if ($status == 2) {
+                $finalStatus = 'canceled';
+            } else if ($status == 1 && $schedule_type == 'anytime') {
+                $finalStatus = 'active';
+            } else if ($status == 1 && $schedule_type == 'scheduled') {
+
+                if ($start_time > $current_time) {
+                    $finalStatus = 'upcoming';
+                } else if ($current_time >= $start_time && $current_time <= $end_time) {
+                    $finalStatus = 'active';
+                } else if ($current_time > $end_time) {
+                    $finalStatus = 'completed';
+                }
+            }
+            // ---------------------------
+            // MERGE DATA (DUMMY FORMAT)
+            // ---------------------------
+            $mergedData = [
+                'passing_marks' => $exam['passing_marks'] + 0,
+
+                'shuffle_questions' => $settings['shuffle_questions'] == 1,
+                'shuffle_options' => $settings['shuffle_options'] == 1,
+                'full_screen_mode' => $settings['full_screen_mode'] == 1,
+                'disable_copy_paste' => $settings['disable_copy_paste'] == 1,
+                'disable_right_click' => $settings['disable_right_click'] == 1,
+                'show_results_immediately' => $settings['immediate_results'] == 1
+            ];
+
+            return json_encode([
+                'status' => 'success',
+                'rest_exam_info' => $mergedData,
+                'sections' => $finalSections,
+                'questions' => $finalQuestions
+            ]);
+
+        } catch (Exception $e) {
+            return json_encode([
+                'status' => 'error',
+                'msg' => $e->getMessage()
+            ]);
+        }
+    }
+
     public function saveExamAnswer($exam_id, $attempt_id, $question_id)
     {
         try {
@@ -1127,5 +1477,4 @@ class ExamAPI
             ]);
         }
     }
-
 }

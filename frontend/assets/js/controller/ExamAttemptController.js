@@ -2,16 +2,15 @@ app.controller('ExamAttemptController', [
     "$scope", "$http", "$compile", "$timeout", "window", "$sce", "$interval",
     function ($scope, $http, $compile, $timeout, window, $sce, $interval) {
         // Initialize scope variables
-        $scope.examId = window.getIdFromUrl(1);
+        $scope.examId = window.getIdFromUrl();
         $scope.loading = true;
-        $scope.useDummyData = false;
         $scope.error = null;
         $scope.examData = null;
         $scope.questions = [];
         $scope.currentQuestionIndex = 0;
         $scope.currentQuestion = null;
-        $scope.timeRemaining = 7200; // 2 hours in seconds
-        $scope.timeRemainingFormatted = "02:00:00";
+        $scope.timeRemaining = null;
+        $scope.timeRemainingFormatted = null;
         $scope.timerWarning = false;
         $scope.timeExpired = false;
         $scope.answeredCount = 0;
@@ -29,240 +28,109 @@ app.controller('ExamAttemptController', [
         $scope.isSubmitting = false;
         $scope.attemptId = null;
         $scope.estimatedScore = 0;
+        $scope.showEligibilityModal = false;
+        $scope.eligibilityError = null;
+        $scope.currentDate = new Date();
+        $scope.isAlreadyTaken = false;
+        $scope.isProgress = false;
+        $scope.isCompleted = false;
+        $scope.isAbandoned = false;
 
-        // Comprehensive Dummy Data
-        $scope.dummyExamData = {
-            id: "demo-101",
-            title: "Web Development Fundamentals - Final Exam",
-            code: "WD101-FINAL-2024",
-            duration: 120, // minutes
-            total_questions: 25,
-            total_marks: 100,
-            passing_marks: 40,
-            schedule_type: "scheduled",
-            start_time: "2024-12-15T09:00:00Z",
-            instructions: $sce.trustAsHtml(`
-                <div class="space-y-2">
-                    <p><strong>Read all instructions carefully before starting:</strong></p>
-                    <ol class="list-decimal pl-5 space-y-1">
-                        <li>This exam consists of 25 multiple choice questions.</li>
-                        <li>Each question carries 4 marks.</li>
-                        <li>There is negative marking of 1 mark for each wrong answer.</li>
-                        <li>Total duration of the exam is 120 minutes.</li>
-                        <li>Use the question navigator to jump between questions.</li>
-                        <li>Flag questions you want to review later.</li>
-                        <li>Click "Save Answer" to save your response.</li>
-                        <li>Submit only when you have answered all questions.</li>
-                    </ol>
-                    <p class="mt-3 text-yellow-300"><i class="fas fa-exclamation-triangle mr-1"></i> Do not refresh or close the browser during the exam.</p>
-                </div>
-            `),
-            shuffle_questions: true,
-            shuffle_options: false,
-            full_screen_mode: true,
-            disable_copy_paste: true,
-            disable_right_click: true,
-            show_results_immediately: true,
-            allow_retake: false,
-            max_attempts: 1
-        };
-
-        // Dummy Questions Data
-        $scope.dummyQuestions = [
-            {
-                id: 1,
-                question: $sce.trustAsHtml("What does HTML stand for?"),
-                marks: 4,
-                difficulty: "Easy",
-                options: [
-                    { op: "A", text: $sce.trustAsHtml("Hyper Text Markup Language"), correct: true, explanation: "HTML is the standard markup language for creating web pages." },
-                    { op: "B", text: $sce.trustAsHtml("High Tech Modern Language"), correct: false },
-                    { op: "C", text: $sce.trustAsHtml("Hyper Transfer Markup Language"), correct: false },
-                    { op: "D", text: $sce.trustAsHtml("Home Tool Markup Language"), correct: false }
-                ],
-                answer: null,
-                flagged: false
-            },
-            {
-                id: 2,
-                question: $sce.trustAsHtml("Which CSS property controls the text size?"),
-                marks: 4,
-                difficulty: "Easy",
-                options: [
-                    { op: "A", text: $sce.trustAsHtml("text-size"), correct: false },
-                    { op: "B", text: $sce.trustAsHtml("font-size"), correct: true, explanation: "The font-size property sets the size of the text." },
-                    { op: "C", text: $sce.trustAsHtml("text-style"), correct: false },
-                    { op: "D", text: $sce.trustAsHtml("font-style"), correct: false }
-                ],
-                answer: null,
-                flagged: false
-            },
-            {
-                id: 3,
-                question: $sce.trustAsHtml("Which of the following is NOT a JavaScript data type?"),
-                marks: 4,
-                difficulty: "Medium",
-                options: [
-                    { op: "A", text: $sce.trustAsHtml("String"), correct: false },
-                    { op: "B", text: $sce.trustAsHtml("Number"), correct: false },
-                    { op: "C", text: $sce.trustAsHtml("Boolean"), correct: false },
-                    { op: "D", text: $sce.trustAsHtml("Character"), correct: true, explanation: "JavaScript has String, Number, Boolean, Object, Null, Undefined, and Symbol data types, but not Character as a separate type." }
-                ],
-                answer: "A",
-                flagged: true
-            },
-            {
-                id: 4,
-                question: $sce.trustAsHtml("What will be the output of: console.log(typeof null) in JavaScript?"),
-                marks: 4,
-                difficulty: "Hard",
-                options: [
-                    { op: "A", text: $sce.trustAsHtml("null"), correct: false },
-                    { op: "B", text: $sce.trustAsHtml("undefined"), correct: false },
-                    { op: "C", text: $sce.trustAsHtml("object"), correct: true, explanation: "This is a known quirk in JavaScript - typeof null returns 'object'." },
-                    { op: "D", text: $sce.trustAsHtml("string"), correct: false }
-                ],
-                answer: "C",
-                flagged: false
-            },
-            {
-                id: 5,
-                question: $sce.trustAsHtml("Which HTTP method is used to send data to a server to create a new resource?"),
-                marks: 4,
-                difficulty: "Medium",
-                options: [
-                    { op: "A", text: $sce.trustAsHtml("GET"), correct: false },
-                    { op: "B", text: $sce.trustAsHtml("POST"), correct: true, explanation: "POST is used to create new resources on the server." },
-                    { op: "C", text: $sce.trustAsHtml("PUT"), correct: false },
-                    { op: "D", text: $sce.trustAsHtml("DELETE"), correct: false }
-                ],
-                answer: "B",
-                flagged: false
-            },
-            {
-                id: 6,
-                question: $sce.trustAsHtml("What does CSS stand for?"),
-                marks: 4,
-                difficulty: "Easy",
-                options: [
-                    { op: "A", text: $sce.trustAsHtml("Creative Style Sheets"), correct: false },
-                    { op: "B", text: $sce.trustAsHtml("Cascading Style Sheets"), correct: true, explanation: "CSS stands for Cascading Style Sheets." },
-                    { op: "C", text: $sce.trustAsHtml("Computer Style Sheets"), correct: false },
-                    { op: "D", text: $sce.trustAsHtml("Colorful Style Sheets"), correct: false }
-                ],
-                answer: null,
-                flagged: false
-            },
-            {
-                id: 7,
-                question: $sce.trustAsHtml("Which symbol is used for comments in JavaScript?"),
-                marks: 4,
-                difficulty: "Easy",
-                options: [
-                    { op: "A", text: $sce.trustAsHtml("// for single-line, /* */ for multi-line"), correct: true, explanation: "JavaScript uses // for single-line comments and /* */ for multi-line comments." },
-                    { op: "B", text: $sce.trustAsHtml("# for single-line, ### for multi-line"), correct: false },
-                    { op: "C", text: $sce.trustAsHtml("<!-- --> for both"), correct: false },
-                    { op: "D", text: $sce.trustAsHtml("' ' for single-line"), correct: false }
-                ],
-                answer: null,
-                flagged: true
-            },
-            {
-                id: 8,
-                question: $sce.trustAsHtml("What is the purpose of the 'this' keyword in JavaScript?"),
-                marks: 4,
-                difficulty: "Hard",
-                options: [
-                    { op: "A", text: $sce.trustAsHtml("Refers to the current function"), correct: false },
-                    { op: "B", text: $sce.trustAsHtml("Refers to the global object"), correct: false },
-                    { op: "C", text: $sce.trustAsHtml("Refers to the object it belongs to"), correct: true, explanation: "The 'this' keyword refers to the object that is executing the current function." },
-                    { op: "D", text: $sce.trustAsHtml("Refers to the parent object"), correct: false }
-                ],
-                answer: null,
-                flagged: false
-            },
-            {
-                id: 9,
-                question: $sce.trustAsHtml("Which HTML tag is used to create a hyperlink?"),
-                marks: 4,
-                difficulty: "Easy",
-                options: [
-                    { op: "A", text: $sce.trustAsHtml("&lt;link&gt;"), correct: false },
-                    { op: "B", text: $sce.trustAsHtml("&lt;a&gt;"), correct: true, explanation: "The &lt;a&gt; tag defines a hyperlink." },
-                    { op: "C", text: $sce.trustAsHtml("&lt;href&gt;"), correct: false },
-                    { op: "D", text: $sce.trustAsHtml("&lt;url&gt;"), correct: false }
-                ],
-                answer: "B",
-                flagged: false
-            },
-            {
-                id: 10,
-                question: $sce.trustAsHtml("What does API stand for?"),
-                marks: 4,
-                difficulty: "Medium",
-                options: [
-                    { op: "A", text: $sce.trustAsHtml("Application Programming Interface"), correct: true, explanation: "API stands for Application Programming Interface." },
-                    { op: "B", text: $sce.trustAsHtml("Advanced Programming Interface"), correct: false },
-                    { op: "C", text: $sce.trustAsHtml("Application Process Integration"), correct: false },
-                    { op: "D", text: $sce.trustAsHtml("Automated Programming Interface"), correct: false }
-                ],
-                answer: null,
-                flagged: false
-            }
-        ];
-
-        // Add more dummy questions to reach 25
-        for (let i = 11; i <= 25; i++) {
-            $scope.dummyQuestions.push({
-                id: i,
-                question: $sce.trustAsHtml(`Sample question ${i} about web development concepts?`),
-                marks: 4,
-                difficulty: i % 3 === 0 ? "Hard" : i % 2 === 0 ? "Medium" : "Easy",
-                options: [
-                    { op: "A", text: $sce.trustAsHtml("Option A for question " + i), correct: i % 4 === 0 },
-                    { op: "B", text: $sce.trustAsHtml("Option B for question " + i), correct: i % 4 === 1 },
-                    { op: "C", text: $sce.trustAsHtml("Option C for question " + i), correct: i % 4 === 2 },
-                    { op: "D", text: $sce.trustAsHtml("Option D for question " + i), correct: i % 4 === 3 }
-                ],
-                answer: i <= 15 ? (i % 4 === 0 ? "A" : i % 4 === 1 ? "B" : i % 4 === 2 ? "C" : "D") : null,
-                flagged: i % 7 === 0
-            });
-        }
 
         // Initialize exam
         $scope.init = function () {
-            // Try to load real data first
-            $scope.loadExamData();
+            $scope.loading = true;
+            $scope.showEligibilityModal = false;
+            $scope.eligibilityError = null;
+
+            // First check eligibility
+            $scope.checkUserEligibility();
         };
 
-        // Load dummy data
-        $scope.loadDummyData = function () {
-            $scope.useDummyData = true;
+        // Check the user(student) eligibility for the exam
+        $scope.checkUserEligibility = function () {
             $scope.loading = true;
+            $scope.showEligibilityModal = false;
+            $scope.eligibilityError = null;
 
-            $timeout(() => {
-                $scope.examData = angular.copy($scope.dummyExamData);
-                $scope.processQuestions(angular.copy($scope.dummyQuestions));
-                $scope.initializeTimer(7200); // 2 hours
-                $scope.startAutoSave();
+            try {
+                $http.get(window.baseUrl + "/API/exam/eligibility/" + $scope.examId)
+                    .then(function (response) {
+                        $scope.loading = false;
+
+                        if (response.data.status === 'success' && response.data.isEligible) {
+                            $scope.isEligible = true;
+                            $scope.loadExamMetaData();
+                        } else {
+                            // Set error information
+                            $scope.eligibilityError = {
+                                code: response.data.code || 'UNKNOWN_ERROR',
+                                msg: response.data.msg || 'An unknown error occurred',
+                                title: getErrorTitle(response.data.code),
+                                timestamp: new Date()
+                            };
+
+                            $scope.showEligibilityModal = true;
+                        }
+                    })
+                    .catch(function (error) {
+                        $scope.loading = false;
+                        $scope.eligibilityError = {
+                            code: 'NETWORK_ERROR',
+                            msg: 'Failed to connect to server. Please check your internet connection.',
+                            title: 'Connection Error',
+                            timestamp: new Date()
+                        };
+                        $scope.showEligibilityModal = true;
+                    });
+            } catch (error) {
                 $scope.loading = false;
-                $scope.$apply();
-            }, 1000);
+                $scope.eligibilityError = {
+                    code: 'CLIENT_ERROR',
+                    msg: 'An error occurred while checking eligibility.',
+                    title: 'Client Error',
+                    timestamp: new Date()
+                };
+                $scope.showEligibilityModal = true;
+                console.error('Eligibility check error:', error);
+            }
+        };
+
+        // Helper function to get error titles
+        function getErrorTitle(errorCode) {
+            const errorTitles = {
+                'EXAM_NOT_FOUND': 'Exam Not Found',
+                'EXAM_NOT_PUBLISHED': 'Exam Not Published',
+                'EXAM_CANCELED': 'Exam Canceled',
+                'EXAM_NOT_STARTED': 'Exam Not Started',
+                'EXAM_ENDED': 'Exam Ended',
+                'NOT_REGISTERED': 'Not Registered',
+                'MAX_ATTEMPTS_EXCEEDED': 'Maximum Attempts Exceeded',
+                'NETWORK_ERROR': 'Network Error',
+                'CLIENT_ERROR': 'Client Error',
+                'UNKNOWN_ERROR': 'Unknown Error'
+            };
+
+            return errorTitles[errorCode] || 'Access Denied';
+        }
+
+        // Method to retry eligibility check
+        $scope.retryEligibilityCheck = function () {
+            $scope.checkUserEligibility();
+        };
+
+        // Method to contact support
+        $scope.contactSupport = function () {
+            // Implement support contact logic
+            window.location.href = window.baseUrl + '/support';
         };
 
         // Load exam data
-        $scope.loadExamData = async function () {
+        $scope.loadExamMetaData = async function () {
             try {
-                if (!$scope.examId) {
-                    // Use dummy data for demo
-                    $scope.loadDummyData();
-                    return;
-                }
-
-
                 // Load exam details
                 const examResponse = await $http.get(
-                    window.baseUrl + '/API/exam/attempt/' + $scope.examId
+                    window.baseUrl + '/API/exam/attempt/meta_data/' + $scope.examId
                 );
 
                 if (examResponse.data.status === 'success') {
@@ -275,34 +143,42 @@ app.controller('ExamAttemptController', [
                         duration: data.duration,
                         total_questions: data.total_questions,
                         total_marks: data.total_marks,
-                        passing_marks: data.passing_marks,
-                        passing_persentage: (data.passing_marks / data.total_marks) * 100,
                         instructions: $sce.trustAsHtml(data.instructions || ''),
                         schedule_type: data.schedule_type,
-                        shuffle_questions: data.shuffle_questions,
-                        shuffle_options: data.shuffle_options,
-                        full_screen_mode: data.full_screen_mode,
-                        disable_copy_paste: data.disable_copy_paste,
-                        disable_right_click: data.disable_right_click,
-                        allow_retake: data.allow_retake,
+
+                        start_time: data.start_time ? new Date(data.start_time) : null,
+                        end_time: data.start_time ? new Date(new Date(data.start_time).getTime() + data.duration * 60 * 1000) : null,
+                        started_at: (data.schedule_type === 'anytime' && data.started_at) ? new Date(data.started_at) : new Date(), // only for schedule type anytime
+
                         max_attempts: data.max_attempts > 0 ? data.max_attempts : 1,
-                        show_results_immediately: data.show_results_immediately,
-                        start_time: new Date(data.start_time).toISOString(),
-                        end_time: new Date(new Date(data.start_time).getTime() + data.duration * 1000).toISOString(),
+                        allow_retake: data.allow_retake,
+
+                        isAlreadyTaken: data.isAlredyTaken,
+                        isProgress: data.isProgress,
+                        isCompleted: data.isCompleted,
+                        isAbandoned: data.isAbandoned,
                     };
+                    const now = new Date();
 
-                    console.log($scope.examData)
+                    // ANYTIME
+                    if ($scope.examData.schedule_type === 'anytime') {
+                        $scope.startExam();
+                    }
 
-                    $scope.timeRemaining = data.duration * 60;
+                    // SCHEDULED
+                    if ($scope.examData.schedule_type === 'scheduled') {
 
-                    // Process questions
-                    $scope.processQuestions(examResponse.data.questions, examResponse.data.sections);
+                        if (now < $scope.examData.start_time) {
+                            $scope.isExamStarted = false;
+                            $scope.isExamEnded = false;
+                        } else if (now >= $scope.examData.start_time && now <= $scope.examData.end_time) {
+                            $scope.startExam();
 
-                    // Initialize timer
-                    $scope.initializeTimer($scope.timeRemaining);
-
-                    // Start auto-save
-                    $scope.startAutoSave();
+                        } else if (now > $scope.examData.end_time) {
+                            $scope.isExamStarted = false;
+                            $scope.isExamEnded = true;
+                        }
+                    }
 
                     $scope.loading = false;
                     $scope.$apply();
@@ -311,8 +187,54 @@ app.controller('ExamAttemptController', [
                 }
             } catch (error) {
                 console.error('Error loading exam:', error);
-                // Fall back to dummy data
-                $scope.loadDummyData();
+            }
+        };
+
+        // Start Exam
+        $scope.startExam = () => {
+            $scope.isExamStarted = true;
+            $scope.isExamEnded = false;
+            $scope.loadExamData();
+        }
+
+        // load other exam data
+        $scope.loadExamData = async function () {
+            try {
+                // Load exam details
+                const examResponse = await $http.get(
+                    window.baseUrl + '/API/exam/attempt/' + $scope.examId
+                );
+
+                if (examResponse.data.status === 'success') {
+                    const data = examResponse.data.rest_exam_info
+
+                    $scope.examData =angular.extend($scope.examData || {}, {
+                        passing_marks: data.passing_marks,
+                        passing_persentage: (data.passing_marks / data.total_marks) * 100,
+                        shuffle_questions: data.shuffle_questions,
+                        shuffle_options: data.shuffle_options,
+                        full_screen_mode: data.full_screen_mode,
+                        disable_copy_paste: data.disable_copy_paste,
+                        disable_right_click: data.disable_right_click,
+                        show_results_immediately: data.show_results_immediately,
+                    });
+
+
+                    // Process questions
+                    $scope.processQuestions(examResponse.data.questions, examResponse.data.sections);
+                    // Initialize timer
+                    $scope.timeRemaining = $scope.examData.duration * 60;
+                    $scope.initializeTimer($scope.timeRemaining);
+
+                    // Start auto-save
+                    $scope.startAutoSave();
+                    $scope.loading = false;
+                    $scope.$apply();
+                } else {
+                    throw new Error(examResponse.data.message || 'Failed to load exam data');
+                }
+            } catch (error) {
+                console.error('Error loading exam:', error);
             }
         };
 
@@ -339,7 +261,8 @@ app.controller('ExamAttemptController', [
                     // difficulty: question.difficulty,
                     answer: question.user_answer || null,
                     flagged: question.flagged || false,
-                    order: index + 1
+                    order: index + 1,
+                    sectionIds: question.sectionIconsods || []
                 };
             });
 
@@ -356,7 +279,7 @@ app.controller('ExamAttemptController', [
                 const questions = section.questions;
                 questions.forEach((question) => {
                     question.sectionDescription = section.description;
-                    question.sectionSecondDescription = section.second_description;
+                    question.sectionSecondDescription = section.secondDescription;
                     $scope.questions.push(question);
                 })
             })
@@ -429,7 +352,6 @@ app.controller('ExamAttemptController', [
                     reviewSectionsOrder.push(newSection);
                 }
             });
-            console.log(reviewSectionsOrder);
 
             $scope.reviewSections = reviewSectionsOrder;
 
@@ -443,7 +365,7 @@ app.controller('ExamAttemptController', [
 
         // Initialize timer
         $scope.initializeTimer = function (timeRemainingSeconds) {
-            $scope.timeRemaining = timeRemainingSeconds || ($scope.examData?.duration * 60 || 7200);
+            $scope.timeRemaining = timeRemainingSeconds;
             $scope.updateTimerDisplay();
 
             $scope.examEndTime = new Date();
@@ -457,13 +379,11 @@ app.controller('ExamAttemptController', [
                 if ($scope.timeRemaining <= 300 && !$scope.timerWarning) { // 5 minutes
                     $scope.timerWarning = true;
                     // Play warning sound
-                    if (!$scope.useDummyData) {
-                        try {
-                            const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3');
-                            audio.volume = 0.3;
-                            audio.play();
-                        } catch (e) { }
-                    }
+                    try {
+                        const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3');
+                        audio.volume = 0.3;
+                        audio.play();
+                    } catch (e) { }
                 }
 
                 // Check if time expired
@@ -477,6 +397,21 @@ app.controller('ExamAttemptController', [
 
         // Update timer display
         $scope.updateTimerDisplay = function () {
+            let endTime;
+
+            if ($scope.examData.schedule_type === 'scheduled') {
+                const startTime = new Date($scope.examData.start_time);
+                endTime = new Date(startTime.getTime() + $scope.examData.duration * 60 * 1000);
+            } else {
+                const startTime = new Date($scope.examData.started_at);
+                endTime = new Date(startTime.getTime() + $scope.examData.duration * 60 * 1000);
+            }
+
+            const currentTime = new Date();
+
+            // Time remaining in seconds
+            $scope.timeRemaining = Math.max(0, Math.floor((endTime - currentTime) / 1000));
+
             const hours = Math.floor($scope.timeRemaining / 3600);
             const minutes = Math.floor(($scope.timeRemaining % 3600) / 60);
             const seconds = $scope.timeRemaining % 60;
@@ -513,18 +448,6 @@ app.controller('ExamAttemptController', [
         // Save progress
         $scope.saveProgress = async function () {
             if ($scope.isSubmitting || $scope.showSuccessModal) return;
-
-            if ($scope.useDummyData) {
-                // Simulate save for demo
-                console.log('Demo: Progress saved at', new Date().toLocaleTimeString());
-                Toast.fire({
-                    type: 'info',
-                    title: 'Demo Mode',
-                    msg: 'Progress auto-saved (Demo Mode)',
-                    timer: 1500
-                });
-                return;
-            }
 
             try {
                 const answers = $scope.questions.map(q => ({
@@ -748,59 +671,31 @@ app.controller('ExamAttemptController', [
                 $scope.timeTakenFormatted = $scope.formatTime($scope.timeTaken);
                 $scope.submissionTime = new Date();
 
-                if ($scope.useDummyData) {
-                    // Demo submission
-                    $timeout(() => {
-                        // Clear intervals
-                        $interval.cancel($scope.timerInterval);
-                        $interval.cancel($scope.autoSaveInterval);
+                // Prepare final submission
+                const answers = $scope.questions.map(q => ({
+                    question_id: q.id,
+                    answer: q.answer
+                }));
 
-                        // Show success modal
-                        $scope.showSuccessModal = true;
-                        $scope.isSubmitting = false;
-
-                        // Play success sound
-                        try {
-                            const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3');
-                            audio.volume = 0.3;
-                            audio.play();
-                        } catch (e) { }
-
-                        $scope.$apply();
-                    }, 1500);
-
-                    Toast.fire({
-                        type: 'info',
-                        title: 'Demo Submission',
-                        msg: 'Submitting exam in demo mode...',
-                        timer: 1500
-                    });
-                } else {
-                    // Prepare final submission
-                    const answers = $scope.questions.map(q => ({
-                        question_id: q.id,
-                        answer: q.answer
-                    }));
-
-                    const response = await $http.post(
-                        window.baseUrl + '/API/exam/submit/' + $scope.attemptId,
-                        {
-                            answers: answers,
-                            time_taken: $scope.timeTaken
-                        }
-                    );
-
-                    if (response.data.status === 'success') {
-                        // Clear intervals
-                        $interval.cancel($scope.timerInterval);
-                        $interval.cancel($scope.autoSaveInterval);
-
-                        // Show success modal
-                        $scope.showSuccessModal = true;
-                    } else {
-                        throw new Error(response.data.message || 'Submission failed');
+                const response = await $http.post(
+                    window.baseUrl + '/API/exam/submit/' + $scope.attemptId,
+                    {
+                        answers: answers,
+                        time_taken: $scope.timeTaken
                     }
+                );
+
+                if (response.data.status === 'success') {
+                    // Clear intervals
+                    $interval.cancel($scope.timerInterval);
+                    $interval.cancel($scope.autoSaveInterval);
+
+                    // Show success modal
+                    $scope.showSuccessModal = true;
+                } else {
+                    throw new Error(response.data.message || 'Submission failed');
                 }
+
             } catch (error) {
                 console.error('Error submitting exam:', error);
                 Toast.fire({

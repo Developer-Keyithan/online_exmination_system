@@ -227,7 +227,7 @@ function renderMenuOptions($menu, $collapse, $level = 0)
                                 class="menu-label font-medium transition-all duration-300 group-hover:opacity-100 group-hover:mx-0 group-hover:leading-none <?php echo $collapse ? 'md:opacity-0 md:mx-2 md:leading-3 ' : 'leading-none'; ?>"><?= $item['title'] ?></span>
                         </div>
                         <i
-                            class="fa-solid fa-chevron-right text-white transition-transform duration-300 peer-checked:rotate-90"></i>
+                            class="fa-solid fa-chevron-down text-white transition-transform duration-300 peer-checked:rotate-180"></i>
                     </label>
 
                     <div class="overflow-hidden ml-2 border-l border-gray-700 transition-all duration-500 ease-in-out

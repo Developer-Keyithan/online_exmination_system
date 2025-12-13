@@ -163,7 +163,8 @@
                         </div>
 
                         <!-- Exam Instructions -->
-                        <div class="bg-[#0005] p-4 rounded-lg" ng-if="examData.instructions && examData.instructions !== ''">
+                        <div class="bg-[#0005] p-4 rounded-lg"
+                            ng-if="examData.instructions && examData.instructions !== ''">
                             <div class="flex items-center mb-3">
                                 <i class="fas fa-clipboard-list text-purple-400 mr-2"></i>
                                 <h4 class="text-gray-100 font-medium">Exam Instructions</h4>
@@ -173,7 +174,8 @@
                         </div>
 
                         <!-- Exam Rules -->
-                        <div class="bg-[#0005] p-4 rounded-lg" ng-if="examData.shuffle_questions || examData.shuffle_options || examData.full_screen_mode || examData.disable_copy_paste || examData.allow_retake">
+                        <div class="bg-[#0005] p-4 rounded-lg"
+                            ng-if="examData.shuffle_questions || examData.shuffle_options || examData.full_screen_mode || examData.disable_copy_paste || examData.allow_retake">
                             <div class="flex items-center mb-3">
                                 <i class="fas fa-gavel text-yellow-400 mr-2"></i>
                                 <h4 class="text-gray-100 font-medium">Important Rules</h4>
@@ -235,7 +237,7 @@
             <!-- Right Column: Registration Form -->
             <div class="lg:col-span-2">
                 <!-- Registration Card -->
-                <div class="bg-[#0004] rounded-lg p-6 border border-gray-600 sticky top-6">
+                <div class="bg-[#0004] rounded-lg p-6 border border-gray-600 top-6">
                     <h2 class="text-xl font-semibold text-gray-100 mb-6 flex items-center">
                         <i class="fas fa-user-plus text-green-400 mr-2"></i>
                         Registration Details
@@ -257,19 +259,21 @@
                                 <p class="text-sm text-gray-400">Email</p>
                                 <p class="text-gray-100 font-medium">{{studentInfo.email || 'N/A'}}</p>
                             </div>
-                            <div>
+                            <!-- <div>
                                 <p class="text-sm text-gray-400">Department</p>
                                 <p class="text-gray-100 font-medium">{{studentInfo.department || 'Not specified'}}</p>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
 
                     <!-- Registration Form -->
-                    <form name="registrationForm" ng-submit="submitRegistration()" novalidate>
+                    <form id="registrationForm" onsubmit="return false">
+                        <input type="hidden" name="student_id" value="{{ studentInfo.id }}" />
+                        <input type="hidden" name="exam_id" value="{{ examId }}" />
                         <!-- Terms & Conditions -->
                         <div class="mb-6">
                             <h3 class="text-lg font-medium text-gray-100 mb-3">Terms & Conditions</h3>
-                            <div class="bg-[#0005] p-4 rounded-lg max-h-48 overflow-y-auto">
+                            <div class="bg-[#0005] p-4 rounded-lg overflow-y-auto">
                                 <div class="space-y-3 text-sm text-gray-300">
                                     <p><strong>By registering for this exam, you agree to:</strong></p>
                                     <ol class="list-decimal pl-5 space-y-2">
@@ -290,7 +294,8 @@
                             <!-- Agreement Checkbox -->
                             <div class="mt-4">
                                 <label class="flex items-start space-x-3 cursor-pointer">
-                                    <input type="checkbox" ng-model="registrationData.agree_terms" required
+                                    <input type="checkbox" ng-model="registrationData.agree_terms" name="agree_terms"
+                                        required
                                         class="mt-1 rounded bg-[#0006] border-gray-600 text-green-500 focus:ring-green-500">
                                     <span class="text-gray-300 text-sm">
                                         I have read and agree to the terms and conditions
@@ -304,11 +309,11 @@
                         </div>
 
                         <!-- Additional Information -->
-                        <div class="mb-6">
-                            <h3 class="text-lg font-medium text-gray-100 mb-3">Additional Information</h3>
+                        <!-- <div class="mb-6">
+                            <h3 class="text-lg font-medium text-gray-100 mb-3">Additional Information</h3> -->
 
-                            <!-- Preferred Language -->
-                            <div class="mb-4">
+                        <!-- Preferred Language -->
+                        <!-- <div class="mb-4">
                                 <label class="block text-sm text-gray-400 mb-2">Preferred Language</label>
                                 <select ng-model="registrationData.preferred_language"
                                     class="w-full bg-[#0005] border border-gray-600 rounded-lg px-4 py-3 text-gray-100 focus:outline-none focus:border-cyan-500">
@@ -318,18 +323,18 @@
                                     <option value="de">German</option>
                                     <option value="other">Other</option>
                                 </select>
-                            </div>
+                            </div> -->
 
-                            <!-- Special Accommodations -->
-                            <div class="mb-4">
+                        <!-- Special Accommodations -->
+                        <!-- <div class="mb-4">
                                 <label class="block text-sm text-gray-400 mb-2">Special Accommodations Needed</label>
                                 <textarea ng-model="registrationData.special_accommodations" rows="3"
                                     placeholder="If you require any special accommodations (extra time, etc.)"
                                     class="w-full bg-[#0005] border border-gray-600 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-cyan-500"></textarea>
-                            </div>
+                            </div> -->
 
-                            <!-- Notification Preferences -->
-                            <div>
+                        <!-- Notification Preferences -->
+                        <!-- <div>
                                 <label class="flex items-start space-x-3 cursor-pointer">
                                     <input type="checkbox" ng-model="registrationData.receive_notifications"
                                         class="mt-1 rounded bg-[#0006] border-gray-600 text-cyan-500 focus:ring-cyan-500">
@@ -337,6 +342,32 @@
                                         Send me email notifications about exam updates
                                     </span>
                                 </label>
+                            </div>
+                        </div> -->
+
+
+                        <!-- Notification Preferences -->
+                        <div class="flex flex-col mb-4">
+                            <label class="flex items-start space-x-3 cursor-pointer">
+                                Enter your password
+                            </label>
+
+                            <div class="relative w-full">
+                                <input type="{{ showPassword ? 'text' : 'password' }}"
+                                    ng-model="registrationData.password" name="pwd" placeholder="Enter password"
+                                    required
+                                    class="mt-1 rounded bg-[#0006] w-full border-gray-600 text-cyan-500 focus:ring-cyan-500">
+                                <i class="fas absolute top-1/2 transform -translate-y-1/2 right-3 text-gray-400 hover:text-gray-300 cursor-pointer"
+                                    ng-class="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+                                    ng-click="showPassword = !showPassword"></i>
+
+                            </div>
+                            <span class="text-gray-300 text-sm mt-1">
+                                Enter your password for confirmation
+                            </span>
+                            <div ng-show="registrationForm.$submitted && registrationForm.$error.required"
+                                class="text-red-400 text-xs mt-1">
+                                Password is required
                             </div>
                         </div>
 
@@ -346,11 +377,11 @@
                             <div class="space-y-2">
                                 <div class="flex justify-between">
                                     <span class="text-gray-400">Exam:</span>
-                                    <span class="text-gray-100">{{examData.title}}</span>
+                                    <span class="text-gray-100 capitalize">{{examData.title}}</span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-gray-400">Code:</span>
-                                    <span class="text-gray-100">{{examData.code}}</span>
+                                    <span class="text-gray-100 uppercase">{{examData.code}}</span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-gray-400">Schedule:</span>
@@ -372,7 +403,7 @@
 
                         <!-- Action Buttons -->
                         <div class="space-y-3">
-                            <button type="submit" ng-disabled="registrationForm.$invalid || isSubmitting"
+                            <button type="button" ng-disabled="registrationForm.$invalid || isSubmitting" ng-click="submitRegistration()"
                                 class="w-full py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
                                 <i class="fas"
                                     ng-class="isSubmitting ? 'fa-spinner animate-spin' : 'fa-check-circle'"></i>
@@ -396,10 +427,9 @@
                     <div class="space-y-2 text-sm text-gray-300">
                         <p>If you encounter any issues during registration:</p>
                         <ul class="list-disc pl-5 space-y-1">
-                            <li>Contact the instructor: {{examData.instructor_email || 'instructor@university.edu'}}
-                            </li>
+                            <!-- <li>Contact the instructor: {{examData.instructor_email || 'instructor@university.edu'}}</li> -->
                             <li>Email support: support@examsystem.edu</li>
-                            <li>Call: +1 (555) 123-4567</li>
+                            <li>Call: +94 77 123-4567</li>
                         </ul>
                     </div>
                 </div>
@@ -408,7 +438,7 @@
     </div>
 
     <!-- Registration Success Modal -->
-    <div ng-if="showSuccessModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+    <div ng-if="showSuccessModal" class="fixed inset-0 bg-black/80 z-[9999999] flex items-center justify-center p-4">
         <div class="bg-[#0006] backdrop-blur rounded-lg border border-gray-600 w-full max-w-md">
             <div class="p-6 border-b border-gray-600">
                 <h3 class="text-xl font-bold text-gray-100 flex items-center">
@@ -460,17 +490,17 @@
 
                 <!-- Action Buttons -->
                 <div class="space-y-3">
-                    <a ng-href="<?php echo BASE_URL; ?>/exam/attempt/{{examData.id}}"
+                    <a ng-href="<?php echo BASE_URL; ?>/exam/{{attemptUrl}}/attempt/{{examData.id}}"
                         ng-if="examData.schedule_type === 'anytime' || isExamAvailable()"
                         class="block w-full py-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors text-center">
                         <i class="fas fa-play mr-2"></i>
                         Start Exam Now
                     </a>
 
-                    <a href="<?php echo BASE_URL; ?>/exams"
+                    <a href="<?php echo BASE_URL; ?>/exam/my"
                         class="block w-full py-3 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-700 transition-colors text-center">
                         <i class="fas fa-list mr-2"></i>
-                        View All Exams
+                        Back to Exams
                     </a>
 
                     <a href="<?php echo BASE_URL; ?>/dashboard"
@@ -484,7 +514,7 @@
     </div>
 
     <!-- Already Registered Modal -->
-    <div ng-if="showAlreadyRegisteredModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+    <div ng-if="showAlreadyRegisteredModal" class="fixed inset-0 bg-black/80 z-[9999999] flex items-center justify-center p-4">
         <div class="bg-[#0006] backdrop-blur rounded-lg border border-gray-600 w-full max-w-md">
             <div class="p-6 border-b border-gray-600">
                 <h3 class="text-xl font-bold text-gray-100 flex items-center">
@@ -524,18 +554,18 @@
 
                 <!-- Action Buttons -->
                 <div class="space-y-3">
-                    <a ng-href="<?php echo BASE_URL; ?>/exam/attempt/{{examData.id}}"
+                    <a ng-href="<?php echo BASE_URL; ?>/exam/{{attemptUrl}}/attempt/{{examData.id}}"
                         ng-if="existingRegistration.status === 'registered'"
                         class="block w-full py-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors text-center">
                         <i class="fas fa-play mr-2"></i>
                         Start Exam
                     </a>
 
-                    <a href="<?php echo BASE_URL; ?>/exams"
+                    <!-- <a href="<?php // echo BASE_URL; ?>/exams"
                         class="block w-full py-3 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-700 transition-colors text-center">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Back to Exams
-                    </a>
+                    </a> -->
 
                     <a ng-href="<?php echo BASE_URL; ?>/exam/results/student/{{examData.id}}"
                         ng-if="existingRegistration.status === 'completed'"
@@ -549,7 +579,7 @@
     </div>
 
     <!-- Exam Unavailable Modal -->
-    <div ng-if="showExamUnavailableModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+    <div ng-if="showExamUnavailableModal" class="fixed inset-0 bg-black/80 z-[9999999] flex items-center justify-center p-4">
         <div class="bg-[#0006] backdrop-blur rounded-lg border border-gray-600 w-full max-w-md">
             <div class="p-6 border-b border-gray-600">
                 <h3 class="text-xl font-bold text-gray-100 flex items-center">
@@ -581,17 +611,17 @@
                 </div>
 
                 <div class="space-y-3">
-                    <a href="<?php echo BASE_URL; ?>/exams"
+                    <a href="<?php echo BASE_URL; ?>/exam/my"
                         class="block w-full py-3 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-700 transition-colors text-center">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Back to Exams
                     </a>
 
-                    <button ng-click="contactInstructor()"
+                    <!-- <button ng-click="contactInstructor()"
                         class="w-full py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors">
                         <i class="fas fa-envelope mr-2"></i>
                         Contact Instructor
-                    </button>
+                    </button> -->
                 </div>
             </div>
         </div>

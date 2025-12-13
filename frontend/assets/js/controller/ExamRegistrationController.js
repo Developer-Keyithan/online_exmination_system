@@ -10,11 +10,20 @@ app.controller('ExamRegistrationController', [
         $scope.isSubmitting = false;
         $scope.showSuccessModal = false;
         $scope.showAlreadyRegisteredModal = false;
+        $scope.showPassword = false;
         $scope.showExamUnavailableModal = false;
         $scope.registrationId = null;
         $scope.registrationDate = null;
         $scope.existingRegistration = null;
         $scope.registrationError = null;
+        $scope.registrationData = {
+            agree_terms: false,
+            preferred_language: null,
+            special_accommodations: null,
+            receive_notifications: false
+        };
+        $scope.attemptUrl = null;
+
 
         // Initialize
         $scope.init = function () {
@@ -59,26 +68,17 @@ app.controller('ExamRegistrationController', [
             $http.get(window.baseUrl + '/API/student/info')
                 .then(function (response) {
                     if (response.data.status === 'success') {
-                        console.log(response.data)
                         $scope.studentInfo = response.data.student_info;
                     } else {
-                        // Use default student info
-                        $scope.studentInfo = {
-                            name: 'John Doe',
-                            student_id: 'STU2024001',
-                            email: 'john.doe@student.edu',
-                            department: 'Computer Science'
-                        };
+                        throw new Error(response.data.msg || 'Failed to load student information');
                     }
                 })
-                .catch(function () {
-                    // Use default student info on error
-                    $scope.studentInfo = {
-                        name: 'John Doe',
-                        student_id: 'STU2024001',
-                        email: 'john.doe@student.edu',
-                        department: 'Computer Science'
-                    };
+                .catch(function (error) {
+                    Toast.fire({
+                        type: 'error',
+                        title: "Error!",
+                        msg: error.msg || 'Failed to load student information. Please try again.'
+                    })
                 });
         };
 
@@ -158,21 +158,36 @@ app.controller('ExamRegistrationController', [
                 receive_notifications: $scope.registrationData.receive_notifications
             };
 
-            $http.post(window.baseUrl + '/API/exam/register', registrationData)
+            $http.post(window.baseUrl + '/API/exam/register', $('#registrationForm').serialize())
                 .then(function (response) {
                     if (response.data.status === 'success') {
                         $scope.registrationId = response.data.registration_id;
+                        $scope.attemptUrl = response.data.url;
                         $scope.registrationDate = new Date();
-                        $scope.showSuccessModal = true;
 
-                        // Show success notification
+                        if (response.data.code) {
+                            $scope.existingRegistration = response.data.existingRegistration;
+                            $scope.existingRegistration.date = new Date(response.data.existingRegistration.date);
+                            $scope.showAlreadyRegisteredModal = true;
+                            Toast.fire({
+                                type: 'info',
+                                title: 'Information!',
+                                msg: response.data.msg || 'You have already registered for this exam.'
+                            })
+                            return;
+                        }
+
+                        $scope.showSuccessModal = true;
                         Toast.fire({
                             type: 'success',
                             title: 'Registration Successful',
                             msg: 'You have been registered for the exam.'
                         });
                     } else {
-                        throw new Error(response.data.message || 'Registration failed');
+                        const err = new Error(response.data.message);
+                        err.code = response.data.code;
+                        console.log(err)
+                        throw err;
                     }
                 })
                 .catch(function (error) {
@@ -188,7 +203,7 @@ app.controller('ExamRegistrationController', [
                         Toast.fire({
                             type: 'error',
                             title: 'Registration Failed',
-                            msg: error.data?.message || 'Failed to register. Please try again.'
+                            msg: error.data?.msg || 'Failed to register. Please try again.'
                         });
                     }
                 })

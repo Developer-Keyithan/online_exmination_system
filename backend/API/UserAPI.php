@@ -125,9 +125,9 @@ class UserAPI
             // Get POST data safely
             $fullname = $_POST['fullname'] ?? '';
             $email = $_POST['email'] ?? '';
-            $phone = $_POST['phone'] ?? '';
+            $phone = str_replace(0, '', $_POST['phone']) ?? '';
             $username = $_POST['username'] ?? '';
-            $group = $_POST['userGroup'] ?? '';
+            $group_name = $_POST['userGroup'] ?? '';
             $status = $_POST['status'] ?? '';
             $pwd = $_POST['password'] ?? '';
             $cpwd = $_POST['cpassword'] ?? '';
@@ -144,7 +144,7 @@ class UserAPI
                 throw new Exception("Phone number is required");
             if (!$username)
                 throw new Exception("Username is required");
-            if (!$group)
+            if (!$group_name)
                 throw new Exception("User group is required");
             if (!$status)
                 throw new Exception("Status is required");
@@ -152,6 +152,16 @@ class UserAPI
                 throw new Exception("Password is required");
             if ($pwd !== $cpwd)
                 throw new Exception("Passwords do not match");
+
+            $group = null;
+            if ($group_name == 'Administrator') $group = 2;
+            if ($group_name == 'Admin') $group = 3;
+            if ($group_name == 'HOD') $group = 4;
+            if ($group_name == 'Lecturer') $group = 5;
+            if ($group_name == 'Student') $group = 6;
+            if ($group_name == 'Parent') $group = 7;
+
+            print_r($group);
 
             $stmt = $this->db->prepare("SELECT * FROM users WHERE email = ?");
             $stmt->execute([$email]);
@@ -166,14 +176,22 @@ class UserAPI
             $stmt = $this->db->prepare("SELECT * FROM users WHERE phone = ? AND user_group = ?");
             $stmt->execute([$username, $group]);
             if ($stmt->rowCount() > 0)
-                throw new Exception("Phone number already exists");
+                throw new Exception("Phone number already exists on this user group $group_name" );
 
             // Hash the password
             $hashedPwd = password_hash($pwd, PASSWORD_DEFAULT);
 
-            $reg_no = $this->generateRegNo($this->db, $group);
+            if ($group == 4) $prefix = 'HOD';
+            if ($group == 5) $prefix = 'LEC';
+            if ($group == 6) $prefix = 'STU';
+            if ($group == 7) $prefix = 'PRE';
+            if ($group == 1 || $group == 2 || $group == 3) {
+                $reg_no = null;
+            } else {
+                $reg_no = $this->generateRegNo($this->db, $prefix);
+            }
             // Insert into database (example using PDO)
-            $stmt = $this->db->prepare("INSERT INTO users (reg_no, name, email, phone, username, user_group, status, password, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $this->db->prepare("INSERT INTO users (reg_no, name, email, phone, username, user_group, status, password, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$reg_no, $fullname, $email, $phone, $username, $group, $status, $hashedPwd, $note]);
 
             return json_encode([
@@ -193,7 +211,7 @@ class UserAPI
     {
         try {
             $user_id = user_id();
-            $studentInfo = $this->db->query("SELECT * FROM users WHERE id = $user_id")->fetchAll(PDO::FETCH_ASSOC);
+            $studentInfo = $this->db->query("SELECT id, email, name, reg_no as student_id FROM users WHERE id = $user_id")->fetch(PDO::FETCH_ASSOC);
             return json_encode([
                 'status' => 'success',
                 'student_info' => $studentInfo

@@ -58,11 +58,11 @@
         // Rotate arrow when checkbox checked
         document.addEventListener('change', function (e) {
             if (e.target.type === 'checkbox' && e.target.classList.contains('peer')) {
-                const arrow = e.target.nextElementSibling.querySelector('.fa-chevron-right');
+                const arrow = e.target.nextElementSibling.querySelector('.fa-chevron-down');
                 if (e.target.checked) {
-                    arrow.classList.add('rotate-90');
+                    arrow.classList.add('rotate-180');
                 } else {
-                    arrow.classList.remove('rotate-90');
+                    arrow.classList.remove('rotate-180');
                 }
             }
         });

@@ -8,7 +8,7 @@
     </button>
 
     <!-- Loading State -->
-    <div ng-if="loading && !useDummyData" class="text-center py-12">
+    <div ng-if="loading" class="text-center py-12">
         <div class="max-w-md mx-auto">
             <i class="fas fa-spinner animate-spin text-cyan-500 text-4xl mb-4"></i>
             <h3 class="text-lg font-medium text-gray-100 mb-2">Loading Exam...</h3>
@@ -16,41 +16,162 @@
         </div>
     </div>
 
-    <!-- Dummy Data Notice -->
-    <div ng-if="useDummyData" class="mb-6 p-4 bg-yellow-900/20 border border-yellow-700 rounded-lg">
-        <div class="flex items-start space-x-3">
-            <i class="fas fa-info-circle text-yellow-400 text-lg mt-1"></i>
-            <div>
-                <h3 class="text-yellow-400 font-medium">Demo Mode - Using Dummy Data</h3>
-                <p class="text-gray-300 text-sm">This is a demonstration of the exam interface. All data is simulated
-                    for preview purposes.</p>
+    <!-- Eligibility Modal -->
+    <div ng-if="showEligibilityModal && !loading"
+        class="fixed inset-0 bg-black/80 z-[9999999] flex items-center justify-center p-4">
+        <div class="bg-[#0006] backdrop-blur rounded-lg border border-gray-600 w-full max-w-lg">
+            <div class="p-6 border-b border-gray-600">
+                <h3 class="text-xl font-bold text-gray-100 flex items-center">
+                    <i class="fas fa-exclamation-triangle text-yellow-400 mr-2"></i>
+                    Exam Access Restricted
+                </h3>
+            </div>
+
+            <div class="p-6">
+                <!-- Error Icon based on error code -->
+                <div class="text-center mb-6">
+                    <div class="w-24 h-24 mx-auto mb-4 rounded-full border-4 flex items-center justify-center" ng-class="{
+                            'bg-red-500/20 border-red-500/30': eligibilityError.code === 'MAX_ATTEMPTS_EXCEEDED' || eligibilityError.code === 'EXAM_ENDED' || eligibilityError.code === 'EXAM_CANCELED' || eligibilityError.code === 'EXAM_NOT_FOUND',
+                            'bg-yellow-500/20 border-yellow-500/30': eligibilityError.code === 'EXAM_NOT_STARTED' || eligibilityError.code === 'EXAM_NOT_PUBLISHED',
+                            'bg-blue-500/20 border-blue-500/30': eligibilityError.code === 'NOT_REGISTERED'
+                        }">
+                        <i class="fas fa-solid text-4xl" ng-class="{
+                            'fa-ban text-red-400': eligibilityError.code === 'MAX_ATTEMPTS_EXCEEDED' || eligibilityError.code === 'EXAM_NOT_FOUND',
+                            'fa-clock text-yellow-400': eligibilityError.code === 'EXAM_NOT_STARTED' || eligibilityError.code === 'EXAM_ENDED',
+                            'fa-eye-slash text-yellow-400': eligibilityError.code === 'EXAM_NOT_PUBLISHED',
+                            'fa-times-circle text-red-400': eligibilityError.code === 'EXAM_CANCELED',
+                            'fa-solid fa-user-slash text-blue-400': eligibilityError.code === 'NOT_REGISTERED',
+                            'fa-solid fa-exclamation-circle text-yellow-400': !eligibilityError.code
+                        }"></i>
+                    </div>
+
+                    <h4 class="text-lg font-medium text-gray-100 mb-2">
+                        {{eligibilityError.title || 'Access Denied'}}
+                    </h4>
+                    <p class="text-gray-400">{{eligibilityError.msg}}</p>
+                </div>
+
+                <!-- Error Details Card -->
+                <div class="bg-[#0005] rounded-lg p-4 mb-6">
+                    <h5 class="text-md font-medium text-gray-100 mb-3 flex items-center">
+                        <i class="fas fa-info-circle text-cyan-400 mr-2"></i>
+                        Error Details
+                    </h5>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Error Code:</span>
+                            <span class="font-mono px-2 py-1 rounded bg-gray-700 text-gray-300">
+                                {{eligibilityError.code || 'UNKNOWN_ERROR'}}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Exam ID:</span>
+                            <span class="text-cyan-400">{{ 'EX_' + ('0000' + examId).slice(-4) }}</span>
+                        </div>
+                        <div class="flex justify-between items-center" ng-if="eligibilityError.timestamp">
+                            <span class="text-gray-400">Timestamp:</span>
+                            <span class="text-gray-300">{{eligibilityError.timestamp | date:'medium'}}</span>
+                        </div>
+                    </div>
+
+                    <!-- Specific guidance based on error code -->
+                    <div ng-if="eligibilityError.code === 'EXAM_NOT_STARTED'"
+                        class="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded">
+                        <div class="flex items-center">
+                            <i class="fas fa-calendar-alt text-blue-400 text-xl mr-3"></i>
+                            <div>
+                                <div class="text-blue-300 font-medium">Exam Schedule</div>
+                                <div class="text-blue-400 text-sm mt-1">
+                                    Please wait until the scheduled start time to begin your exam.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div ng-if="eligibilityError.code === 'MAX_ATTEMPTS_EXCEEDED'"
+                        class="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded">
+                        <div class="flex items-center">
+                            <i class="fas fa-chart-line text-red-400 text-xl mr-3"></i>
+                            <div>
+                                <div class="text-red-300 font-medium">Attempt Limit Reached</div>
+                                <div class="text-red-400 text-sm mt-1">
+                                    You have used all available attempts for this exam.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div ng-if="eligibilityError.code === 'NOT_REGISTERED'"
+                        class="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded">
+                        <div class="flex items-center">
+                            <i class="fas fa-user-plus text-blue-400 text-xl mr-3"></i>
+                            <div>
+                                <div class="text-blue-300 font-medium">Registration Required</div>
+                                <div class="text-blue-400 text-sm mt-1">
+                                    Please register for this exam before attempting it.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-3 p-4">
+                    <a href="<?php echo BASE_URL; ?>/exam/my"
+                        class="block w-full py-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors text-center flex items-center justify-center space-x-2 hover:scale-105 transition-transform">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back to Exams List</span>
+                    </a>
+
+                    <button ng-click="retryEligibilityCheck()" ng-if="eligibilityError.code === 'EXAM_NOT_STARTED' || 
+                                  eligibilityError.code === 'EXAM_ENDED' ||
+                                  eligibilityError.code === 'EXAM_NOT_PUBLISHED'"
+                        class="w-full py-3 rounded-lg border border-yellow-500 text-yellow-400 hover:bg-yellow-500/10 transition-colors hover:scale-105 transition-transform">
+                        <i class="fas fa-redo mr-2"></i>
+                        Check Again
+                    </button>
+
+                    <a ng-if="eligibilityError.code === 'NOT_REGISTERED'"
+                        ng-href="<?php echo BASE_URL; ?>/exam/register/{{examId}}"
+                        class="block w-full py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors text-center flex items-center justify-center space-x-2 hover:scale-105 transition-transform">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Register Now</span>
+                    </a>
+
+                    <!-- <button ng-click="contactSupport()"
+                        class="w-full py-3 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-700 transition-colors hover:scale-105 transition-transform">
+                        <i class="fas fa-headset mr-2"></i>
+                        Contact Support
+                    </button> -->
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Error State -->
-    <div ng-if="error && !loading && !useDummyData" class="text-center py-12">
+    <!-- Error State (for non-eligibility errors) -->
+    <div ng-if="error && !loading && !showEligibilityModal" class="text-center py-12">
         <div class="max-w-md mx-auto">
             <i class="fas fa-exclamation-triangle text-red-500 text-6xl mb-4"></i>
             <h3 class="text-lg font-medium text-gray-100 mb-2">Failed to Load Exam</h3>
             <p class="text-gray-400 mb-6">{{error}}</p>
             <div class="flex flex-wrap gap-3 justify-center">
-                <a href="<?php echo BASE_URL; ?>/exams"
+                <a href="<?php echo BASE_URL; ?>/exam/my"
                     class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg inline-flex items-center space-x-2 transition-colors">
                     <i class="fas fa-arrow-left"></i>
                     <span>Back to Exams</span>
                 </a>
-                <button ng-click="loadDummyData()"
+                <button ng-click="retryLoading()"
                     class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg inline-flex items-center space-x-2 transition-colors">
-                    <i class="fas fa-eye"></i>
-                    <span>Try Demo Mode</span>
+                    <i class="fas fa-redo"></i>
+                    <span>Retry</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Exam Container (Visible when loaded) -->
-    <div ng-if="(!loading || useDummyData) && examData">
+    <!-- Exam Container (Visible when eligible and loaded) -->
+    <div ng-if="!loading && examData && isEligible && !showEligibilityModal">
+        <!-- [Rest of the exam interface remains exactly the same as in your original code] -->
         <!-- Exam Header -->
         <div class="bg-[#0004] rounded-lg p-6 mb-6 border border-gray-600">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -59,13 +180,6 @@
                     <p class="text-gray-400"><span class="uppercase">{{examData.code}}</span> •
                         {{examData.total_questions}} Questions •
                         {{examData.total_marks}} Total marks</p>
-                    <!-- <div class="flex items-center mt-2">
-                        <span class="text-sm text-gray-400 mr-4">Instructor: {{examData.instructor || 'Dr. John
-                            Smith'}}</span>
-                        <span class="text-sm px-2 py-1 rounded-full bg-blue-500/20 text-blue-300">
-                            {{examData.course || 'Computer Science 101'}}
-                        </span>
-                    </div> -->
                 </div>
 
                 <!-- Timer Section -->
@@ -86,9 +200,6 @@
                         </div>
                         <div class="text-xs text-gray-400">
                             Exam Duration: {{examData.duration}} minutes
-                        </div>
-                        <div class="text-xs text-yellow-400 mt-1" ng-if="timerWarning">
-                            <i class="fas fa-exclamation-triangle"></i> Less than 5 minutes remaining!
                         </div>
                     </div>
                 </div>
@@ -138,7 +249,7 @@
             </div>
 
             <!-- Quick Stats Bar -->
-            <div class="mt-4 grid grid-cols-3 gap-3">
+            <div ng-show="isExamStarted && !isExamEnded" class="mt-4 grid grid-cols-3 gap-3">
                 <div class="bg-[#0005] p-3 rounded-lg text-center">
                     <div class="text-2xl font-bold text-cyan-400">{{answeredCount}}</div>
                     <div class="text-xs text-gray-400">Answered</div>
@@ -155,7 +266,7 @@
         </div>
 
         <!-- Main Exam Area -->
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div ng-show="isExamStarted && !isExamEnded" class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <!-- Left Sidebar: Question Navigator -->
             <div class="lg:col-span-1">
                 <div class="bg-[#0004] rounded-lg p-4 border border-gray-600 sticky top-6">
@@ -239,46 +350,63 @@
             <!-- Right Content Area: Question Display -->
             <div class="lg:col-span-3">
                 <!-- Current Question -->
+                <!-- Main Question Container -->
                 <div class="bg-[#0004] rounded-lg p-6 border border-gray-600 mb-6">
+                    <!-- Section Descriptions -->
+                    <p ng-if="currentQuestion.sectionDescription" class="text-gray-300 mb-4"
+                        ng-class="currentQuestion.sectionSecondDescription ? '' : 'border-b border-gray-600/70 pb-4'">
+                        {{ currentQuestion.sectionDescription }}
+                    </p>
+                    <p ng-if="currentQuestion.sectionSecondDescription"
+                        class="text-gray-300 mb-4 border-b border-gray-600/70 pb-4">
+                        {{ currentQuestion.sectionSecondDescription }}
+                    </p>
+
                     <!-- Question Header -->
                     <div class="flex justify-between items-start mb-6">
+                        <!-- Left side: Question identification -->
                         <div>
                             <div class="flex items-center space-x-3 mb-2">
-                                <span class="text-lg font-bold text-cyan-400">Question {{currentQuestionIndex +
-                                    1}}</span>
+                                <!-- Question number with cyan accent for visual prominence -->
+                                <span class="text-lg font-bold text-cyan-400">
+                                    Question {{ currentQuestionIndex + 1 }}
+                                </span>
+
+                                <!-- Flagged indicator - only shown when question is marked for review -->
                                 <span ng-if="questions[currentQuestionIndex].flagged"
                                     class="text-xs px-2 py-1 bg-yellow-500/20 text-yellow-300 rounded-full">
                                     <i class="fas fa-flag mr-1"></i>Flagged for Review
                                 </span>
-                                <!-- <span class="text-sm text-gray-400">({{currentQuestion.marks}} marks)</span> -->
                             </div>
-                            <!-- <div class="text-sm text-gray-400">
-                                {{getQuestionType(currentQuestion)}}
-                            </div> -->
                         </div>
+
+                        <!-- Right side: Question metrics -->
                         <div class="flex items-center space-x-4">
+                            <!-- Marks display - shows point value of current question -->
                             <div class="text-sm">
                                 <span class="text-gray-400">Marks:</span>
-                                <span class="text-yellow-400 font-bold ml-1">{{currentQuestion.marks}}</span>
+                                <span class="text-yellow-400 font-bold ml-1">
+                                    {{ currentQuestion.marks }}
+                                </span>
                             </div>
-                            <!-- <div class="text-sm">
-                                <span class="text-gray-400">Difficulty:</span>
-                                <span class="text-cyan-400 font-bold ml-1">{{currentQuestion.difficulty ||
-                                    'Medium'}}</span>
-                            </div> -->
                         </div>
                     </div>
 
-                    <!-- Question Text -->
+                    <!-- Question Content Area -->
                     <div class="mb-8">
+                        <!-- Question Text -->
                         <div class="text-gray-100 text-lg leading-relaxed mb-4"
-                            ng-bind-html="currentQuestion.question | safeHtml"></div>
+                            ng-bind-html="currentQuestion.question | safeHtml">
+                        </div>
 
-                        <!-- Question Image (if any) -->
+                        <!-- Question Image Container -->
                         <div ng-if="currentQuestion.image" class="mb-6">
                             <div class="relative">
-                                <img ng-src="{{currentQuestion.image}}" alt="Question Image"
+                                <!-- Question image with border and size constraints -->
+                                <img ng-src="{{ currentQuestion.image }}" alt="Question Image"
                                     class="max-w-full max-h-96 rounded-lg border border-gray-600">
+
+                                <!-- Image label overlay positioned top-right -->
                                 <div class="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
                                     <i class="fas fa-image mr-1"></i>Question Image
                                 </div>
@@ -286,37 +414,45 @@
                         </div>
                     </div>
 
-                    <!-- Options -->
+                    <!-- Answer Options Container -->
                     <div class="space-y-4 mb-8">
-                        <div ng-repeat="option in currentQuestion.options track by $index"
-                            class="rounded-lg py-3 px-4 transition-all duration-200 cursor-pointer hover:border-cyan-500 hover:bg-cyan-500/5 hover:shadow-lg hover:scale-[1.01]"
-                            ng-class="{
-                                 'border-2 border-cyan-500 bg-cyan-500/10 shadow-lg scale-[1.01]': currentQuestion.answer === option.op,
-                                 'border-2 border-gray-600': currentQuestion.answer !== option.op
-                             }" ng-click="selectAnswer(option.op)">
+                        <!-- Individual Option -->
+                        <div ng-repeat="option in currentQuestion.options track by $index" class="rounded-lg py-3 px-4 transition-all duration-200 cursor-pointer 
+                            hover:border-cyan-500 hover:bg-cyan-500/5 hover:shadow-lg hover:scale-[1.01]" ng-class="{
+                            'border-2 border-cyan-500 bg-cyan-500/10 shadow-lg scale-[1.01]': currentQuestion.answer === option.op,
+                            'border-2 border-gray-600': currentQuestion.answer !== option.op
+                        }" ng-click="selectAnswer(option.op)">
+
+                            <!-- Option inner layout using flexbox -->
                             <div class="flex items-center">
+                                <!-- Option letter indicator (A, B, C, D) -->
                                 <div class="mr-4">
-                                    <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-200"
-                                        ng-class="currentQuestion.answer === option.op ? 
-                                                   'border-cyan-500 bg-cyan-500 shadow-lg' : 
-                                                   'border-gray-500 hover:border-cyan-400'">
+                                    <!-- Circular indicator that changes based on selection state -->
+                                    <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center 
+                                transition-all duration-200" ng-class="currentQuestion.answer === option.op ? 
+                                   'border-cyan-500 bg-cyan-500 shadow-lg' : 
+                                   'border-gray-500 hover:border-cyan-400'">
                                         <span class="text-sm font-medium" ng-class="currentQuestion.answer === option.op ? 
-                                                        'text-white' : 'text-gray-300'">
+                                        'text-white' : 'text-gray-300'">
                                             {{ ["A","B","C","D"][$index] }}
                                         </span>
                                     </div>
                                 </div>
-                                <div class="flex-1">
-                                    <div class="text-gray-100 text-lg" ng-bind-html="option.text | safeHtml"></div>
 
-                                    <!-- Option Image (if any) -->
+                                <!-- Option content area -->
+                                <div class="flex-1">
+                                    <!-- Option text (supports HTML content) -->
+                                    <div class="text-gray-100 text-lg" ng-bind-html="option.text | safeHtml">
+                                    </div>
+
+                                    <!-- Optional option-specific image -->
                                     <div ng-if="option.image" class="mt-3">
-                                        <img ng-src="{{option.image}}" alt="Option Image"
+                                        <img ng-src="{{ option.image }}" alt="Option Image"
                                             class="max-w-48 max-h-48 rounded border border-gray-600">
                                     </div>
                                 </div>
 
-                                <!-- Selection Indicator -->
+                                <!-- Selection confirmation indicator -->
                                 <div class="ml-4" ng-if="currentQuestion.answer === option.op">
                                     <div
                                         class="w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center animate-pulse">
@@ -327,23 +463,30 @@
                         </div>
                     </div>
 
-                    <!-- Navigation Buttons -->
+                    <!-- Navigation Controls -->
                     <div class="flex justify-between mt-8 pt-6 border-t border-gray-600">
-                        <button ng-click="previousQuestion()" ng-disabled="currentQuestionIndex === 0"
-                            class="px-6 py-3 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-700 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-transform">
+                        <!-- Previous Question Button -->
+                        <button ng-click="previousQuestion()" ng-disabled="currentQuestionIndex === 0" class="px-6 py-3 rounded-lg border border-gray-600 text-gray-300 
+                       hover:bg-gray-700 transition-colors flex items-center space-x-2 
+                       disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-transform">
                             <i class="fas fa-arrow-left"></i>
                             <span>Previous Question</span>
                         </button>
 
+                        <!-- Action Buttons Container -->
                         <div class="flex space-x-3">
-                            <button ng-click="saveAndMark()"
-                                class="px-6 py-3 rounded-lg bg-yellow-600 hover:bg-yellow-700 text-white transition-colors flex items-center space-x-2 hover:scale-105 transition-transform">
+                            <!-- Save & Mark Button -->
+                            <button ng-click="saveAndMark()" class="px-6 py-3 rounded-lg bg-yellow-600 hover:bg-yellow-700 
+                           text-white transition-colors flex items-center space-x-2 
+                           hover:scale-105 transition-transform">
                                 <i class="fas fa-bookmark"></i>
                                 <span>Save & Mark</span>
                             </button>
 
-                            <button ng-click="saveAndNext()"
-                                class="px-6 py-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors flex items-center space-x-2 hover:scale-105 transition-transform">
+                            <!-- Save & Next Button -->
+                            <button ng-click="saveAndNext()" class="px-6 py-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 
+                           text-white transition-colors flex items-center space-x-2 
+                           hover:scale-105 transition-transform">
                                 <span>Save & Next</span>
                                 <i class="fas fa-arrow-right"></i>
                             </button>

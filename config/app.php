@@ -12,7 +12,7 @@ return [
     'logo' => "assets/img/logo.png",
     'user_icon' => "assets/img/1.png",
     'powered-url' => 'https://northernithub.com/',
-    'powered-text' => 'Powered by: NorthernHub',
-    'copyright' => 'Copyright ' . $y . ' NorthernHub. All rights reserved.',
+    'powered-text' => 'Powered by: NorthernITHub',
+    'copyright' => 'Copyright ' . $y . ' NorthernITHub. All rights reserved.',
 ];
 ?>

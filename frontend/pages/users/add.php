@@ -189,7 +189,7 @@ $userGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <button type="button"
                             class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
                             ng-click="togglePasswordVisibility('password')">
-                            <i class="fas fa-eye"></i>
+                            <i class="fas" ng-class="passwordVisible.password ? 'fa-eye-slash' : 'fa-eye'"></i>
                         </button>
                     </div>
                     <div class="error-message" ng-show="addUserForm.submitted && addUserForm.password.$error.required">
@@ -211,7 +211,7 @@ $userGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <button type="button"
                             class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
                             ng-click="togglePasswordVisibility('confirmPassword')">
-                            <i class="fas fa-eye"></i>
+                            <i class="fas" ng-class="passwordVisible.confirmPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
                         </button>
                     </div>
                     <div class="error-message"

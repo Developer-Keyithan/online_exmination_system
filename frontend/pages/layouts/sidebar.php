@@ -41,7 +41,7 @@ $user_icon_path = $_SERVER['DOCUMENT_ROOT'] . '/NIT/exam/frontend/' . $user_icon
                 <?php endif; ?>
             </div>
             <div id="user-name"
-                class="flex flex-col items-start justify-between transition-all duration-300 group-hover:block <?php echo $collapse ? 'hidden' : 'block' ?>">
+                class="flex flex-col items-start justify-between w-[calc(100% - 50px)] transition-all duration-300 group-hover:block <?php echo $collapse ? 'hidden' : 'block' ?>">
                 <p><?php echo $_SESSION['username'] ?> <small>(<?php echo $_SESSION['role_name'] ?>)</small></p>
                 <p class="text-xs"><?php echo $_SESSION['email'] ?></p>
             </div>
