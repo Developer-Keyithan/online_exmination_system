@@ -1,229 +1,3 @@
-// app.controller('MyExamController', [
-//     "$scope", "$http", "$compile", "$timeout", "window",
-//     function ($scope, $http, $compile, $timeout, window) {
-//         // Initialize scope variables
-//         $scope.exams = [];
-//         $scope.filteredExams = [];
-//         $scope.loading = true;
-//         $scope.error = null;
-//         $scope.searchQuery = '';
-//         $scope.currentFilter = 'all';
-//         $scope.activeExamMenu = null;
-//         $scope.theLoggedUser = {};
-
-//         // Get user session
-//         $http.get(window.baseUrl + "/API/session")
-//             .then(function (response) {
-//                 $scope.theLoggedUser = response.data.user || {};
-//                 $scope.init();
-//             })
-//             .catch(function (err) {
-//                 console.error('Failed to get session:', err);
-//                 $scope.theLoggedUser = {};
-//                 $scope.init();
-//             });
-
-//         $scope.init = () => {
-//             $scope.loadExams();
-//         }
-
-//         // Load exams based on user role
-//         $scope.loadExams = function () {
-//             $scope.loading = true;
-//             $scope.error = null;
-
-//             let apiEndpoint = '';
-
-//             // Determine API endpoint based on user role
-//             if ($scope.theLoggedUser.role == '1' || $scope.theLoggedUser.role == '2' || 
-//                 $scope.theLoggedUser.role == 1 || $scope.theLoggedUser.role == 2) {
-//                 // Lecturer/Admin: Get exams created by them
-//                 apiEndpoint = window.baseUrl + '/API/exam/my';
-//             } else if ($scope.theLoggedUser.role == '3' || $scope.theLoggedUser.role == 3) {
-//                 // Student: Get exams assigned to them
-//                 apiEndpoint = window.baseUrl + '/API/exam/my-attempts';
-//             } else {
-//                 $scope.error = 'Invalid user role';
-//                 $scope.loading = false;
-//                 return;
-//             }
-
-//             $http.get(apiEndpoint)
-//                 .then(function (response) {
-//                     if (response.data.status === 'success') {
-//                         $scope.exams = response.data.exams || [];
-//                         $scope.filteredExams = [...$scope.exams];
-//                     } else {
-//                         $scope.error = response.data.message || 'Failed to load exams';
-//                         $scope.exams = [];
-//                         $scope.filteredExams = [];
-//                     }
-//                     $scope.loading = false;
-//                 })
-//                 .catch(function (error) {
-//                     $scope.error = error.data?.message || 'Failed to load exams';
-//                     $scope.loading = false;
-//                     console.error('Error loading exams:', error);
-//                 });
-//         };
-
-//         // Filter exams based on status (different for lecturers vs students)
-//         $scope.setFilter = function (filter) {
-//             $scope.currentFilter = filter;
-//             $scope.applyFilters();
-//         };
-
-//         // Apply both search and filter
-//         $scope.applyFilters = function () {
-//             let filtered = [...$scope.exams];
-
-//             // Apply status filter based on user role
-//             if ($scope.currentFilter !== 'all') {
-//                 filtered = filtered.filter(function (exam) {
-//                     if ($scope.theLoggedUser.role == '1' || $scope.theLoggedUser.role == '2' || 
-//                         $scope.theLoggedUser.role == 1 || $scope.theLoggedUser.role == 2) {
-//                         // Lecturer filters
-//                         return exam.status === $scope.currentFilter;
-//                     } else {
-//                         // Student filters
-//                         return exam.attempt_status === $scope.currentFilter;
-//                     }
-//                 });
-//             }
-
-//             // Apply search filter
-//             if ($scope.searchQuery.trim()) {
-//                 const query = $scope.searchQuery.toLowerCase();
-//                 filtered = filtered.filter(function (exam) {
-//                     return exam.title?.toLowerCase().includes(query) ||
-//                            exam.code?.toLowerCase().includes(query) ||
-//                            exam.description?.toLowerCase().includes(query);
-//                 });
-//             }
-
-//             $scope.filteredExams = filtered;
-//         };
-
-//         // Clear all filters and search
-//         $scope.clearFilters = function () {
-//             $scope.searchQuery = '';
-//             $scope.currentFilter = 'all';
-//             $scope.filteredExams = [...$scope.exams];
-//         };
-
-//         // Toggle exam dropdown menu (for lecturers only)
-//         $scope.toggleExamMenu = function (examId) {
-//             if ($scope.activeExamMenu === examId) {
-//                 $scope.activeExamMenu = null;
-//             } else {
-//                 $scope.activeExamMenu = examId;
-//             }
-//         };
-
-//         // Close dropdown when clicking outside
-//         $scope.closeDropdown = function () {
-//             $scope.activeExamMenu = null;
-//         };
-
-//         // Create new exam - navigate to create page (for lecturers only)
-//         $scope.createExam = function () {
-//             window.location.href = window.baseUrl + '/exam/create';
-//         };
-
-//         // Delete exam (for lecturers only)
-//         $scope.deleteExam = function (exam) {
-//             if (!exam || !exam.id) {
-//                 Toast.fire({
-//                     type: 'error',
-//                     title: 'Invalid Exam',
-//                     msg: 'Cannot delete: Invalid exam data'
-//                 });
-//                 return;
-//             }
-
-//             $scope.loading = true;
-
-//             // Confirm Deletion
-//             Toast.popover({
-//                 type: 'confirm',
-//                 title: 'Delete Exam',
-//                 titleColor: '#f87171',
-//                 content: `
-//                     <i class="fa-solid fa-trash-can" style="font-size:3rem; color:#f87171"></i><br><br>
-//                     Are you sure you want to delete "<strong>${exam.title}</strong>"? This action cannot be undone.
-//                 `,
-//                 contentColor: '#fff',
-//                 options: {
-//                     confirm: {
-//                         text: 'Yes, Delete',
-//                         background: '#DC2626',
-//                         onConfirm: async function () {
-//                             try {
-//                                 await $http.delete(window.baseUrl + '/API/exam/delete/' + exam.id)
-//                                     .then(function (response) {
-//                                         if (response.data.status === 'success') {
-//                                             Toast.fire({
-//                                                 type: 'success',
-//                                                 title: 'Deleted!',
-//                                                 msg: `"${exam.title}" has been deleted successfully.`
-//                                             });
-//                                             $scope.exams = $scope.exams.filter(function (e) {
-//                                                 return e.id !== exam.id;
-//                                             });
-//                                             $scope.applyFilters();
-//                                         } else {
-//                                             $scope.error = error.data?.message || 'Failed to delete exam';
-//                                             Toast.fire({
-//                                                 type: 'error',
-//                                                 title: 'Error!',
-//                                                 msg: `An error occurred while deleting "${exam.title}".`
-//                                             });
-//                                         }
-//                                         $scope.loading = false;
-//                                     })
-//                                 $scope.$apply();
-//                             } catch (err) {
-//                                 Toast.fire({
-//                                     type: 'error',
-//                                     title: 'Error!',
-//                                     msg: 'Failed to delete exam.'
-//                                 });
-//                                 console.error(err);
-//                                 $scope.loading = false;
-//                             }
-//                         }
-//                     },
-//                     cancel: {
-//                         text: "Don't Delete",
-//                         background: '#0E7490',
-//                         onCancel: function () {
-//                             Toast.popover({ type: 'close' })
-//                         }
-//                     }
-//                 }
-//             });
-//         };
-
-//         // Close dropdown when clicking outside (event listener)
-//         document.addEventListener('click', function (event) {
-//             if (!event.target.closest('.relative')) {
-//                 $scope.$apply(function () {
-//                     $scope.closeDropdown();
-//                 });
-//             }
-//         });
-
-//         // Custom filter for date formatting
-//         $scope.$on('$destroy', function() {
-//             document.removeEventListener('click', $scope.closeDropdown);
-//         });
-//     }
-// ]);
-
-
-
-
-
 app.controller('MyExamController', [
     "$scope", "$http", "$compile", "$timeout", "window",
     function ($scope, $http, $compile, $timeout, window) {
@@ -236,7 +10,12 @@ app.controller('MyExamController', [
         $scope.currentFilter = 'all';
         $scope.activeExamMenu = null;
         $scope.theLoggedUser = {};
-        $scope.useDummyData = false;
+        $scope.isUserSelect = false;
+        $scope.selectedUser = null;
+        $scope.selectedStudent = {};
+        $scope.selectedLecturer = {};
+        $scope.isUserSelect = false;
+
 
         // Comprehensive Dummy Data for Exams
         $scope.dummyExams = {
@@ -523,85 +302,63 @@ app.controller('MyExamController', [
         $http.get(window.baseUrl + "/API/session")
             .then(function (response) {
                 $scope.theLoggedUser = response.data.user || {};
-                // For demo purposes, we'll simulate different roles
-                if (!$scope.theLoggedUser.role) {
-                    // Default to lecturer for demo
-                    $scope.theLoggedUser.role = '1';
+                if ($scope.theLoggedUser.role == '1' || $scope.theLoggedUser.role == 1 ||
+                    $scope.theLoggedUser.role == '2' || $scope.theLoggedUser.role == 2 ||
+                    $scope.theLoggedUser.role == '3' || $scope.theLoggedUser.role == 3 ||
+                    $scope.theLoggedUser.role == '4' || $scope.theLoggedUser.role == 4) {
+                    $scope.isUserSelect = false;
+                } else {
+                    $scope.isUserSelect = true
+                    $scope.init();
                 }
-                $scope.init();
             })
             .catch(function (err) {
                 console.error('Failed to get session:', err);
-                // For demo, default to lecturer role
-                $scope.theLoggedUser = { role: '1', name: 'Demo User' };
-                $scope.useDummyData = true;
-                $scope.init();
             });
 
         $scope.init = () => {
-            if ($scope.useDummyData) {
-                $scope.loadDummyData();
-            } else {
-                $scope.loadExams();
-            }
-        }
-
-        // Load dummy data
-        $scope.loadDummyData = function () {
-            $scope.loading = true;
-            $timeout(() => {
-                if ($scope.theLoggedUser.role == '1' || $scope.theLoggedUser.role == '2' ||
-                    $scope.theLoggedUser.role == 1 || $scope.theLoggedUser.role == 2) {
-                    $scope.exams = $scope.dummyExams.lecturer;
-                } else {
-                    $scope.exams = $scope.dummyExams.student;
-                }
-                $scope.filteredExams = [...$scope.exams];
-                $scope.loading = false;
-            }, 800); // Simulate loading delay
+            $scope.loadExams();
         };
 
         // Load exams based on user role
         $scope.loadExams = function () {
             $scope.loading = true;
             $scope.error = null;
+            $scope.isUserSelect = true;
+            console.log('Selected User:', $scope.selectedUser);
 
-            let apiEndpoint = '';
-
-            // Determine API endpoint based on user role
-            if ($scope.theLoggedUser.role == '1' || $scope.theLoggedUser.role == '2' ||
-                $scope.theLoggedUser.role == 1 || $scope.theLoggedUser.role == 2) {
-                // Lecturer/Admin: Get exams created by them
-                apiEndpoint = window.baseUrl + '/API/exam/my-exams';
-            } else if ($scope.theLoggedUser.role == '3' || $scope.theLoggedUser.role == 3) {
-                // Student: Get exams assigned to them
-                apiEndpoint = window.baseUrl + '/API/exam/my-attempts';
-            } else {
-                $scope.error = 'Invalid user role';
-                $scope.loading = false;
-                return;
-            }
-
-            $http.get(apiEndpoint)
+            const apiEndpoint = '/API/exam/my/' + ($scope.selectedUser ? $scope.selectedUser.id : $scope.theLoggedUser.user);
+            console.log('API Endpoint:', apiEndpoint);
+            $http.get(window.baseUrl + apiEndpoint)
                 .then(function (response) {
                     if (response.data.status === 'success') {
                         $scope.exams = response.data.exams || [];
                         $scope.filteredExams = [...$scope.exams];
-                        $scope.useDummyData = false;
+                        $scope.selectedUser = response.data.user || $scope.theLoggedUser.user;
                     } else {
-                        // If API fails, fall back to dummy data
-                        $scope.useDummyData = true;
-                        $scope.loadDummyData();
+                        $scope.error = response.data.msg;
+                        $scope.selectedUser = $scope.selectedUser || $scope.theLoggedUser.user;
                         return;
                     }
                     $scope.loading = false;
                 })
                 .catch(function (error) {
-                    // If API call fails, use dummy data
-                    $scope.useDummyData = true;
-                    $scope.loadDummyData();
                     console.error('Error loading exams:', error);
                 });
+        };
+
+        $scope.selectStudent = function (id, name) {
+            $scope.selectedStudent = { id, name, role_id: 6 };
+            $scope.selectedLecturer = {};
+            $scope.selectedUser = $scope.selectedStudent;
+            $scope.isUserSelect = true;
+        };
+
+        $scope.selectLecturer = function (id, name) {
+            $scope.selectedLecturer = { id, name, role_id: 5 };
+            $scope.selectedStudent = {};
+            $scope.selectedUser = $scope.selectedLecturer;
+            $scope.isUserSelect = true;
         };
 
         // Helper functions for date calculations
@@ -715,47 +472,6 @@ app.controller('MyExamController', [
                     type: 'error',
                     title: 'Invalid Exam',
                     msg: 'Cannot delete: Invalid exam data'
-                });
-                return;
-            }
-
-            // For dummy data, just remove from array
-            if ($scope.useDummyData) {
-                Toast.popover({
-                    type: 'confirm',
-                    title: 'Delete Exam',
-                    titleColor: '#f87171',
-                    content: `
-                        <i class="fa-solid fa-trash-can" style="font-size:3rem; color:#f87171"></i><br><br>
-                        Are you sure you want to delete "<strong>${exam.title}</strong>"? This action cannot be undone.
-                    `,
-                    contentColor: '#fff',
-                    options: {
-                        confirm: {
-                            text: 'Yes, Delete',
-                            background: '#DC2626',
-                            onConfirm: function () {
-                                $scope.exams = $scope.exams.filter(function (e) {
-                                    return e.id !== exam.id;
-                                });
-                                $scope.applyFilters();
-                                Toast.fire({
-                                    type: 'success',
-                                    title: 'Deleted!',
-                                    msg: `"${exam.title}" has been deleted successfully.`
-                                });
-                                $scope.$apply();
-                                Toast.popover({ type: 'close' });
-                            }
-                        },
-                        cancel: {
-                            text: "Don't Delete",
-                            background: '#0E7490',
-                            onCancel: function () {
-                                Toast.popover({ type: 'close' })
-                            }
-                        }
-                    }
                 });
                 return;
             }

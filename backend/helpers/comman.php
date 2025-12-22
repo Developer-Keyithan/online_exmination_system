@@ -393,7 +393,7 @@ function user_name()
 
 function getUserRoleID($id)
 {
-    $sql = "SELECT user_group FROM user WHERE id = ?";
+    $sql = "SELECT user_group FROM users WHERE id = ?";
     $statement = db()->prepare($sql);
     $statement->execute([$id]);
     $row = $statement->fetch(PDO::FETCH_ASSOC);

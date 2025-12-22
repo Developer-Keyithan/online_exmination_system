@@ -103,7 +103,7 @@ Router::group(['prefix' => 'API'], function () {
     Router::get('/student/info', 'UserAPI@getStudentInfo', 'get_student_info', ['auth']);
 
     Router::get('/exam/all', 'ExamAPI@getAllExams', 'get_all_exams', ['auth']);
-    Router::get('/exam/my/{user_id}', 'ExamAPI@getUserExams', 'get_user_exams', ['auth']);
+    Router::get('/exam/my/{user_id}', 'ExamAPI@getExamsByRole', 'get_user_exams', ['auth']);
     Router::get('/exam/data/{exam_id}', 'ExamAPI@getExamDataForPreview', 'get_exam', ['auth']);
     Router::get('/exam/registration/{exam_id}', 'ExamAPI@getExamRegistrationData', 'get_exam_registration_data', ['auth']);
     Router::get('/exam/register/{exam_id}', 'ExamAPI@configRegistration', 'config_registration', ['auth']);

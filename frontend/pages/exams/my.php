@@ -4,20 +4,134 @@
 <?php $this->start('content'); ?>
 <div class="bg-[#0003] p-6 rounded-lg mb-16">
     <!-- Header Section -->
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold"
-            ng-show="theLoggedUser.role == '2' || theLoggedUser.role == 2">
-            My Created Exams</h1>
-        <h1 class="text-2xl font-bold" ng-show="theLoggedUser.role == '3' || theLoggedUser.role == 3 || theLoggedUser.role == '1' || theLoggedUser.role == 1">My Exams</h1>
-        <p class="text-gray-400"
-            ng-show="theLoggedUser.role == '2' || theLoggedUser.role == 2">
-            Manage and monitor all your examinations</p>
-        <p class="text-gray-400" ng-show="theLoggedUser.role == '3' || theLoggedUser.role == 3 || theLoggedUser.role == '1' || theLoggedUser.role == 1">View and attempt your
-            assigned examinations</p>
+    <div class="mb-6 flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+        <div>
+            <div
+                ng-show="(theLoggedUser.user === '5' || theLoggedUser.user === 5 || selectedUser.role_id === '5' || selectedUser.role_id === 5) && isUserSelect">
+                <h1 class="text-2xl font-bold">
+                    Your Created Exams
+                </h1>
+                <p class="text-gray-400">
+                    Create, manage, and monitor all of your examinations in one place.
+                </p>
+            </div>
+
+            <div
+                ng-show="(theLoggedUser.user === '6' || theLoggedUser.user === 6 || selectedUser.role_id === '6' || selectedUser.role_id === 6) && isUserSelect">
+                <h1 class="text-2xl font-bold">
+                    Your Exams
+                </h1>
+                <p class="text-gray-400">
+                    View and attempt only the examinations you are registered for.
+                </p>
+            </div>
+
+            <div
+                ng-show="(theLoggedUser.user === '7' || theLoggedUser.user === 7 || selectedUser.role_id === '7' || selectedUser.role_id === 7) && isUserSelect">
+                <h1 class="text-2xl font-bold">
+                    Child's Exams
+                </h1>
+                <p class="text-gray-400">
+                    View your child’s assigned examinations and monitor their progress and results.
+                </p>
+            </div>
+        </div>
+
+
+        <?php if (user_id() == 1 || user_id() == 2 || user_id() == 3 || user_id() == 4):
+            $stmt = db()->prepare("SELECT id, name FROM users WHERE user_group = 6");
+            $stmt->execute();
+            $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $stmt = db()->prepare("SELECT id, name FROM users WHERE user_group = 5");
+            $stmt->execute();
+            $lecturers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            ?>
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <!-- Select a student -->
+                <div
+                    class="bg-[#0d1117] rounded-lg border border-[#fff2] text-gray-300 p-2 relative w-full md:min-w-[250px]">
+
+                    <!-- Default label -->
+                    <div class="cursor-pointer w-full flex items-center justify-between"
+                        ng-click="studentDropdownOpen = !studentDropdownOpen; lecturerDropdownOpen = false;">
+                        <p class="px-2">{{ selectedStudent.id ? selectedStudent.name : 'Select a student' }}</p>
+                        <i class="fa-solid fa-chevron-down transition-all duration-300"
+                            ng-class="{'rotate-180': studentDropdownOpen}"></i>
+                    </div>
+
+                    <!-- Dropdown list -->
+                    <div ng-show="studentDropdownOpen"
+                        class="overflow-hidden mt-1 absolute top-full right-0 bg-[#0d1117] border border-[#fff2] rounded-lg w-full z-50">
+
+                        <div class="p-2">
+                            <!-- Search input -->
+                            <input type="text" ng-model="studentSearch" placeholder="Search students..."
+                                class="w-full p-2 rounded bg-[#0d1117] border border-[#fff2] text-gray-300 focus:outline-none" />
+                        </div>
+
+                        <div class="max-h-60 overflow-y-auto p-2">
+
+                            <!-- Individual students -->
+                            <?php foreach ($students as $student): ?>
+                                <?php if (!isset($student['id']))
+                                    continue; ?>
+                                <div class="rounded-lg px-4 py-2 text-gray-300 hover:bg-cyan-500/30 cursor-pointer transition-all duration-300"
+                                    ng-class="{'bg-cyan-500/70 hover:bg-cyan-500/60 text-white': selectedStudent && selectedStudent.id === <?= $student['id'] ?>}"
+                                    ng-show="'<?= strtolower(addslashes($student['name'])) ?>'.indexOf((studentSearch || '').toLowerCase()) !== -1"
+                                    ng-click="selectStudent(<?= $student['id'] ?>, '<?= addslashes($student['name']) ?>'); studentDropdownOpen = false; selectedUser = selectedStudent; loadExams()">
+                                    <?= htmlspecialchars($student['name']) ?>
+                                </div>
+                            <?php endforeach; ?>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Select a lecturer -->
+                <div
+                    class="bg-[#0d1117] rounded-lg border border-[#fff2] text-gray-300 p-2 relative w-full md:min-w-[250px]">
+
+                    <!-- Default label -->
+                    <div class="cursor-pointer w-full flex items-center justify-between"
+                        ng-click="lecturerDropdownOpen = !lecturerDropdownOpen; studentDropdownOpen = false;">
+                        <p class="px-2">{{ selectedLecturer.id ? selectedLecturer.name : 'Select a lecturer' }}</p>
+                        <i class="fa-solid fa-chevron-down transition-all duration-300"
+                            ng-class="{'rotate-180': lecturerDropdownOpen}"></i>
+                    </div>
+
+                    <!-- Dropdown list -->
+                    <div ng-show="lecturerDropdownOpen"
+                        class="overflow-hidden mt-1 absolute top-full right-0 bg-[#0d1117] border border-[#fff2] rounded-lg w-full z-50">
+
+                        <div class="p-2">
+                            <!-- Search input -->
+                            <input type="text" ng-model="lecturerSearch" placeholder="Search Lecturers..."
+                                class="w-full p-2 rounded bg-[#0d1117] border border-[#fff2] text-gray-300 focus:outline-none" />
+                        </div>
+
+                        <div class="max-h-60 overflow-y-auto p-2">
+
+                            <!-- Individual students -->
+                            <?php foreach ($lecturers as $lecturer): ?>
+                                <?php if (!isset($lecturer['id']))
+                                    continue; ?>
+                                <div class="rounded-lg px-4 py-2 text-gray-300 hover:bg-cyan-500/30 cursor-pointer transition-all duration-300"
+                                    ng-class="{'bg-cyan-500/70 hover:bg-cyan-500/60 text-white': selectedLecturer && selectedLecturer.id === <?= $lecturer['id'] ?>}"
+                                    ng-show="'<?= strtolower(addslashes($lecturer['name'])) ?>'.indexOf((lecturerSearch || '').toLowerCase()) !== -1"
+                                    ng-click="selectLecturer(<?= $lecturer['id'] ?>, '<?= addslashes($lecturer['name']) ?>'); lecturerDropdownOpen = false; selectedUser = selectedLecturer; loadExams()">
+                                    <?= htmlspecialchars($lecturer['name']) ?>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
 
     <!-- Loading State -->
-    <div ng-if="loading && !useDummyData" class="text-center py-12">
+    <div ng-if="loading && isUserSelect" class="text-center py-12">
         <div class="max-w-md mx-auto">
             <i class="fas fa-spinner animate-spin text-cyan-500 text-4xl mb-4"></i>
             <h3 class="text-lg font-medium text-gray-100 mb-2">Loading...</h3>
@@ -25,22 +139,10 @@
         </div>
     </div>
 
-    <!-- Dummy Data Notice -->
-    <div ng-cloak ng-if="useDummyData" class="mb-6 p-4 bg-yellow-900/20 border border-yellow-700 rounded-lg">
-        <div class="flex items-start space-x-3">
-            <i class="fas fa-info-circle text-yellow-400 text-lg mt-1"></i>
-            <div>
-                <h3 class="text-yellow-400 font-medium">Showing Dummy Data</h3>
-                <p class="text-gray-300 text-sm">This is sample data for demonstration. Your actual exams will appear
-                    here when connected to the backend.</p>
-            </div>
-        </div>
-    </div>
-
     <!-- For Lecturers: Show Create Button -->
     <div ng-cloak
-        ng-if="!loading && (theLoggedUser.role == '2' || theLoggedUser.role == 2)"
-        class="mb-6">
+        ng-if="!loading && (theLoggedUser.role == '5' || theLoggedUser.role == 5 || selectedUser.role_id == '5' || selectedUser.role_id == 5)"
+        class="mb-6 flex flex-wrap gap-3">
         <div class="flex flex-wrap justify-between items-center gap-4">
             <div class="flex flex-wrap gap-3">
                 <button ng-click="setFilter('all')"
@@ -79,7 +181,8 @@
     </div>
 
     <!-- For Students: Show Attempt Filters -->
-    <div ng-cloak ng-if="!loading && (theLoggedUser.role == '3' || theLoggedUser.role == 3 || theLoggedUser.role == '1' || theLoggedUser.role == 1)"
+    <div ng-cloak
+        ng-if="!loading && (theLoggedUser.role == '6' || theLoggedUser.role == 6 || selectedUser.role_id == '6' || selectedUser.role_id == 6 || theLoggedUser.role == '7' || theLoggedUser.role == 7 || selectedUser.role_id == '7' || selectedUser.role_id == 7)"
         class="mb-6 flex flex-wrap gap-3">
         <button ng-click="setFilter('all')"
             ng-class="{'bg-cyan-600 text-white': currentFilter === 'all', 'bg-[#0005] text-gray-300': currentFilter !== 'all'}"
@@ -118,11 +221,10 @@
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
 
         <!-- For Lecturers: Created Exams View -->
-        <div ng-repeat="exam in filteredExams"
-            ng-show="theLoggedUser.role == '2' || theLoggedUser.role == 2"
+        <div ng-repeat="exam in filteredExams" ng-show="theLoggedUser.role == '5' || theLoggedUser.role == 5 || selectedUser.role_id == '5' || selectedUser.role_id == 5"
             class="bg-[#0003] rounded-xl shadow-md border border-[#fff2] hover:shadow-lg transition-shadow hover:border-cyan-500/50 hover:scale-[1.02] transition-all duration-300">
             <!-- Exam Header -->
-            <div class="p-4 border-b border-[#fff2]">
+            <div class="p-4 border-b border-[#fff2] grid grid-rows-subgrid grid-start">
                 <div class="flex justify-between items-start">
                     <div>
                         <h3 class="font-semibold text-lg text-gray-200 capitalize">{{exam.title}}</h3>
@@ -328,7 +430,8 @@
         </div>
 
         <!-- For Students: Attempt Exams View -->
-        <div ng-repeat="exam in filteredExams" ng-show="theLoggedUser.role == '3' || theLoggedUser.role == 3 || theLoggedUser.role == '1' || theLoggedUser.role == 1"
+        <div ng-repeat="exam in filteredExams"
+            ng-show="theLoggedUser.role == '6' || theLoggedUser.role == 6 || selectedUser.role_id == '6' || selectedUser.role_id == 6 || theLoggedUser.role == '7' || theLoggedUser.role == 7 || selectedUser.role_id == '7' || selectedUser.role_id == 7"
             class="bg-[#0003] rounded-xl shadow-md border border-[#fff2] hover:shadow-lg transition-shadow hover:border-green-500/50 hover:scale-[1.02] transition-all duration-300">
             <!-- Exam Header -->
             <div class="p-4 border-b border-[#fff2]">
@@ -576,7 +679,7 @@
 
     <!-- No Exams State - Lecturer -->
     <div ng-cloak
-        ng-if="!loading && filteredExams.length === 0 && exams.length === 0 && (theLoggedUser.role == '2' || theLoggedUser.role == 2) && !useDummyData"
+        ng-if="!loading && filteredExams.length === 0 && exams.length === 0 && (theLoggedUser.role == '2' || theLoggedUser.role == 2) && isUserSelect"
         class="text-center py-12">
         <div class="max-w-md mx-auto">
             <i class="fas fa-clipboard-list text-gray-300 text-6xl mb-4"></i>
@@ -592,16 +695,23 @@
 
     <!-- No Exams State - Student -->
     <div ng-cloak
-        ng-if="!loading && filteredExams.length === 0 && exams.length === 0 && (theLoggedUser.role == '3' || theLoggedUser.role == 3 || theLoggedUser.role == '1' || theLoggedUser.role == 1) && !useDummyData"
+        ng-if="!loading && filteredExams.length === 0 && exams.length === 0 && (theLoggedUser.role == '6' || theLoggedUser.role == 6 || theLoggedUser.role == '1' || theLoggedUser.role == 1) && isUserSelect"
         class="text-center py-12">
         <div class="max-w-md mx-auto">
-            <i class="fas fa-book-open text-gray-300 text-6xl mb-4"></i>
-            <h3 class="text-lg font-medium text-gray-100 mb-2">No exams assigned yet</h3>
-            <p class="text-gray-400 mb-6">You don't have any exams assigned to you at the moment.</p>
+            <i class="fas fa-user-clock text-yellow-400 text-6xl mb-4"></i>
+
+            <h3 class="text-lg font-medium text-gray-100 mb-2">
+                No Exams Found
+            </h3>
+
+            <p class="text-gray-400 mb-6">
+                You have not registered for or attended any exams yet.
+            </p>
+
             <button ng-click="requestExams()"
-                class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg inline-flex items-center space-x-2 transition-colors hover:scale-105 transition-transform">
-                <i class="fas fa-question-circle"></i>
-                <span>Contact Instructor</span>
+                class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg inline-flex items-center space-x-2 transition-all hover:scale-105">
+                <i class="fas fa-paper-plane"></i>
+                <span>Request Exam Access</span>
             </button>
         </div>
     </div>
@@ -621,7 +731,7 @@
     </div>
 
     <!-- Error State -->
-    <div ng-cloak ng-if="error && !useDummyData" class="text-center py-12">
+    <div ng-cloak ng-if="error && isUserSelect" class="text-center py-12">
         <div class="max-w-md mx-auto">
             <i class="fas fa-exclamation-triangle text-red-500 text-6xl mb-4"></i>
             <h3 class="text-lg font-medium text-gray-100 mb-2">Failed to load exams</h3>
@@ -632,13 +742,27 @@
                     <i class="fas fa-redo"></i>
                     <span>Try Again</span>
                 </button>
-                <button ng-click="useDummyData = true"
-                    class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg inline-flex items-center space-x-2 transition-colors">
-                    <i class="fas fa-eye"></i>
-                    <span>Show Demo Data</span>
-                </button>
             </div>
         </div>
     </div>
+
+    <!-- User not selected state -->
+    <div ng-cloak
+        ng-if="!isUserSelect && (theLoggedUser.user === '1' || theLoggedUser.user === 1 || theLoggedUser.user === '2' || theLoggedUser.user === 2 || theLoggedUser.user === '3' || theLoggedUser.user === 3 || theLoggedUser.user === '4' || theLoggedUser.user === 4)"
+        class="text-center py-12">
+
+        <div class="max-w-md mx-auto">
+            <i class="fas fa-user-slash text-cyan-400 text-6xl mb-4"></i>
+
+            <h3 class="text-lg font-medium text-gray-100 mb-2">
+                Select a User Type
+            </h3>
+
+            <p class="text-gray-400 mb-6">
+                Please select a Student or Lecturer to continue.
+            </p>
+        </div>
+    </div>
+
 </div>
 <?php $this->end(); ?>

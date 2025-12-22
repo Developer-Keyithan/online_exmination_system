@@ -1631,4 +1631,128 @@ class ExamAPI
             ]);
         }
     }
+
+    public function getExamsByRole($user_id = null)
+    {
+        try {
+            $user_id = $user_id ?? user_id();
+            if (!$user_id) {
+                throw new Exception("Unauthorized");
+            }
+
+            $role = getUserRoleID($user_id);
+
+            /* =========================
+               BASE QUERY
+            ========================== */
+            $sql = "SELECT ei.*, es.*, er.*, ea.*, ea.status AS attempt_status FROM exam_info ei LEFT JOIN exam_settings es ON ei.id = es.exam_id LEFT JOIN exam_registration er ON ei.id = er.exam_id LEFT JOIN exam_attempts ea ON er.id = ea.registration_id ";
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $lecturer = [];
+            $student = [];
+
+            /* =========================
+               LECTURER / ADMIN / CREATOR
+               Roles: 1,2,3,5
+            ========================== */
+            if (in_array($role, [5])) {
+                foreach ($rows as $row) {
+                    $lecturer[] = [
+                        'id' => (int) $row['id'],
+                        'title' => $row['title'],
+                        'code' => $row['code'],
+                        'instructions' => $row['instructions'],
+                        'duration' => (int) $row['duration'],
+                        'total_questions' => (int) $row['total_num_of_ques'],
+                        'total_marks' => (int) $row['total_marks'],
+                        'passing_marks' => (int) $row['passing_marks'],
+                        'status' => $row['status'],
+                        'schedule_type' => $row['schedule_type'],
+                        'start_time' => $row['start_time']
+                            ? str_replace(' ', 'T', $row['start_time']) . 'Z'
+                            : null,
+                        'participants_count' => (int) $row['attempts_count'],
+                        'completed_count' =>
+                            $row['attempt_status'] === 'completed' ? 1 : 0,
+                        'shuffle_questions' => (bool) $row['shuffle_questions'],
+                        'shuffle_options' => (bool) $row['shuffle_options'],
+                        'full_screen_mode' => (bool) $row['full_screen_mode'],
+                        'allow_retake' => (bool) $row['retake'],
+                    ];
+                }
+            }
+
+            /* =========================
+               STUDENT
+               Roles: 6,7
+            ========================== */
+            if (in_array($role, [6, 7])) {
+                foreach ($rows as $row) {
+
+                    // only student related records
+                    if ((int) $row['student_id'] !== (int) $user_id) {
+                        continue;
+                    }
+
+                    $percentage = $row['score'] !== null
+                        ? round(($row['score'] / $row['total_marks']) * 100)
+                        : null;
+
+                    $student[] = [
+                        'id' => (int) $row['id'],
+                        'title' => $row['title'],
+                        'code' => $row['code'],
+                        'instructor_name' => null,
+                        'duration' => (int) $row['duration'],
+                        'total_questions' => (int) $row['total_num_of_ques'],
+                        'total_marks' => (int) $row['total_marks'],
+                        'passing_marks' => (int) $row['passing_marks'],
+                        'passing_percentage' =>
+                            round(($row['passing_marks'] / $row['total_marks']) * 100),
+                        'schedule_type' => $row['schedule_type'],
+                        'start_time' => $row['start_time']
+                            ? str_replace(' ', 'T', $row['start_time']) . 'Z'
+                            : null,
+                        'attempt_status' => $row['attempt_status'],
+                        'your_score' =>
+                            $row['score'] !== null ? (int) $row['score'] : null,
+                        'percentage' => $percentage,
+                        'is_passed' =>
+                            $row['score'] !== null
+                            ? $row['score'] >= $row['passing_marks']
+                            : null,
+                        'last_attempt_date' => $row['completed_at']
+                            ? str_replace(' ', 'T', $row['completed_at']) . 'Z'
+                            : null,
+                        'attempts_remaining' =>
+                            (int) $row['max_attempts'] - (int) $row['attempts_count'],
+                        'time_remaining' => $row['time_remaining'],
+                        'shuffle_questions' => (bool) $row['shuffle_questions'],
+                        'shuffle_options' => (bool) $row['shuffle_options'],
+                        'full_screen_mode' => (bool) $row['full_screen_mode'],
+                        'allow_retake' => (bool) $row['retake']
+                    ];
+                }
+            }
+
+            return json_encode([
+                'status' => 'success',
+                'exams' => $role == 5 ? $lecturer : $student,
+                'user' => [
+                    'id' => (int) $user_id,
+                    'name' => getUserName($user_id),
+                    'role_id' => (int) $role
+                ]
+            ]);
+        } catch (Exception $e) {
+            return json_encode([
+                'status' => 'error',
+                'msg' => $e->getMessage()
+            ]);
+        }
+    }
+
 }
