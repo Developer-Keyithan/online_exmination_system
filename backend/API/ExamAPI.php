@@ -1,4 +1,5 @@
 <?php
+
 use Backend\Modal\Auth;
 
 class ExamAPI
@@ -164,7 +165,6 @@ class ExamAPI
                 'msg' => 'Exam updated successfully',
                 'exam' => $exam
             ]);
-
         } catch (Exception $e) {
             return json_encode([
                 'status' => 'error',
@@ -178,19 +178,21 @@ class ExamAPI
         try {
             $exams = [];
 
-            $statement = $this->db->prepare("SELECT i.id, i.title, i.code, i.duration, i.total_num_of_ques AS total_questions, i.status, s.schedule_type, s.start_time FROM exam_info i LEFT JOIN exam_settings s  ON s.exam_id = i.id");
+            // Get all exams with settings
+            $statement = $this->db->prepare("SELECT i.id, i.title, i.code, i.duration, i.total_num_of_ques AS total_questions, i.status, i.created_by, s.schedule_type, s.start_time FROM exam_info i LEFT JOIN exam_settings s ON s.exam_id = i.id ");
             $statement->execute();
             $result = $statement->fetchAll(PDO::FETCH_ASSOC);
 
             foreach ($result as $exam) {
-
-                $status = $exam['status'];                  // DB status
-                $schedule_type = $exam['schedule_type'];    // scheduled / anytime
+                $exam_id = $exam['id'];
+                $status = $exam['status'];
+                $schedule_type = $exam['schedule_type'];
                 $start_time = $exam['start_time'] ? strtotime($exam['start_time']) : null;
-                $duration = (int) $exam['duration'];         // minutes
+                $duration = (int) $exam['duration'];
                 $current_time = time();
-                $end_time = $start_time + ($duration * 60);  // calculate end time
+                $end_time = $start_time + ($duration * 60);
 
+                // Calculate final status
                 $finalStatus = '';
                 if ($status == 0) {
                     $finalStatus = 'draft';
@@ -209,16 +211,29 @@ class ExamAPI
                 }
                 $exam['final_status'] = $finalStatus;
 
+                // Count participants
+                $stmt = $this->db->prepare("SELECT COUNT(*) as participants_count FROM exam_registration WHERE exam_id = ?");
+                $stmt->execute([$exam_id]);
+                $participants_count = (int) $stmt->fetch(PDO::FETCH_ASSOC)['participants_count'];
+
+                // Count completed attempts (completed or rules_violation)
+                $stmt = $this->db->prepare("SELECT COUNT(*) as completed_count  FROM exam_attempts ea JOIN exam_registration er ON ea.registration_id = er.id WHERE er.exam_id = ? AND (ea.status = 'completed' OR ea.status = 'rules_violation') ");
+                $stmt->execute([$exam_id]);
+                $completed_count = (int) $stmt->fetch(PDO::FETCH_ASSOC)['completed_count'];
+
                 $exams[] = [
                     'id' => $exam['id'],
                     'title' => $exam['title'],
                     'code' => str_replace(' ', '_', $exam['code']),
                     'schedule_type' => $exam['schedule_type'],
                     'start_time' => $start_time ? str_replace(' ', 'T', $exam['start_time']) : null,
-                    'end_time' => date("Y-m-d\TH:i:s", $end_time),
+                    'end_time' => $start_time ? date("Y-m-d\TH:i:s", $end_time) : null,
                     'duration' => $exam['duration'],
-                    'status' => $exam['final_status'],
-                    'total_questions' => $exam['total_questions']
+                    'status' => $finalStatus,
+                    'total_questions' => $exam['total_questions'],
+                    'participants_count' => $participants_count,
+                    'completed_count' => $completed_count,
+                    'created_by' => $exam['created_by']
                 ];
             }
 
@@ -226,7 +241,6 @@ class ExamAPI
                 'status' => 'success',
                 'exams' => $exams
             ]);
-
         } catch (Exception $e) {
             return json_encode([
                 'status' => 'error',
@@ -452,7 +466,6 @@ class ExamAPI
                 'msg' => 'Exam settings added successfully',
                 'exam_settings' => $settings_data
             ]);
-
         } catch (Exception $e) {
             return json_encode([
                 'status' => 'error',
@@ -540,7 +553,6 @@ class ExamAPI
                 'msg' => 'Exam settings updated successfully',
                 'exam_settings' => $settings_data
             ]);
-
         } catch (Exception $e) {
             return json_encode([
                 'status' => 'error',
@@ -689,7 +701,6 @@ class ExamAPI
                 'questions' => $finalQuestions,
                 'settings' => $settings_info
             ]);
-
         } catch (Exception $e) {
             return json_encode([
                 'status' => 'error',
@@ -762,26 +773,37 @@ class ExamAPI
             $stmt = $this->db->prepare("DELETE FROM exam_settings WHERE exam_id = ?");
             $stmt->execute([$exam_id]);
 
-            $stmt = $this->db->prepare("SELECT id, exam_ids FROM questions WHERE JSON_CONTAINS(exam_ids, JSON_QUOTE(?))");
+            $stmt = $this->db->prepare("SELECT id FROM sections WHERE exam_id = ?");
+            $stmt->execute([$exam_id]);
+            $sections = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+            $stmt = $this->db->prepare("SELECT id, exam_ids, section_ids FROM questions WHERE JSON_CONTAINS(exam_ids, JSON_QUOTE(?))");
             $stmt->execute([$exam_id]);
             $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             foreach ($questions as $q) {
-                $ids = json_decode($q['exam_ids'], true);
-                if (($key = array_search($exam_id, $ids)) !== false) {
-                    unset($ids[$key]);
-                    $ids = array_values($ids);
+                $exam_ids = json_decode($q['exam_ids'], true);
+                $section_ids = json_decode($q['section_ids'], true);
+
+                if (($key = array_search($exam_id, $exam_ids)) !== false) {
+                    unset($exam_ids[$key]);
+                    $exam_ids = array_values($exam_ids);
                 }
 
-                $new_exam_ids = count($ids) > 0 ? json_encode($ids) : null;
+                $section_ids = array_filter($section_ids, function ($sid) use ($sections) {
+                    return !in_array($sid, $sections);
+                });
+                $section_ids = array_values($section_ids);
 
-                $update = $this->db->prepare("UPDATE questions SET exam_ids = ? WHERE id = ?");
-                $update->execute([$new_exam_ids, $q['id']]);
+                // Update question
+                $update = $this->db->prepare("UPDATE questions SET exam_ids = ?, section_ids = ? WHERE id = ?");
+                $update->execute([json_encode($exam_ids), json_encode($section_ids), $q['id']]);
             }
 
-            // Delete exam results -> Apply on future
-            // $stmt = $this->db->prepare("DELETE FROM exam_results WHERE exam_id = ?");
-            // $stmt->execute([$exam_id]);
+            foreach ($sections as $section) {
+                $stmt = $this->db->prepare("DELETE FROM sections WHERE id = ?");
+                $stmt->execute([$section['id']]);
+            }
 
             return json_encode([
                 'status' => 'success',
@@ -822,7 +844,6 @@ class ExamAPI
                 'status' => 'success',
                 'msg' => 'Exam registered successfully'
             ]);
-
         } catch (Exception $e) {
             return json_encode([
                 'status' => 'error',
@@ -1016,7 +1037,6 @@ class ExamAPI
                 ],
                 'isEligible' => true
             ]);
-
         } catch (Exception $e) {
             return json_encode([
                 'status' => 'error',
@@ -1101,7 +1121,6 @@ class ExamAPI
                 'status' => 'success',
                 'exam_data' => $exam_data
             ]);
-
         } catch (Exception $e) {
             return json_encode([
                 'status' => 'error',
@@ -1291,7 +1310,6 @@ class ExamAPI
                 'status' => 'success',
                 'exam_info' => $mergedData,
             ]);
-
         } catch (Exception $e) {
             return json_encode([
                 'status' => 'error',
@@ -1497,7 +1515,6 @@ class ExamAPI
                 'questions' => $finalQuestions,
                 'answers' => $stored_answers
             ]);
-
         } catch (Exception $e) {
             return json_encode([
                 'status' => 'error',
@@ -1562,7 +1579,6 @@ class ExamAPI
                 'answer' => $answer ? $answer : null,
                 'flagged' => $flagged === 'true' ? true : false
             ]);
-
         } catch (Exception $e) {
             return json_encode([
                 'status' => 'error',
@@ -1641,14 +1657,21 @@ class ExamAPI
             }
 
             $role = getUserRoleID($user_id);
+            $params = [];
+            if ($role == 5 || $role == '5') {
+                $sql = "SELECT ei.*, ei.id as original_exam_id, ei.status as info_status, es.*, er.*, er.status as register_status, ea.*, es.id AS settings_id, er.id AS registration_id, ea.id AS attempt_id, ea.status AS attempt_status, ea.status AS attempt_status FROM exam_info ei LEFT JOIN exam_settings es ON ei.id = es.exam_id LEFT JOIN exam_registration er ON ei.id = er.exam_id LEFT JOIN exam_attempts ea ON er.id = ea.registration_id WHERE ei.created_by = ?";
+                $params = [$user_id];
+            } elseif ($role == 6 || $role == '6') {
+                $sql = "SELECT ei.*, ei.id as original_exam_id, ei.status as info_status, es.*, er.*, er.status as register_status, ea.*, es.id AS settings_id, er.id AS registration_id, ea.id AS attempt_id, ea.status AS attempt_status FROM exam_registration er LEFT JOIN exam_info ei ON ei.id = er.exam_id LEFT JOIN exam_settings es ON ei.id = es.exam_id LEFT JOIN exam_attempts ea ON er.id = ea.registration_id WHERE er.student_id = ? ";
+                $params = [$user_id];
+            }
 
             /* =========================
                BASE QUERY
             ========================== */
-            $sql = "SELECT ei.*, es.*, er.*, ea.*, ea.status AS attempt_status FROM exam_info ei LEFT JOIN exam_settings es ON ei.id = es.exam_id LEFT JOIN exam_registration er ON ei.id = er.exam_id LEFT JOIN exam_attempts ea ON er.id = ea.registration_id ";
 
             $stmt = $this->db->prepare($sql);
-            $stmt->execute();
+            $stmt->execute($params);
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             $lecturer = [];
@@ -1659,9 +1682,63 @@ class ExamAPI
                Roles: 1,2,3,5
             ========================== */
             if (in_array($role, [5])) {
+                $exams = []; // aggregated per exam
+
                 foreach ($rows as $row) {
+                    $status = '';
+
+                    if ($row['info_status'] == 0) {
+                        $status = 'draft';
+                    } elseif ($row['info_status'] == 2) {
+                        $status = 'canceled';
+                    } elseif ($row['info_status'] == 1) {
+                        if ($row['schedule_type'] === 'anytime') {
+                            $status = 'live';
+                        } elseif ($row['schedule_type'] === 'scheduled') {
+                            date_default_timezone_set('Asia/Colombo');
+
+                            $currentTime = time();
+                            $startTime = (int) $row['start_time'];
+                            $duration = (int) $row['duration'];
+                            $endTime = $startTime + ($duration * 60);
+
+                            if ($currentTime < $startTime) {
+                                $status = 'scheduled';
+                            } elseif ($currentTime >= $startTime && $currentTime <= $endTime) {
+                                $status = 'live';
+                            } else {
+                                $status = 'ended';
+                            }
+                        }
+                    }
+
+                    $exam_id = $row['original_exam_id'];
+
+                    if (!isset($exams[$exam_id])) {
+                        $exams[$exam_id] = [
+                            'exam' => $row,
+                            'completed_count' => 0,
+                            'participants_count' => 0,
+                            'status' => $status
+                        ];
+                    }
+
+                    // Count completed attempts
+                    if ($row['attempt_status'] === 'completed' || $row['attempt_status'] === 'rules_violation') {
+                        $exams[$exam_id]['completed_count']++;
+                    }
+
+                    // Count participants (registrations)
+                    if (!empty($row['registration_id'])) {
+                        $exams[$exam_id]['participants_count']++;
+                    }
+                }
+
+                // Push aggregated exams to $lecturer array
+                foreach ($exams as $exam_id => $e) {
+                    $row = $e['exam'];
                     $lecturer[] = [
-                        'id' => (int) $row['id'],
+                        'id' => (int) $exam_id,
                         'title' => $row['title'],
                         'code' => $row['code'],
                         'instructions' => $row['instructions'],
@@ -1669,27 +1746,30 @@ class ExamAPI
                         'total_questions' => (int) $row['total_num_of_ques'],
                         'total_marks' => (int) $row['total_marks'],
                         'passing_marks' => (int) $row['passing_marks'],
-                        'status' => $row['status'],
+                        'status' => $e['status'],
                         'schedule_type' => $row['schedule_type'],
                         'start_time' => $row['start_time']
                             ? str_replace(' ', 'T', $row['start_time']) . 'Z'
                             : null,
-                        'participants_count' => (int) $row['attempts_count'],
-                        'completed_count' =>
-                            $row['attempt_status'] === 'completed' ? 1 : 0,
+                        'participants_count' => $e['participants_count'],
+                        'completed_count' => $e['completed_count'],
                         'shuffle_questions' => (bool) $row['shuffle_questions'],
                         'shuffle_options' => (bool) $row['shuffle_options'],
                         'full_screen_mode' => (bool) $row['full_screen_mode'],
                         'allow_retake' => (bool) $row['retake'],
+                        'created_by' => (int) $row['created_by']
                     ];
                 }
             }
+
 
             /* =========================
                STUDENT
                Roles: 6,7
             ========================== */
             if (in_array($role, [6, 7])) {
+                $exams = [];
+
                 foreach ($rows as $row) {
 
                     // only student related records
@@ -1701,8 +1781,40 @@ class ExamAPI
                         ? round(($row['score'] / $row['total_marks']) * 100)
                         : null;
 
+                    $currentTime = time(); // current timestamp
+                    $startTime   = $row['start_time'] ? strtotime($row['start_time']) : null;
+                    $duration    = (int) $row['duration']; // in minutes
+                    $endTime     = $startTime + ($duration * 60); // end time in seconds
+
+                    $finalStatus = '';
+
+                    if ($row['info_status'] == 0) {
+                        $finalStatus = 'available'; // draft or not yet started
+                    } elseif ($row['info_status'] == 2) {
+                        $finalStatus = 'expired'; // canceled or expired
+                    } elseif ($row['info_status'] == 1) {
+                        if ($row['schedule_type'] === 'anytime') {
+                            if ($currentTime < $startTime) {
+                                $finalStatus = 'upcoming';
+                            } elseif ($currentTime >= $startTime && $currentTime <= $endTime) {
+                                $finalStatus = 'in_progress';
+                            } else {
+                                $finalStatus = 'completed';
+                            }
+                        } elseif ($row['schedule_type'] === 'scheduled') {
+                            if ($currentTime < $startTime) {
+                                $finalStatus = 'upcoming';
+                            } elseif ($currentTime >= $startTime && $currentTime <= $endTime) {
+                                $finalStatus = 'in_progress';
+                            } else {
+                                $finalStatus = 'completed';
+                            }
+                        }
+                    }
+
                     $student[] = [
-                        'id' => (int) $row['id'],
+                        'id' => (int) $row['original_exam_id'],
+                        'attempt_id' => (int) $row['attempt_id'],
                         'title' => $row['title'],
                         'code' => $row['code'],
                         'instructor_name' => null,
@@ -1711,32 +1823,34 @@ class ExamAPI
                         'total_marks' => (int) $row['total_marks'],
                         'passing_marks' => (int) $row['passing_marks'],
                         'passing_percentage' =>
-                            round(($row['passing_marks'] / $row['total_marks']) * 100),
+                        round(($row['passing_marks'] / $row['total_marks']) * 100),
                         'schedule_type' => $row['schedule_type'],
                         'start_time' => $row['start_time']
                             ? str_replace(' ', 'T', $row['start_time']) . 'Z'
                             : null,
                         'attempt_status' => $row['attempt_status'],
                         'your_score' =>
-                            $row['score'] !== null ? (int) $row['score'] : null,
+                        $row['score'] !== null ? (int) $row['score'] : null,
                         'percentage' => $percentage,
                         'is_passed' =>
-                            $row['score'] !== null
+                        $row['score'] !== null
                             ? $row['score'] >= $row['passing_marks']
                             : null,
                         'last_attempt_date' => $row['completed_at']
                             ? str_replace(' ', 'T', $row['completed_at']) . 'Z'
                             : null,
                         'attempts_remaining' =>
-                            (int) $row['max_attempts'] - (int) $row['attempts_count'],
+                        (int) $row['max_attempts'] - (int) $row['attempts_count'],
                         'time_remaining' => $row['time_remaining'],
                         'shuffle_questions' => (bool) $row['shuffle_questions'],
                         'shuffle_options' => (bool) $row['shuffle_options'],
                         'full_screen_mode' => (bool) $row['full_screen_mode'],
-                        'allow_retake' => (bool) $row['retake']
+                        'allow_retake' => (bool) $row['retake'],
+                        'attempt_status' => $finalStatus
                     ];
                 }
             }
+
 
             return json_encode([
                 'status' => 'success',
@@ -1754,5 +1868,4 @@ class ExamAPI
             ]);
         }
     }
-
 }

@@ -54,7 +54,7 @@
 
     <!-- Exams Grid -->
     <div ng-cloak ng-if="!loading && filteredExams.length > 0"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         <div ng-repeat="exam in filteredExams"
             class="bg-[#0003] rounded-xl shadow-md border border-[#fff2] hover:shadow-lg transition-shadow">
             <!-- Exam Header -->
@@ -71,30 +71,27 @@
                         </button>
 
                         <!-- Dropdown Menu -->
-                        <div ng-if="activeExamMenu === exam.id"
+                        <div ng-if="activeExamMenu === exam.id && (exam.status !== 'draft' || theLoggedUser.role === '1' || theLoggedUser.role === 1 || exam.created_by ===  theLoggedUser.user)"
                             class="absolute right-0 top-8 bg-[#0003] backdrop-blur rounded-lg shadow-lg border border-[#fff2] p-2 z-10 min-w-[200px]">
                             <a href="<?php echo BASE_URL . '/exam/edit/' ?>{{exam.id}}"
+                                ng-if="(theLoggedUser.role === '1' || theLoggedUser.role === 1 || exam.created_by ===  theLoggedUser.user) && exam.status !== 'active' && exam.status !== 'completed'"
                                 class="w-full text-left px-4 py-2 text-sm text-cyan-500 hover:bg-[#12aac815] transition-colors duration-300 flex items-center space-x-2 rounded-md">
                                 <i class="fas fa-edit text-cyan-500"></i>
                                 <span>Edit Exam</span>
                             </a>
-                            <a href="<?php echo BASE_URL . '/exam/preview/' ?>{{exam.id}}"
+                            <a href="<?php echo BASE_URL . '/exam/preview/' ?>{{exam.id}}" ng-if="exam.status !== 'draft'"
                                 class="w-full text-left px-4 py-2 text-sm text-blue-500 hover:bg-[#00f3] transition-colors duration-300 flex items-center space-x-2 rounded-md">
                                 <i class="fas fa-eye text-blue-500"></i>
                                 <span>View Details</span>
                             </a>
-                            <!-- <button ng-click="manageQuestions(exam)"
-                                class="w-full text-left px-4 py-2 text-sm text-purple-500 hover:bg-[#f0f3] transition-colors duration-300 flex items-center space-x-2 rounded-md">
-                                <i class="fas fa-question-circle text-purple-500"></i>
-                                <span>Manage Questions</span>
-                            </button> -->
-                            <a href="<?php echo BASE_URL . '/exam/results/' ?>{{exam.id}}"
+                            <!-- <a href="<?php // echo BASE_URL . '/exam/results/' 
+                                            ?>{{exam.id}}"
                                 class="w-full text-left px-4 py-2 text-sm text-green-500 hover:bg-[#0f03] transition-colors duration-300 flex items-center space-x-2 rounded-md">
                                 <i class="fas fa-chart-bar text-green-500"></i>
                                 <span>View Results</span>
-                            </a>
+                            </a> -->
                             <button
-                                ng-if="theLoggedUser.role === '1' || theLoggedUser.role === '2' || theLoggedUser.role === 1 || theLoggedUser.role === 2"
+                                ng-if="(theLoggedUser.role === '1' || theLoggedUser.role === 1 || exam.created_by ===  theLoggedUser.user) && exam.status !== 'active' && exam.status !== 'completed'"
                                 ng-click="deleteExam(exam)"
                                 class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-[#f001] transition-colors duration-300 hover:text-red-200 flex items-center space-x-2 rounded-md">
                                 <i class="fas fa-trash"></i>
@@ -186,25 +183,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Exam Actions -->
-            <div class="p-4 flex items-end space-x-2 border-t border-[#fff2]">
-                <a href="<?php echo BASE_URL ?>/exam/preview/{{exam.id}}"
-                    class="flex-1 bg-[#12aac820] hover:bg-[#12aac850] text-gray-100 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1">
-                    <i class="fas fa-eye"></i>
-                    <span>View</span>
-                </a>
-                <!-- <button ng-click="manageQuestions(exam)"
-                    class="flex-1 bg-[#a012c820] hover:bg-[#a012c850] text-gray-100 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1">
-                    <i class="fas fa-question-circle"></i>
-                    <span>Questions</span>
-                </button> -->
-                <a href="<?php echo BASE_URL ?>/exam/results/{{exam.id}}"
-                    class="flex-1 bg-[#12c82020] hover:bg-[#12c82050] text-gray-100 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Results</span>
-                </a>
             </div>
         </div>
     </div>

@@ -1,4 +1,5 @@
 <?php
+
 use Backend\Modal\Auth;
 
 class PageAPI
@@ -145,7 +146,16 @@ class PageAPI
                 $path = getPath();
                 header('Location: ' . BASE_URL . '/404?path=' . urlencode($path) . '&method=' . urlencode($method));
             } else {
-                return view('results.review', ['title' => 'Exam Results Review', 'exam_id' => $id]);
+                $stmt = db()->prepare("SELECT id FROM users WHERE id = ?");
+                $stmt->execute([$student_id]);
+                $student = $stmt->fetch(PDO::FETCH_ASSOC);
+                if (!$student) {
+                    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+                    $path = getPath();
+                    header('Location: ' . BASE_URL . '/404?path=' . urlencode($path) . '&method=' . urlencode($method));
+                } else {
+                    return view('results.review', ['title' => 'Exam Results Review', 'exam_id' => $id]);
+                }
             }
         }
     }

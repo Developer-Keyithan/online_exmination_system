@@ -109,8 +109,6 @@ app.controller('ExamController', [
                 return;
             }
 
-            $scope.loading = true;
-
             // Confirm Deletion
             Toast.popover({
                 type: 'confirm',
@@ -148,7 +146,6 @@ app.controller('ExamController', [
                                                 msg: `An error occurred while deleting "${exam.title}".`
                                             });
                                         }
-                                        $scope.loading = false;
                                     })
                                 $scope.$apply();
                             } catch (err) {
@@ -158,7 +155,6 @@ app.controller('ExamController', [
                                     msg: 'Failed to delete exam.'
                                 });
                                 console.error(err);
-                                $scope.loading = false;
                             }
                         }
                     },

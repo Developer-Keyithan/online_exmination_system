@@ -406,8 +406,10 @@ app.controller('MyExamController', [
             // Apply status filter based on user role
             if ($scope.currentFilter !== 'all') {
                 filtered = filtered.filter(function (exam) {
-                    if ($scope.theLoggedUser.role == '1' || $scope.theLoggedUser.role == '2' ||
-                        $scope.theLoggedUser.role == 1 || $scope.theLoggedUser.role == 2) {
+                    if ($scope.selectedUser.role_id === '5' || $scope.selectedUser.role_id === 5) {
+                        if ($scope.currentFilter === 'published') {
+                            return ['live', 'scheduled', 'published'].includes(exam.status);
+                        }
                         // Lecturer filters
                         return exam.status === $scope.currentFilter;
                     } else {
@@ -476,8 +478,6 @@ app.controller('MyExamController', [
                 return;
             }
 
-            $scope.loading = true;
-
             // For real API calls
             Toast.popover({
                 type: 'confirm',
@@ -514,7 +514,6 @@ app.controller('MyExamController', [
                                                 msg: `An error occurred while deleting "${exam.title}".`
                                             });
                                         }
-                                        $scope.loading = false;
                                     })
                                 $scope.$apply();
                             } catch (err) {
@@ -524,7 +523,6 @@ app.controller('MyExamController', [
                                     msg: 'Failed to delete exam.'
                                 });
                                 console.error(err);
-                                $scope.loading = false;
                             }
                         }
                     },
