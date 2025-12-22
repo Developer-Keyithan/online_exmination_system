@@ -219,12 +219,12 @@
     <!-- Exams Grid -->
     <div ng-cloak ng-if="!loading && filteredExams.length > 0"
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+        <!-- Lecturers: Created Exams -->
+        <div ng-repeat="exam in filteredExams" ng-show="theLoggedUser.role == '5' || selectedUser.role_id == '5'" class="bg-[#0003] rounded-xl shadow-md border border-[#fff2] hover:shadow-lg hover:border-cyan-500/50 hover:scale-[1.02] transition-all duration-300
+              grid grid-rows-[auto_1fr_auto]">
 
-        <!-- For Lecturers: Created Exams View -->
-        <div ng-repeat="exam in filteredExams" ng-show="theLoggedUser.role == '5' || theLoggedUser.role == 5 || selectedUser.role_id == '5' || selectedUser.role_id == 5"
-            class="bg-[#0003] rounded-xl shadow-md border border-[#fff2] hover:shadow-lg transition-shadow hover:border-cyan-500/50 hover:scale-[1.02] transition-all duration-300">
             <!-- Exam Header -->
-            <div class="p-4 border-b border-[#fff2] grid grid-rows-subgrid grid-start">
+            <div class="p-4 border-b border-[#fff2] row-start-1">
                 <div class="flex justify-between items-start">
                     <div>
                         <h3 class="font-semibold text-lg text-gray-200 capitalize">{{exam.title}}</h3>
@@ -235,199 +235,79 @@
                             class="text-gray-400 p-1 rounded-lg hover:bg-[#fff3] transition-colors">
                             <i class="fas fa-ellipsis-v"></i>
                         </button>
-
-                        <!-- Dropdown Menu -->
                         <div ng-if="activeExamMenu === exam.id"
                             class="absolute right-0 top-8 bg-[#0003] backdrop-blur rounded-lg shadow-lg border border-[#fff2] p-2 z-10 min-w-[200px]">
-                            <a href="<?php echo BASE_URL . '/exam/edit/' ?>{{exam.id}}"
-                                class="w-full text-left px-4 py-2 text-sm text-cyan-500 hover:bg-[#12aac815] transition-colors duration-300 flex items-center space-x-2 rounded-md">
-                                <i class="fas fa-edit text-cyan-500"></i>
-                                <span>Edit Exam</span>
+                            <a href="<?php echo BASE_URL ?>/exam/edit/{{exam.id}}" class="menu-item text-cyan-500">
+                                <i class="fas fa-edit"></i> Edit Exam
                             </a>
-                            <a href="<?php echo BASE_URL . '/exam/preview/' ?>{{exam.id}}"
-                                class="w-full text-left px-4 py-2 text-sm text-blue-500 hover:bg-[#00f3] transition-colors duration-300 flex items-center space-x-2 rounded-md">
-                                <i class="fas fa-eye text-blue-500"></i>
-                                <span>Preview Exam</span>
+                            <a href="<?php echo BASE_URL ?>/exam/preview/{{exam.id}}" class="menu-item text-blue-500">
+                                <i class="fas fa-eye"></i> Preview Exam
                             </a>
-                            <a href="<?php echo BASE_URL . '/exam/results/' ?>{{exam.id}}"
-                                class="w-full text-left px-4 py-2 text-sm text-green-500 hover:bg-[#0f03] transition-colors duration-300 flex items-center space-x-2 rounded-md">
-                                <i class="fas fa-chart-bar text-green-500"></i>
-                                <span>View Results</span>
+                            <a href="<?php echo BASE_URL ?>/exam/results/{{exam.id}}" class="menu-item text-green-500">
+                                <i class="fas fa-chart-bar"></i> View Results
                             </a>
-                            <button
-                                ng-if="theLoggedUser.role === '1' || theLoggedUser.role === '2' || theLoggedUser.role === 1 || theLoggedUser.role === 2"
-                                ng-click="deleteExam(exam)"
-                                class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-[#f001] transition-colors duration-300 hover:text-red-200 flex items-center space-x-2 rounded-md">
-                                <i class="fas fa-trash"></i>
-                                <span>Delete Exam</span>
-                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Exam Details -->
-            <div class="p-4">
-                <div class="space-y-3">
-                    <!-- Status Badge -->
-                    <div>
-                        <span ng-switch="exam.status" class="inline-flex items-center rounded-full text-sm">
-                            <span ng-switch-when="published"
-                                class="px-2 py-1 rounded-full bg-green-500/20 text-green-300 border border-green-500">
-                                <i class="fas fa-check-circle mr-1"></i> Published
-                            </span>
-                            <span ng-switch-when="scheduled"
-                                class="px-2 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500">
-                                <i class="fas fa-clock mr-1"></i> Scheduled
-                            </span>
-                            <span ng-switch-when="draft"
-                                class="px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-500">
-                                <i class="fas fa-edit mr-1"></i> Draft
-                            </span>
-                            <span ng-switch-when="canceled"
-                                class="px-2 py-1 rounded-full bg-red-500/20 text-red-300 border border-red-500">
-                                <i class="fas fa-ban mr-1"></i> Canceled
-                            </span>
-                        </span>
-                    </div>
+            <div class="p-4 row-start-2 grid grid-rows-subgrid gap-3">
+                <!-- Status Badge -->
+                <div>
+                    <span ng-switch="exam.status" class="inline-flex items-center rounded-full text-sm">
+                        <span ng-switch-when="published" class="badge-green"><i class="fas fa-check-circle mr-1"></i>
+                            Published</span>
+                        <span ng-switch-when="scheduled" class="badge-blue"><i class="fas fa-clock mr-1"></i>
+                            Scheduled</span>
+                        <span ng-switch-when="draft" class="badge-yellow"><i class="fas fa-edit mr-1"></i> Draft</span>
+                        <span ng-switch-when="canceled" class="badge-red"><i class="fas fa-ban mr-1"></i>
+                            Canceled</span>
+                    </span>
+                </div>
 
-                    <!-- Basic Info -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-[#0005] p-3 rounded-lg hover:bg-[#0007] transition-colors">
-                            <div class="flex items-center mb-1">
-                                <i class="fas fa-clock text-cyan-400 text-xs mr-2"></i>
-                                <p class="text-xs text-gray-400">Duration</p>
-                            </div>
-                            <p class="text-gray-200 font-medium">{{exam.duration}} minutes</p>
-                        </div>
-                        <div class="bg-[#0005] p-3 rounded-lg hover:bg-[#0007] transition-colors">
-                            <div class="flex items-center mb-1">
-                                <i class="fas fa-question-circle text-purple-400 text-xs mr-2"></i>
-                                <p class="text-xs text-gray-400">Questions</p>
-                            </div>
-                            <p class="text-gray-200 font-medium">{{exam.total_questions || 25}} questions</p>
-                        </div>
+                <!-- Basic Info -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="info-box">
+                        <i class="fas fa-clock text-cyan-400 text-xs mr-2"></i>
+                        Duration: {{exam.duration}} min
                     </div>
-
-                    <!-- Marks Info -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-[#0005] p-3 rounded-lg hover:bg-[#0007] transition-colors">
-                            <div class="flex items-center mb-1">
-                                <i class="fas fa-star text-yellow-400 text-xs mr-2"></i>
-                                <p class="text-xs text-gray-400">Total Marks</p>
-                            </div>
-                            <p class="text-gray-200 font-medium">{{exam.total_marks || 100}} marks</p>
-                        </div>
-                        <div class="bg-[#0005] p-3 rounded-lg hover:bg-[#0007] transition-colors">
-                            <div class="flex items-center mb-1">
-                                <i class="fas fa-flag text-green-400 text-xs mr-2"></i>
-                                <p class="text-xs text-gray-400">Passing</p>
-                            </div>
-                            <p class="text-gray-200 font-medium">{{exam.passing_marks || 40}} marks</p>
-                        </div>
+                    <div class="info-box">
+                        <i class="fas fa-question-circle text-purple-400 text-xs mr-2"></i>
+                        Questions: {{exam.total_questions || 25}}
                     </div>
+                </div>
 
-                    <!-- Schedule Info -->
-                    <div ng-if="exam.schedule_type === 'scheduled'"
-                        class="bg-[#0005] p-3 rounded-lg hover:bg-[#0007] transition-colors">
-                        <div class="flex items-center mb-1">
-                            <i class="fas fa-calendar-alt text-blue-400 text-xs mr-2"></i>
-                            <p class="text-xs text-gray-400">Schedule</p>
-                        </div>
-                        <div class="space-y-1">
-                            <div class="flex items-center text-gray-200 text-sm">
-                                <span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
-                                <span>Starts: {{exam.start_time | formatDateTime: 'MMM DD, YYYY'}}</span>
-                            </div>
-                            <div class="flex items-center text-gray-200 text-sm">
-                                <span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
-                                <span>Time: {{exam.start_time | formatDateTime: 'hh:mm a'}}</span>
-                            </div>
-                        </div>
+                <!-- Marks & Passing -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="info-box">
+                        <i class="fas fa-star text-yellow-400 text-xs mr-2"></i>
+                        Total Marks: {{exam.total_marks || 100}}
                     </div>
-
-                    <!-- Anytime Exam -->
-                    <div ng-if="exam.schedule_type === 'anytime'"
-                        class="bg-[#0005] p-3 rounded-lg hover:bg-[#0007] transition-colors">
-                        <div class="flex items-center mb-1">
-                            <i class="fas fa-infinity text-green-400 text-xs mr-2"></i>
-                            <p class="text-xs text-gray-400">Schedule Type</p>
-                        </div>
-                        <div class="flex items-center text-gray-200">
-                            <span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
-                            <span class="text-sm">Anytime Exam</span>
-                        </div>
-                        <p class="text-xs text-gray-400 mt-1">Candidates can take anytime</p>
-                    </div>
-
-                    <!-- Participants Stats -->
-                    <div class="bg-[#0005] p-3 rounded-lg hover:bg-[#0007] transition-colors">
-                        <div class="flex items-center justify-between mb-1">
-                            <div class="flex items-center">
-                                <i class="fas fa-users text-cyan-400 text-xs mr-2"></i>
-                                <p class="text-xs text-gray-400">Participants</p>
-                            </div>
-                            <span class="text-xs text-gray-400">{{exam.participants_count || 0}} enrolled</span>
-                        </div>
-                        <div class="w-full bg-gray-700 rounded-full h-2 mb-2">
-                            <div class="bg-green-500 h-2 rounded-full"
-                                ng-style="width: (exam.completed_count || 0) / (exam.participants_count || 1) * 100%">
-                            </div>
-                        </div>
-                        <div class="flex justify-between text-xs">
-                            <span class="text-green-400">
-                                <i class="fas fa-check-circle mr-1"></i>{{exam.completed_count || 0}} completed
-                            </span>
-                            <span class="text-yellow-400">
-                                <i class="fas fa-clock mr-1"></i>{{(exam.participants_count || 0) -
-                                (exam.completed_count || 0)}} pending
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Exam Settings -->
-                    <div class="bg-[#0005] p-3 rounded-lg hover:bg-[#0007] transition-colors">
-                        <div class="flex items-center mb-1">
-                            <i class="fas fa-cog text-purple-400 text-xs mr-2"></i>
-                            <p class="text-xs text-gray-400">Settings</p>
-                        </div>
-                        <div class="grid grid-cols-2 gap-1 text-xs">
-                            <span class="text-gray-300" ng-if="exam.shuffle_questions">
-                                <i class="fas fa-random text-green-400 mr-1"></i>Shuffle Q
-                            </span>
-                            <span class="text-gray-300" ng-if="exam.shuffle_options">
-                                <i class="fas fa-random text-green-400 mr-1"></i>Shuffle Options
-                            </span>
-                            <span class="text-gray-300" ng-if="exam.full_screen_mode">
-                                <i class="fas fa-expand text-blue-400 mr-1"></i>Full Screen
-                            </span>
-                            <span class="text-gray-300" ng-if="exam.allow_retake">
-                                <i class="fas fa-redo text-yellow-400 mr-1"></i>Retake Allowed
-                            </span>
-                        </div>
+                    <div class="info-box">
+                        <i class="fas fa-flag text-green-400 text-xs mr-2"></i>
+                        Passing Marks: {{exam.passing_marks || 40}}
                     </div>
                 </div>
             </div>
 
-            <!-- Exam Actions -->
-            <div class="p-4 flex items-end space-x-2 border-t border-[#fff2]">
+            <!-- Actions -->
+            <div class="p-4 row-start-3 flex items-end space-x-2 border-t border-[#fff2]">
                 <a href="<?php echo BASE_URL ?>/exam/preview/{{exam.id}}"
-                    class="flex-1 bg-[#12aac820] hover:bg-[#12aac850] text-gray-100 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1 hover:scale-105 transition-transform">
-                    <i class="fas fa-eye"></i>
-                    <span>Preview</span>
+                    class="action-btn bg-[#12aac820] hover:bg-[#12aac850]">
+                    <i class="fas fa-eye"></i> Preview
                 </a>
                 <a href="<?php echo BASE_URL ?>/exam/results/{{exam.id}}"
-                    class="flex-1 bg-[#12c82020] hover:bg-[#12c82050] text-gray-100 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1 hover:scale-105 transition-transform">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Results</span>
+                    class="action-btn bg-[#12c82020] hover:bg-[#12c82050]">
+                    <i class="fas fa-chart-bar"></i> Results
                 </a>
                 <a ng-if="exam.status === 'draft'" href="<?php echo BASE_URL ?>/exam/edit/{{exam.id}}"
-                    class="flex-1 bg-[#f59e0b20] hover:bg-[#f59e0b50] text-gray-100 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center space-x-1 hover:scale-105 transition-transform">
-                    <i class="fas fa-edit"></i>
-                    <span>Edit</span>
+                    class="action-btn bg-[#f59e0b20] hover:bg-[#f59e0b50]">
+                    <i class="fas fa-edit"></i> Edit
                 </a>
             </div>
         </div>
+
 
         <!-- For Students: Attempt Exams View -->
         <div ng-repeat="exam in filteredExams"
