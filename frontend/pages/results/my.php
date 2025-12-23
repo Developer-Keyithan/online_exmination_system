@@ -315,11 +315,6 @@
             <i class="fas fa-clipboard-check text-gray-300 text-6xl mb-4"></i>
             <h3 class="text-lg font-medium text-gray-100 mb-2">No exam results yet</h3>
             <p class="text-gray-400 mb-6">Complete your assigned exams to see results here.</p>
-            <a href="<?php echo BASE_URL ?>/exam/all"
-                class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg inline-flex items-center space-x-2 transition-colors hover:scale-105 transition-transform">
-                <i class="fas fa-book-open"></i>
-                <span>View Exams</span>
-            </a>
         </div>
     </div>
 

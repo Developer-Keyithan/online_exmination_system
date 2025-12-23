@@ -30,9 +30,9 @@ class UserAPI
         if ($user == 1) {
             $conditions[] = "users.user_group != 1";
         } elseif ($user == 2) {
-            $conditions[] = "users.user_group NOT IN (1,2)";
+            $conditions[] = "users.user_group NOT IN (1,2,4,7)";
         } else {
-            $conditions[] = "users.user_group NOT IN (1,2,3)";
+            $conditions[] = "users.user_group NOT IN (1,2,3,4,7)";
         }
 
         // External filter (user_group)

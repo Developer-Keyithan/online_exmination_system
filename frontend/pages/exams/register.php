@@ -554,7 +554,7 @@
 
                 <!-- Action Buttons -->
                 <div class="space-y-3">
-                    <a ng-href="<?php echo BASE_URL; ?>/exam/{{attemptUrl}}/attempt/{{examData.id}}"
+                    <a ng-href="<?php echo BASE_URL; ?>/exam/{{attemptUrl}}/attempt/{{attemptID}}"
                         ng-if="existingRegistration.status === 'registered'"
                         class="block w-full py-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors text-center">
                         <i class="fas fa-play mr-2"></i>
@@ -567,7 +567,7 @@
                         Back to Exams
                     </a> -->
 
-                    <a ng-href="<?php echo BASE_URL; ?>/exam/results/student/{{examData.id}}"
+                    <a ng-href="<?php echo BASE_URL; ?>/result/review/{{attemptID}}/{{examId}}/{{studentInfo.id}}"
                         ng-if="existingRegistration.status === 'completed'"
                         class="block w-full py-3 rounded-lg border border-green-500 text-green-400 hover:bg-green-500/10 transition-colors text-center">
                         <i class="fas fa-chart-bar mr-2"></i>

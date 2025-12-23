@@ -879,7 +879,7 @@ class ExamAPI
                     $reg_data['date'] = $found['registration_date'];
                     $reg_data['status'] = $found['status'];
                     $reg_data['attempts'] = $found['attempts_count'];
-                    $stmt = $this->db->prepare("SELECT url FROM exam_attempts WHERE exam_id = ? AND student_id = ? AND registration_id = ?");
+                    $stmt = $this->db->prepare("SELECT url, id FROM exam_attempts WHERE exam_id = ? AND student_id = ? AND registration_id = ?");
                     $stmt->execute([$exam_id, $user_id, $found['id']]);
                     $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -888,7 +888,8 @@ class ExamAPI
                         'msg' => 'You have already registered for this exam.',
                         'existingRegistration' => $reg_data,
                         'url' => $result['url'],
-                        'code' => 'ALREADY_REGI'
+                        'code' => 'ALREADY_REGISTERED',
+                        'attempt_id' => $result['id']
                     ]);
                 }
 
@@ -1050,6 +1051,29 @@ class ExamAPI
     {
         try {
             $user_id = user_id(); // or $_SESSION['user_id']
+
+            $stmt = $this->db->prepare("SELECT * FROM exam_registration WHERE exam_id = ? AND student_id = ?");
+            $stmt->execute([$exam_id, $user_id]);
+            $found = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($found) {
+                $reg_data = [];
+                $reg_data['date'] = $found['registration_date'];
+                $reg_data['status'] = $found['status'];
+                $reg_data['attempts'] = $found['attempts_count'];
+                $stmt = $this->db->prepare("SELECT url, id FROM exam_attempts WHERE exam_id = ? AND student_id = ? AND registration_id = ?");
+                $stmt->execute([$exam_id, $user_id, $found['id']]);
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                return json_encode([
+                    'status' => 'success',
+                    'msg' => 'You have already registered for this exam.',
+                    'existingRegistration' => $reg_data,
+                    'url' => $result['url'],
+                    'code' => 'ALREADY_REGISTERED',
+                    'attempt_id' => $result['id']
+                ]);
+            }
 
             // Exam info
             $stmt = $this->db->prepare("SELECT id, title, code, duration, instructions, passing_marks, status, total_marks, total_num_of_ques as total_questions FROM exam_info WHERE id = ?");
@@ -1303,7 +1327,7 @@ class ExamAPI
                 'isProgress' => $isProgress,
                 'isAbandoned' => $isAbandoned,
                 'isCompleted' => $isCompleted,
-                'total_attempts' => count($attempt)
+                'total_attempts' => $registration['attempts_count'] + 0,
             ];
 
             return json_encode([
@@ -1629,7 +1653,7 @@ class ExamAPI
 
             // Update attempts count in exam_registrations
             $stmt = $this->db->prepare(
-                "UPDATE exam_registration SET attempts_count = attempts_count + 1 WHERE id = ?"
+                "UPDATE exam_registration SET attempts_count = attempts_count + 1, status = 'completed' WHERE id = ?"
             );
             $stmt->execute([$attempt['registration_id']]);
 
@@ -1782,9 +1806,9 @@ class ExamAPI
                         : null;
 
                     $currentTime = time(); // current timestamp
-                    $startTime   = $row['start_time'] ? strtotime($row['start_time']) : null;
-                    $duration    = (int) $row['duration']; // in minutes
-                    $endTime     = $startTime + ($duration * 60); // end time in seconds
+                    $startTime = $row['start_time'] ? strtotime($row['start_time']) : null;
+                    $duration = (int) $row['duration']; // in minutes
+                    $endTime = $startTime + ($duration * 60); // end time in seconds
 
                     $finalStatus = '';
 
@@ -1792,6 +1816,8 @@ class ExamAPI
                         $finalStatus = 'available'; // draft or not yet started
                     } elseif ($row['info_status'] == 2) {
                         $finalStatus = 'expired'; // canceled or expired
+                    } elseif ($row['attempt_status'] === 'completed' || $row['attempt_status'] === 'rules_violation') {
+                        $finalStatus = 'completed';
                     } elseif ($row['info_status'] == 1) {
                         if ($row['schedule_type'] === 'anytime') {
                             if ($currentTime < $startTime) {
@@ -1823,24 +1849,23 @@ class ExamAPI
                         'total_marks' => (int) $row['total_marks'],
                         'passing_marks' => (int) $row['passing_marks'],
                         'passing_percentage' =>
-                        round(($row['passing_marks'] / $row['total_marks']) * 100),
+                            round(($row['passing_marks'] / $row['total_marks']) * 100),
                         'schedule_type' => $row['schedule_type'],
                         'start_time' => $row['start_time']
                             ? str_replace(' ', 'T', $row['start_time']) . 'Z'
                             : null,
-                        'attempt_status' => $row['attempt_status'],
                         'your_score' =>
-                        $row['score'] !== null ? (int) $row['score'] : null,
+                            $row['score'] !== null ? (int) $row['score'] : null,
                         'percentage' => $percentage,
                         'is_passed' =>
-                        $row['score'] !== null
+                            $row['score'] !== null
                             ? $row['score'] >= $row['passing_marks']
                             : null,
                         'last_attempt_date' => $row['completed_at']
                             ? str_replace(' ', 'T', $row['completed_at']) . 'Z'
                             : null,
                         'attempts_remaining' =>
-                        (int) $row['max_attempts'] - (int) $row['attempts_count'],
+                            (int) $row['max_attempts'] - (int) $row['attempts_count'],
                         'time_remaining' => $row['time_remaining'],
                         'shuffle_questions' => (bool) $row['shuffle_questions'],
                         'shuffle_options' => (bool) $row['shuffle_options'],

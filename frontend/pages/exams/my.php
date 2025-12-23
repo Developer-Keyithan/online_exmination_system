@@ -469,13 +469,13 @@
                                 'bg-purple-500/20 text-purple-300 border border-purple-500': exam.attempt_status === 'upcoming',
                                 'bg-gray-500/20 text-gray-300 border border-gray-500': exam.attempt_status === 'expired'
                             }">
-                            <i class="fas" ng-class="{
+                            <i class="fas mr-1 text-xs" ng-class="{
                                    'fa-check-circle': exam.attempt_status === 'completed',
                                    'fa-spinner fa-spin': exam.attempt_status === 'in_progress',
                                    'fa-play-circle': exam.attempt_status === 'available',
                                    'fa-clock': exam.attempt_status === 'upcoming',
                                    'fa-ban': exam.attempt_status === 'expired'
-                               }" class="mr-1 text-xs"></i>
+                               }"></i>
                             {{exam.attempt_status === 'completed' ? 'Completed' :
                             exam.attempt_status === 'in_progress' ? 'In Progress' :
                             exam.attempt_status === 'available' ? 'Available' :

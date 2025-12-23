@@ -48,11 +48,9 @@ app.controller('ResultsController', ['$scope', '$timeout', '$http', function ($s
     $scope.loadResults = function () {
         $scope.loading = true;
         $scope.error = null;
-
-        console.log($scope.selectedStudent);
         // Prepare API parameters
         const params = {
-            student_id: $scope.selectedStudent ? +$scope.selectedStudent.id : 'all',
+            student_id: $scope.selectedStudent ? +$scope.selectedStudent : 'all',
             exam_id: $scope.selectedExam || 'all',
             time_filter: $scope.timeFilter || 'all',
             filter: $scope.currentFilter
@@ -179,8 +177,6 @@ app.controller('ResultsController', ['$scope', '$timeout', '$http', function ($s
                 $scope.selectedStudent = { id: 'all', name: 'All Students' };
             }
         }
-
-        console.log('Selected student:', $scope.selectedStudent);
 
         $scope.currentPage = 1;
         $scope.loadResults();

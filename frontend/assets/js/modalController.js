@@ -61,6 +61,18 @@ app.factory("permissionModalController", [
                 //         "courses.unassign": { label: "Unassign Courses", access: { role: [1, 2, 3, 4], permissions: [] } }
                 //     }
                 // },
+                // "lectures": {
+                //     "name": "Lectures",
+                //     "access": { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] },
+                //     "permissions": {
+                //         "lectures.view": { label: "View Lectures", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                //         "lectures.create": { label: "Create Lectures", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                //         "lectures.my": { label: "View My Lectures", access: { role: [1, 4, 5, 6, 7], permissions: [] } },
+                //         "lectures.edit": { label: "Edit Lectures", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                //         "lectures.delete": { label: "Delete Lectures", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                //         "lectures.schedule": { label: "Schedule Lectures", access: { role: [1, 2, 3, 4, 5], permissions: [] } }
+                //     }
+                // },
                 "exams": {
                     "name": "Exams",
                     "access": { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] },
@@ -71,9 +83,11 @@ app.factory("permissionModalController", [
                         "exams.delete": { label: "Delete Exams", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
                         "exams.attempt": { label: "Attempt Exams", access: { role: [1, 6], permissions: [] } },
                         "exams.all": { label: "View All Exams", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
-                        "exams.my": { label: "View My Exams", access: { role: [1, 5], permissions: [] } },
+                        "exams.my": { label: "View My Exams", access: { role: [1, 5, 6, 7], permissions: [] } },
                         "exams.manage": { label: "Manage Exams", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
-                        "exams.schedule": { label: "Schedule Exams", access: { role: [1, 2, 3, 4, 5], permissions: [] } }
+                        "exams.schedule": { label: "Schedule Exams", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "exams.preview": { label: "Preview Exams", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "exams.register": { label: "Register for Exams", access: { role: [1, 6], permissions: [] } }
                     }
                 },
                 "questions": {
@@ -86,10 +100,10 @@ app.factory("permissionModalController", [
                         "questions.edit.my": { label: "Edit My Questions", access: { role: [1, 4, 5], permissions: [] } },
                         "questions.delete": { label: "Delete Questions", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
                         "questions.delete.my": { label: "Delete My Questions", access: { role: [1, 4, 5], permissions: [] } },
-                        "questions.bank": { label: "Access Question Bank", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        // "questions.bank": { label: "Access Question Bank", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
                         "questions.my": { label: "View My Questions", access: { role: [1, 4, 5], permissions: [] } },
                         "questions.all": { label: "View All Questions", access: { role: [1, 2, 3], permissions: [] } },
-                        "questions.assign": { label: "Assign Questions", access: { role: [1, 2, 3, 4, 5], permissions: [] } }
+                        // "questions.assign": { label: "Assign Questions", access: { role: [1, 2, 3, 4, 5], permissions: [] } }
                     }
                 },
                 // "past_papers": {
@@ -112,10 +126,11 @@ app.factory("permissionModalController", [
                         "results.publish": { label: "Publish Results", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
                         "results.all": { label: "View All Results", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
                         "results.my": { label: "View My Results", access: { role: [1, 6, 7], permissions: [] } },
-                        "rerults.edit": { label: "Edit Results", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "results.edit": { label: "Edit Results", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
                         "results.delete": { label: "Delete Results", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
                         "results.create": { label: "Create Results", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
-                        "results.manage": { label: "Manage Results", access: { role: [1, 2, 3, 4, 5], permissions: [] } }
+                        "results.manage": { label: "Manage Results", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                        "results.review": { label: "Review Results", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } }
                     }
                 },
                 // "attendance": {
@@ -133,19 +148,19 @@ app.factory("permissionModalController", [
                 //         "attendance.create": { label: "Create Attendance Records", access: { role: [1, 2, 3, 4, 5], permissions: [] } }
                 //     }
                 // },
-                "notifications": {
-                    "name": "Notifications",
-                    "access": { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] },
-                    "permissions": {
-                        "notifications.view": { label: "View Notifications", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
-                        "notifications.send": { label: "Send Notifications", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
-                        "notifications.manage": { label: "Manage Notifications", access: { role: [1, 2, 3], permissions: [] } },
-                        "notifications.my": { label: "View My Notifications", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
-                        "notifications.all": { label: "View All Notifications", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
-                        "notifications.templates": { label: "Manage Notification Templates", access: { role: [1, 2, 3], permissions: [] } },
-                        "notifications.settings": { label: "Manage Notification Settings", access: { role: [1, 2, 3], permissions: [] } }
-                    }
-                },
+                // "notifications": {
+                //     "name": "Notifications",
+                //     "access": { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] },
+                //     "permissions": {
+                //         "notifications.view": { label: "View Notifications", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                //         "notifications.send": { label: "Send Notifications", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                //         "notifications.manage": { label: "Manage Notifications", access: { role: [1, 2, 3], permissions: [] } },
+                //         "notifications.my": { label: "View My Notifications", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                //         "notifications.all": { label: "View All Notifications", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                //         "notifications.templates": { label: "Manage Notification Templates", access: { role: [1, 2, 3], permissions: [] } },
+                //         "notifications.settings": { label: "Manage Notification Settings", access: { role: [1, 2, 3], permissions: [] } }
+                //     }
+                // },
                 "users": {
                     "name": "User Management",
                     "access": { role: [1, 2, 3], permissions: [] },
@@ -155,6 +170,8 @@ app.factory("permissionModalController", [
                         "users.edit": { label: "Edit Users", access: { role: [1, 2, 3], permissions: [] } },
                         "users.delete": { label: "Delete Users", access: { role: [1, 2, 3], permissions: [] } },
                         "users.view": { label: "View Users", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
+                        "users.all": { label: "View All Users", access: { role: [1, 2, 3], permissions: [] } },
+                        "users.add": { label: "Add Users", access: { role: [1, 2, 3], permissions: [] } },
                         "students.manage": { label: "Manage Students", access: { role: [1, 2, 3, 5], permissions: [] } },
                         // "lecturers.manage": { label: "Manage Lecturers", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
                         // "parents.manage": { label: "Manage Parents", access: { role: [1, 2, 3, 5], permissions: [] } },
@@ -240,8 +257,7 @@ app.factory("permissionModalController", [
                 //         "hod.edit": { label: "Edit HOD", access: { role: [1, 2, 3], permissions: [] } },
                 //         "hod.delete": { label: "Delete HOD", access: { role: [1, 2, 3], permissions: [] } },
                 //         "hod.link.departments": { label: "Link HOD to Departments", access: { role: [1, 2, 3], permissions: [] } },
-                //         "hod.my": { label: "View My HOD", access: { role: [1, 6, 7], permissions: [] } },
-                //         // "hod.approve": { label: "Approve HOD Requests", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                //         "hod.my": { label: "View My HOD", access: { role: [1, 6, 7], permissions: [] } }
                 //     }
                 // },
                 // "reports": {
@@ -249,7 +265,7 @@ app.factory("permissionModalController", [
                 //     "access": { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] },
                 //     "permissions": {
                 //         "reports.view": { label: "View Reports", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
-                //         "reports.view.my": { label: "View Reports", access: { role: [1, 4, 5, 6, 7], permissions: [] } },
+                //         "reports.view.my": { label: "View My Reports", access: { role: [1, 4, 5, 6, 7], permissions: [] } },
                 //         "reports.create": { label: "Create Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
                 //         "reports.edit": { label: "Edit Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
                 //         "reports.edit.my": { label: "Edit My Reports", access: { role: [1, 4, 5], permissions: [] } },
@@ -258,14 +274,14 @@ app.factory("permissionModalController", [
                 //         "reports.download.my": { label: "Download My Reports", access: { role: [1, 4, 5, 6, 7], permissions: [] } },
                 //         "reports.exam": { label: "Access Exam Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
                 //         "reports.exam.create": { label: "Create Exam Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
-                //         "reports.eaxm.edit": { label: "Edit Exam Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
-                //         "reports.eaxm.edit.my": { label: "Edit My Exam Reports", access: { role: [1, 4, 5], permissions: [] } },
-                //         "reports.eaxm.delete": { label: "Delete Exam Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
-                //         "reports.eaxm.delete.my": { label: "Delete My Exam Reports", access: { role: [1, 4, 5], permissions: [] } },
-                //         "reports.eaxm.view": { label: "View Exam Reports", access: { role: [1, 2, 3, 4, 5, 7], permissions: [] } },
-                //         "reports.eaxm.view.my": { label: "View My Exam Reports", access: { role: [1, 4, 5, 6, 7], permissions: [] } },
-                //         "reports.eaxm.download": { label: "Download Exam Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
-                //         "reports.eaxm.download.my": { label: "Download My Exam Reports", access: { role: [1, 4, 5, 6, 7], permissions: [] } },
+                //         "reports.exam.edit": { label: "Edit Exam Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                //         "reports.exam.edit.my": { label: "Edit My Exam Reports", access: { role: [1, 4, 5], permissions: [] } },
+                //         "reports.exam.delete": { label: "Delete Exam Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                //         "reports.exam.delete.my": { label: "Delete My Exam Reports", access: { role: [1, 4, 5], permissions: [] } },
+                //         "reports.exam.view": { label: "View Exam Reports", access: { role: [1, 2, 3, 4, 5, 7], permissions: [] } },
+                //         "reports.exam.view.my": { label: "View My Exam Reports", access: { role: [1, 4, 5, 6, 7], permissions: [] } },
+                //         "reports.exam.download": { label: "Download Exam Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
+                //         "reports.exam.download.my": { label: "Download My Exam Reports", access: { role: [1, 4, 5, 6, 7], permissions: [] } },
                 //         "reports.fee": { label: "Access Fee Reports", access: { role: [1, 2, 3, 4, 5, 7], permissions: [] } },
                 //         "reports.fee.my": { label: "Access My Fee Reports", access: { role: [1, 6, 7], permissions: [] } },
                 //         "reports.attendance": { label: "Access Attendance Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
@@ -275,7 +291,8 @@ app.factory("permissionModalController", [
                 //         "reports.academic": { label: "Access Academic Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
                 //         "reports.academic.my": { label: "Access My Academic Reports", access: { role: [1, 6, 7], permissions: [] } },
                 //         "reports.performance": { label: "Access Performance Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } },
-                //         "reports.performance.my": { label: "Access My Performance Reports", access: { role: [1, 6, 7], permissions: [] } }
+                //         "reports.performance.my": { label: "Access My Performance Reports", access: { role: [1, 6, 7], permissions: [] } },
+                //         "reports.student": { label: "Access Student Performance Reports", access: { role: [1, 2, 3, 4, 5], permissions: [] } }
                 //     }
                 // },
                 "profile": {
@@ -285,7 +302,7 @@ app.factory("permissionModalController", [
                         "profile.view": { label: "View Profile", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
                         "profile.edit": { label: "Edit Profile", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
                         "profile.change_password": { label: "Change Password", access: { role: [1, 2, 3, 4, 5, 6, 7], permissions: [] } },
-                        "profile.delete": { label: "Delete Profile", access: { role: [1, 2, 3,], permissions: [] } },
+                        "profile.delete": { label: "Delete Profile", access: { role: [1, 2, 3], permissions: [] } },
                         "profile.delete.my": { label: "Delete My Profile", access: { role: [1, 4, 5, 6, 7], permissions: [] } }
                     }
                 },
@@ -548,7 +565,6 @@ app.factory("createAndEdituserGroupModalController", [
                     ? `${window.baseUrl}/API/user_groups/${$scope.group.id}`
                     : window.baseUrl + '/API/user_groups';
                 const method = $scope.isEditing ? 'POST' : 'POST';
-                console.log("Saving to URL:", apiUrl, "with method:", method);
 
                 $http({
                     method: method,
@@ -1020,7 +1036,6 @@ app.factory("unassignFromSectionModalController", [
     }
 ]);
 
-
 // Question edior modal controller
 app.factory('questionEditorModalController', [
     "API_URL",
@@ -1046,7 +1061,6 @@ app.factory('questionEditorModalController', [
             const initQuestionEditorModal = (question) => {
                 question.correctAnswer = question.correctAnswer.toUpperCase();
                 $scope.currentQuestion = question;
-                console.log($scope.currentQuestion);
             }
 
             const save = async function (id) {

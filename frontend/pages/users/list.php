@@ -9,9 +9,9 @@ $sql = "SELECT id, name,
 if ($user == 1) {
     $sql .= " AND user_group != 1";
 } elseif ($user == 2) {
-    $sql .= " AND user_group NOT IN (1,2)";
+    $sql .= " AND user_group NOT IN (1,2,4,7)";
 } else {
-    $sql .= " AND user_group NOT IN (1,2,3)";
+    $sql .= " AND user_group NOT IN (1,2,3,4,7)";
 }
 
 // Close subquery
@@ -22,9 +22,9 @@ $sql .= ") AS user_count
 if ($user == 1) {
     $sql .= " WHERE id != 1";
 } elseif ($user == 2) {
-    $sql .= " WHERE id NOT IN (1,2)";
+    $sql .= " WHERE id NOT IN (1,2,4,7)";
 } else {
-    $sql .= " WHERE id NOT IN (1,2,3)";
+    $sql .= " WHERE id NOT IN (1,2,3,4,7)";
 }
 
 $stmt = db()->prepare($sql);

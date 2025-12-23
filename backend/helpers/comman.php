@@ -170,7 +170,7 @@ function hasPermission($permission)
         session_start();
     }
 
-    return in_array($permission, $_SESSION['permissions'] ?? []);
+    return in_array($permission, $_SESSION['permissions']?? []);
 }
 
 function isActiveMenuItem($item, $current)

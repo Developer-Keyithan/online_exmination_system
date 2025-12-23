@@ -105,7 +105,7 @@ $menuData = [
                 'title' => 'Create Exam',
                 'icon' => '<i class="fa-solid fa-plus"></i>',
                 'url' => 'exam/create',
-                'role' => [1,2,5],
+                'role' => [1,5],
                 'permissions' => ['exams.create'],
                 'children' => []
             ],
@@ -114,8 +114,8 @@ $menuData = [
                 'title' => 'My Exams',
                 'icon' => '<i class="fa-solid fa-clipboard-list"></i>',
                 'url' => 'exam/my',
-                'role' => [1,3,5,6,7],
-                'permissions' => ['exams.attempt','exams.view','exams.my'],
+                'role' => [1,5,6,7],
+                'permissions' => ['exams.my'],
                 'children' => []
             ]
         ]
@@ -195,7 +195,7 @@ $menuData = [
                 'icon' => '<i class="fa-solid fa-user-check"></i>',
                 'url' => 'result/my',
                 'role' => [1,6,7],
-                'permissions' => ['results.view','results.my'],
+                'permissions' => ['results.my'],
                 'children' => []
             ]
         ]
@@ -283,7 +283,7 @@ $menuData = [
                 'title' => 'User Group',
                 'icon' => '<i class="fa-solid fa-user-group"></i>',
                 'url' => 'user_group',
-                'role' => [1,2,3],
+                'role' => [1],
                 'permissions' => ['groups.manage'],
                 'children' => []
             ]
@@ -338,7 +338,7 @@ $menuData = [
         'icon' => '<i class="fa-solid fa-gears"></i>',
         'url' => 'settings',
         'role' => [1],
-        'permissions' => ['settings.manage','settings.advanced'],
+        'permissions' => [],
         'children' => []
     ],
 

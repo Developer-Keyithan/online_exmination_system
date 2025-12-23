@@ -325,10 +325,8 @@ app.controller('MyExamController', [
             $scope.loading = true;
             $scope.error = null;
             $scope.isUserSelect = true;
-            console.log('Selected User:', $scope.selectedUser);
 
             const apiEndpoint = '/API/exam/my/' + ($scope.selectedUser ? $scope.selectedUser.id : $scope.theLoggedUser.user);
-            console.log('API Endpoint:', apiEndpoint);
             $http.get(window.baseUrl + apiEndpoint)
                 .then(function (response) {
                     if (response.data.status === 'success') {

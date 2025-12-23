@@ -134,7 +134,6 @@ app.controller('CreateExamController', [
                             }
                         }
                     } else if (getPath() === '/exam/edit/' + getIdFromUrl()) {
-                        console.log(getPath() === '/exam/edit/' + getIdFromUrl())
                         window.location.href = window.baseUrl + '/exam/create'
                     }
                 }, function (error) {
@@ -463,7 +462,6 @@ app.controller('CreateExamController', [
         };
 
         $scope.saveCurrentQuestion = async function () {
-            console.log($scope.isPastStartTime())
             if ($scope.isPastStartTime()) {
                 
                 return;
@@ -858,7 +856,6 @@ app.controller('CreateExamController', [
                             text: 'Cancel',
                             background: '#dc2626',
                             onCancel: function () {
-                                console.log('Cancel');
                                 $scope.closePopover()
                             }
                         }
@@ -1541,7 +1538,6 @@ app.controller('CreateExamController', [
 
             // Calculate exam end time
             const examEnd = new Date(examStart.getTime() + examDurationMinutes * 60000);
-            console.log(now >= examEnd)
 
             // Return true if current time is after exam end
             return now >= examEnd;

@@ -8,6 +8,9 @@ Router::group(['middleware' => ['auth']], function () {
     // 🔹 404 Page Not Found
     Router::get('/404', 'PageAPI@notFound', 'not_found');
 
+    // 🔹 403 Unauthorized
+    Router::get('/unauthorized', 'PageAPI@unauth', 'unauth');
+
     // 🔹 Dashboard
     Router::get('/dashboard', 'PageAPI@dashboard', 'dashboard');
 

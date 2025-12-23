@@ -16,11 +16,11 @@ class UserGroupAPI
         if ($role == 1) {
             $sql .= "";
         } else if ($role == 2) {
-            $sql .= " AND id != 2";
+            $sql .= " AND id != 2 AND id != 4 AND id != 7";
         } else if ($role == 3) {
-            $sql .= " AND id != 2 AND id != 3";
+            $sql .= " AND id != 2 AND id != 3 AND id != 4 AND id != 7";
         } else {
-           $sql .= " AND id != 2 AND id != 3 AND id != 4";
+           $sql .= " AND id != 2 AND id != 3  AND id != 4 AND id != 7";
         }
         
         $stmt = $this->db->prepare($sql);

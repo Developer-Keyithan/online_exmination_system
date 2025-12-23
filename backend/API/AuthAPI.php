@@ -47,7 +47,18 @@ class AuthAPI
             $_SESSION['role'] = $user['user_group'];
             $_SESSION['username'] = $user['name'];
             $_SESSION['role_name'] = $user['role_name'];
-            $_SESSION['permissions'] = !empty($user['permission']) ? explode(',', $user['permission']) : [];
+            $rawPermissions = $user['permission'] ?? '';
+
+            $_SESSION['permissions'] = [];
+
+            if (!empty($rawPermissions)) {
+                $fixedJson = str_replace("'", '"', $rawPermissions);
+                $decoded = json_decode($fixedJson, true);
+
+                if (is_array($decoded)) {
+                    $_SESSION['permissions'] = $decoded;
+                }
+            }
 
             return json_encode([
                 'status' => 'success',
@@ -111,7 +122,8 @@ class AuthAPI
         exit;
     }
 
-    public function registerStudentsForExam() {
+    public function registerStudentsForExam()
+    {
         return true;
     }
 }

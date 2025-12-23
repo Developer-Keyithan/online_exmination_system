@@ -209,19 +209,24 @@ app.controller('ExamAttemptController', [
 
                         // SCHEDULED
                         if ($scope.examData.schedule_type === 'scheduled') {
-
                             if (now < $scope.examData.start_time) {
+                                console.log('Exam not started yet');
                                 $scope.isExamStarted = false;
                                 $scope.isExamEnded = false;
                             } else if (now >= $scope.examData.start_time && now <= $scope.examData.end_time) {
+                                console.log('Exam can be started now');
                                 $scope.showExamStartModal = true;
-
+                                
                             } else if (now > $scope.examData.end_time) {
+                                console.log('Exam has ended');
                                 $scope.isExamStarted = false;
                                 $scope.isExamEnded = true;
                             }
                         }
                     }
+
+
+                    console.log('Exam Modal: ', $scope.showExamStartModal, 'Loading: ', $scope.loading, 'showEligibilityModal: ', $scope.showEligibilityModal);
 
                     $scope.loading = false;
                     $scope.$apply();
@@ -287,7 +292,6 @@ app.controller('ExamAttemptController', [
 
                     // Time remaining in seconds
                     $scope.timeRemaining = Math.max(0, Math.floor((endTime - currentTime) / 1000));
-                    console.log($scope.timeRemaining);
                     $scope.initializeTimer($scope.timeRemaining);
 
                     $scope.loading = false;
@@ -555,7 +559,6 @@ app.controller('ExamAttemptController', [
             if (index >= 0 && index < $scope.questions.length) {
                 $scope.currentQuestionIndex = index;
                 $scope.currentQuestion = $scope.questions[index];
-                console.log($scope.currentQuestion)
             }
         };
 

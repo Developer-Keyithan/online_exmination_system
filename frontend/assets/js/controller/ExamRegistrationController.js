@@ -35,15 +35,29 @@ app.controller('ExamRegistrationController', [
         $scope.loadExamData = function () {
             $http.get(window.baseUrl + '/API/exam/register/' + $scope.examId)
                 .then(function (response) {
+                    if (response.data.code) {
+                        console.log(response.data);
+                        $scope.existingRegistration = response.data.existingRegistration;
+                        $scope.existingRegistration.date = new Date(response.data.existingRegistration.date);
+                        $scope.attemptID = response.data.attempt_id;
+                        $scope.attemptUrl = response.data.url;
+                        $scope.showAlreadyRegisteredModal = true;
+                        Toast.fire({
+                            type: 'info',
+                            title: 'Information!',
+                            msg: response.data.msg || 'You have already registered for this exam.'
+                        })
+                    }
+
                     if (response.data.status === 'success') {
                         $scope.examData = response.data.exam_data;
                         $scope.examData.instructions = $sce.trustAsHtml(typeof $scope.examData.instructions === 'string' ? $scope.examData.instructions : 'No instructions provided.');
 
                         // Check if already registered
-                        if (response.data.already_registered) {
-                            $scope.existingRegistration = response.data.registration;
-                            $scope.showAlreadyRegisteredModal = true;
-                        }
+                        // if (response.data.already_registered) {
+                        //     $scope.existingRegistration = response.data.registration;
+                        //     $scope.showAlreadyRegisteredModal = true;
+                        // }
 
                         // Check if exam is available for registration
                         if (!$scope.isExamAvailableForRegistration()) {
@@ -99,8 +113,6 @@ app.controller('ExamRegistrationController', [
                 // registrationDeadline.setDate(registrationDeadline.getDate() - 3); // 3 Days before exam
                 // registrationDeadline.setHours(registrationDeadline.getHours() - 1); // 1 Hour before exam
                 registrationDeadline.setMinutes(registrationDeadline.getMinutes() - 5); // 5 Minutes before exam
-                console.log(registrationDeadline)
-                console.log(now > registrationDeadline);
                 if (now > registrationDeadline) {
                     return false;
                 }
@@ -169,6 +181,7 @@ app.controller('ExamRegistrationController', [
                         if (response.data.code) {
                             $scope.existingRegistration = response.data.existingRegistration;
                             $scope.existingRegistration.date = new Date(response.data.existingRegistration.date);
+                            $scope.attemptID = response.data.attempt_id;
                             $scope.showAlreadyRegisteredModal = true;
                             Toast.fire({
                                 type: 'info',
@@ -193,10 +206,10 @@ app.controller('ExamRegistrationController', [
 
                     // Get response data safely
                     const errData = error.data || error.response?.data || error || {};
-                    console.log(errData);
 
                     if (errData.code === 'ALREADY_REGISTERED') {
                         $scope.existingRegistration = errData.registration;
+                        $scope.attemptID = errData.attempt_id;
                         $scope.showAlreadyRegisteredModal = true;
                     } else if (errData.code === 'EXAM_UNAVAILABLE') {
                         $scope.registrationError = errData.message;
