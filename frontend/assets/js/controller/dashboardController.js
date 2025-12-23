@@ -19,7 +19,7 @@ app.controller('DashboardController', ['$scope', '$http', '$timeout', function (
     $scope.init = function () {
         // Get user data from session
         if (!$scope.user.id) {
-            $http.get(window.baseUrl + '/API/session')
+            $http.get(window.baseUrl + '/API/auth/user')
                 .then(function (response) {
                     $scope.user = response.data.user;
                     loadDashboardData();
@@ -92,10 +92,13 @@ app.controller('DashboardController', ['$scope', '$http', '$timeout', function (
     function loadAdminDashboard() {
         $http.get(window.baseUrl + '/API/dashboard/admin')
             .then(function (response) {
-                if (response.data.success) {
+                if (response.data.status === 'success') {
                     $scope.stats = response.data.stats;
                     $scope.recentUsers = response.data.recentUsers;
                     $scope.upcomingExams = response.data.upcomingExams;
+                    console.log($scope.stats);
+                    console.log($scope.recentUsers);
+                    console.log($scope.upcomingExams);
                 } else {
                     // Demo data
                     $scope.stats = {
