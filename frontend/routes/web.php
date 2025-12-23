@@ -8,8 +8,8 @@ Router::group(['middleware' => ['auth']], function () {
     // 🔹 404 Page Not Found
     Router::get('/404', 'PageAPI@notFound', 'not_found');
 
-    // 🔹 403 Unauthorized
-    Router::get('/unauthorized', 'PageAPI@unauth', 'unauth');
+    // 🔹 403 Forbidden
+    Router::get('/forbidden', 'PageAPI@forbidden', 'forbidden');
 
     // 🔹 Dashboard
     Router::get('/dashboard', 'PageAPI@dashboard', 'dashboard');
@@ -136,6 +136,40 @@ Router::group(['prefix' => 'API'], function () {
     Router::delete('/questions/delete_question/{id}', 'QuestionAPI@deleteQuestion', 'delete_question', ['auth']);
     Router::delete('/sections/delete/{id}', 'SectionAPI@deleteSection', 'delete_section', ['auth']);
     Router::delete('/exam/delete/{id}', 'ExamAPI@deleteExam', 'delete_exam', ['auth']);
+
+
+
+
+
+
+
+
+
+    // Auth
+    Router::get('/auth/user', 'AuthAPI@getLoggedInUser', 'get_logged_in_user', ['auth']);
+
+    // Profile routes
+    Router::get('/profile', 'ProfileAPI@getProfile');
+    Router::put('/profile/update', 'ProfileAPI@update');
+    Router::post('/profile/change-password', 'ProfileAPI@changePassword');
+    Router::get('/profile/sessions', 'ProfileAPI@getSessions');
+    Router::get('/profile/last-login', 'ProfileAPI@getLastLogin');
+    Router::post('/profile/upload-avatar', 'ProfileAPI@uploadAvatar');
+    Router::get('/profile/export-data', 'ProfileAPI@exportData');
+    Router::delete('/profile/delete-account', 'ProfileAPI@deleteAccount');
+    Router::delete('/profile/logout-session/{id}', 'ProfileAPI@logoutSession');
+    Router::post('/profile/logout-all-sessions', 'ProfileAPI@logoutAllSessions');
+
+    // Dashboard routes
+    Router::get('/dashboard/tech', 'DashboardAPI@techDashboard');
+    Router::get('/dashboard/admin', 'DashboardAPI@adminDashboard');
+    Router::get('/dashboard/lecturer', 'DashboardAPI@lecturerDashboard');
+    Router::get('/dashboard/student', 'DashboardAPI@studentDashboard');
+
+    // System routes
+    Router::post('/system/clear-cache', 'SystemAPI@clearCache');
+    Router::post('/system/backup', 'SystemAPI@backup');
+    Router::get('/system/check-updates', 'SystemAPI@checkUpdates');
 });
 
 Router::group(['prefix' => 'modal'], function () {

@@ -25,7 +25,7 @@ class PageAPI
     private function requirePermission($permission)
     {
         if (!hasPermission($permission)) {
-            header('Location: ' . BASE_URL . '/unauthorized');
+            header('Location: ' . BASE_URL . '/forbidden');
             exit;
         }
     }
@@ -43,9 +43,9 @@ class PageAPI
         return view('not_found.not_found', ['title' => '404 Page Not Found']);
     }
 
-    public function unauth()
+    public function forbidden()
     {
-        return view('unauth.unauth', ['title' => '403 Unauthorized Access']);
+        return view('forbidden.forbidden', ['title' => '403 Forbidden']);
     }
 
     public function dashboard()

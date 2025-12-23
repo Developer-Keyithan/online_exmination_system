@@ -17,6 +17,7 @@
     <script src="<?= asset('assets/js/angular.min.js') ?>"></script>
     <script src="<?= asset('assets/js/angularApp.js') ?>"></script>
     <script src="<?php echo asset('assets/js/modalController.js') ?>"></script>
+    <script src="<?php echo asset('assets/js/notification.server.js') ?>"></script>
     <script type="module" src="<?= asset('assets/js/main.js') ?>"></script>
     <script src="<?= asset('assets/plugins/select2/select2.js') ?>"></script>
     <script>

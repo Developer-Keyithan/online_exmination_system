@@ -5,15 +5,15 @@
 <?php include 'layouts/head.php' ?>
 <!-- start body -->
 
-<body class="flex flex-row justify-center <?php echo in_array(currentNav(), ['login', '404', 'unauthorized'])? 'items-center': 'text-white';?> min-h-[100vh] relative bg-gradient-to-br from-[#0f172a] from-0% via-[#1e293b] via-50% to-[#334155] to-100%">
-    <?php if (currentNav() != 'login' && currentNav() != '404' && currentNav() != 'unauthorized')
+<body class="flex flex-row justify-center <?php echo in_array(currentNav(), ['login', '404', 'unauthorized', 'forbidden'])? 'items-center': 'text-white';?> min-h-[100vh] relative bg-gradient-to-br from-[#0f172a] from-0% via-[#1e293b] via-50% to-[#334155] to-100%">
+    <?php if (currentNav() != 'login' && currentNav() != '404' && currentNav() != 'unauthorized' && currentNav() != 'forbidden')
         include 'layouts/sidebar.php' ?>
         <div class="w-full">
-        <?php if (currentNav() != 'login' && currentNav() != '404' && currentNav() != 'unauthorized')
+        <?php if (currentNav() != 'login' && currentNav() != '404' && currentNav() != 'unauthorized' && currentNav() != 'forbidden')
         include 'layouts/header.php'; ?>
         <div class="w-full <?php echo (currentNav() == 'login') ? 'p-0' : ((currentNav() == '404') ? 'p-0' : 'p-4') ?>"
             <?= $this->getController() ? 'ng-controller="' . $this->getController() . '"' : '' ?>>
-            <?php if (currentNav() != 'login' && currentNav() != '404' && currentNav() != 'unauthorized'): ?>
+            <?php if (currentNav() != 'login' && currentNav() != '404' && currentNav() != 'unauthorized' && currentNav() != 'forbidden'): ?>
                 <div class="mt-3 mb-4 rounded-lg">
                     <div class="flex flex-row justify-between">
                         <h4 class="text-white text-xl font-semibold capitalize">
@@ -80,7 +80,7 @@
             <?= $this->section('content') ?>
         </div>
 
-        <?php if (currentNav() != 'login' && currentNav() != '404' && currentNav() != 'unauthorized')
+        <?php if (currentNav() != 'login' && currentNav() != '404' && currentNav() != 'unauthorized' && currentNav() != 'forbidden')
             include 'layouts/footer.php' ?>
         </div>
         <!-- end body -->

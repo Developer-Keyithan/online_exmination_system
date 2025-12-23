@@ -8,7 +8,7 @@
         <div class="text-center mb-10">
             <h2 class="text-3xl md:text-4xl font-bold text-gray-100 mb-4">
                 <i class="fas fa-user-lock text-purple-400 mr-3"></i>
-                403 Unauthorized Access
+                403 Forbidden Access
             </h2>
 
             <p class="text-lg text-gray-300 mb-6 leading-relaxed">

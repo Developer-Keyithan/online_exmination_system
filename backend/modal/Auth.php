@@ -19,4 +19,9 @@ class Auth {
     public static function logout() {
         session_destroy();
     }
+
+    public static function getUser() {
+        $user['id'] = isset($_SESSION['user']) ? $_SESSION['user'] : null;
+        return $user;
+    }
 }

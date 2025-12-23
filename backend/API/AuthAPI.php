@@ -48,9 +48,7 @@ class AuthAPI
             $_SESSION['username'] = $user['name'];
             $_SESSION['role_name'] = $user['role_name'];
             $rawPermissions = $user['permission'] ?? '';
-
             $_SESSION['permissions'] = [];
-
             if (!empty($rawPermissions)) {
                 $fixedJson = str_replace("'", '"', $rawPermissions);
                 $decoded = json_decode($fixedJson, true);
@@ -59,6 +57,7 @@ class AuthAPI
                     $_SESSION['permissions'] = $decoded;
                 }
             }
+            $_SESSION['logged_in_at'] = date('Y-m-d H:i:s');
 
             return json_encode([
                 'status' => 'success',
@@ -122,6 +121,46 @@ class AuthAPI
         exit;
     }
 
+    public function getLoggedInUser()
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (!isset($_SESSION['user'])) {
+            http_response_code(401);
+            return json_encode([
+                'status' => 'error',
+                'msg' => 'Not logged in'
+            ]);
+        }
+
+        $stmt = db()->prepare(" SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$_SESSION['user']]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+
+        return json_encode([
+            'status' => 'success',
+            'msg' => 'User retrieved successfully',
+            'user' => [
+                'id' => $_SESSION['user'],
+                'email' => $_SESSION['email'],
+                'role' => $_SESSION['role'],
+                'name' => $user['name'],
+                'username' => $user['username'],
+                'role_name' => $_SESSION['role_name'],
+                'permissions' => $_SESSION['permissions'],
+                'registered_at' => $user['created_at'],
+                'last_login' => str_replace(' ', "T", $_SESSION['logged_in_at']),
+                'reg_no' => $user['reg_no'] ? $user['reg_no'] : 'Not provided',
+                'phone' => $user['phone'] ? $user['phone'] : 'Not provided',
+                'created_at' => str_replace(' ', "T", $user['created_at']),
+                'updated_at' => str_replace(' ', "T", $user['updated_at']),
+                'status' => $user['status'],
+            ]
+        ]);
+    }
     public function registerStudentsForExam()
     {
         return true;

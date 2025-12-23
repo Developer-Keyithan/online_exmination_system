@@ -45,6 +45,28 @@ app.filter("formatNIC", function () {
     }
   };
 });
+app.filter('formatMobileNumber', function () {
+  return function (number) {
+    if (!number) return '';
+
+    // Remove non-digits
+    number = number.toString().replace(/\D/g, '');
+
+    // Remove leading 0 if length is 10
+    if (number.length === 10 && number.startsWith('0')) {
+      number = number.slice(1); // Remove first 0 → length 9
+    }
+
+    // Format only if length is 9
+    if (number.length === 9) {
+      return '+94 ' + number.slice(0, 3) + ' ' + number.slice(3, 6) + ' ' + number.slice(6);
+    }
+
+    // fallback
+    return number;
+  };
+});
+
 // app.filter('formatDateTime', function() {
 //     return function(datetimeStr) {
 //         if (!datetimeStr) return '';
