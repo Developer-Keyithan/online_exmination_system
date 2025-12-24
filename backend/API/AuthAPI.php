@@ -150,7 +150,6 @@ class AuthAPI
                 'name' => $user['name'],
                 'username' => $user['username'],
                 'role_name' => $_SESSION['role_name'],
-                'permissions' => $_SESSION['permissions'],
                 'registered_at' => $user['created_at'],
                 'last_login' => str_replace(' ', "T", $_SESSION['logged_in_at']),
                 'reg_no' => $user['reg_no'] ? $user['reg_no'] : 'Not provided',

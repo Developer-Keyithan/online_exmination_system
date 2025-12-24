@@ -196,7 +196,6 @@ app.filter('formatDateTime', function () {
     }
   };
 });
-
 app.filter('fromNow', function () {
   return function (datetimeStr) {
     if (!datetimeStr) return '';
@@ -204,8 +203,10 @@ app.filter('fromNow', function () {
     var dt = new Date(datetimeStr);
     if (isNaN(dt)) return datetimeStr;
 
-    var diff = now - dt; // in ms
-    var seconds = Math.floor(diff / 1000);
+    var diff = now - dt;
+    var absDiff = Math.abs(diff);
+
+    var seconds = Math.floor(absDiff / 1000);
     var minutes = Math.floor(seconds / 60);
     var hours = Math.floor(minutes / 60);
     var days = Math.floor(hours / 24);
@@ -213,15 +214,51 @@ app.filter('fromNow', function () {
     var months = Math.floor(days / 30);
     var years = Math.floor(days / 365);
 
-    if (seconds < 60) return seconds + ' sec ago';
-    if (minutes < 60) return minutes + ' min ago';
-    if (hours < 24) return hours + ` hour${hours > 1 ? 's' : ''} ago`;
-    if (days < 7) return days + `day${days > 1 ? 's' : ''} ago`;
-    if (weeks < 5) return weeks + `week${weeks > 1 ? 's' : ''} ago`;
-    if (months < 12) return months + `month${months > 1 ? 's' : ''} ago`;
-    return years + `year${years > 1 ? 's' : ''} ago`;
+    var text = '';
+
+    if (diff >= 0) { // past
+      if (seconds < 10) text = 'just now';
+      else if (seconds < 60) text = seconds + ' sec ago';
+      else if (minutes < 60) text = minutes + ' min ago';
+      else if (hours < 24) text = hours + ` hour${hours > 1 ? 's' : ''} ago`;
+      else if (days === 1) text = 'yesterday';
+      else if (days < 7) text = days + ` day${days > 1 ? 's' : ''} ago`;
+      else if (weeks < 5) text = weeks + ` week${weeks > 1 ? 's' : ''} ago`;
+      else if (months < 12) text = months + ` month${months > 1 ? 's' : ''} ago`;
+      else text = years + ` year${years > 1 ? 's' : ''} ago`;
+    } else { // future
+      if (seconds < 60) text = 'in a few seconds';
+      else if (minutes < 60) text = 'in ' + minutes + ' min';
+      else if (hours < 24) text = 'in ' + hours + ` hour${hours > 1 ? 's' : ''}`;
+      else if (days === 1) text = 'tomorrow';
+      else if (days < 7) text = 'in ' + days + ` day${days > 1 ? 's' : ''}`;
+      else if (weeks < 5) text = 'in ' + weeks + ` week${weeks > 1 ? 's' : ''}`;
+      else if (months < 12) text = 'in ' + months + ` month${months > 1 ? 's' : ''}`;
+      else text = 'in ' + years + ` year${years > 1 ? 's' : ''}`;
+    }
+
+    return text;
   };
 });
+app.directive('liveFromNow', ['$interval', '$filter', function ($interval, $filter) {
+  return {
+    restrict: 'A',
+    scope: {
+      datetime: '@liveFromNow'
+    },
+    link: function (scope, element) {
+      function updateTime() {
+        element.text($filter('fromNow')(scope.datetime));
+      }
+      updateTime();
+      var intervalPromise = $interval(updateTime, 1000);
+      element.on('$destroy', function () {
+        $interval.cancel(intervalPromise);
+      });
+    }
+  };
+}]);
+
 app.filter('remainingTime', function () {
   return function (datetimeStr) {
     if (!datetimeStr) return '';

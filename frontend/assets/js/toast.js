@@ -18,7 +18,7 @@ export const Toast = {
             case 'info':
                 return popup.info({ title, titleColor, content: { text: content, color: contentColor }, options: { ...options, position, buttonPosition, buttonWidth, buttonContainerClass, buttonContainerStyles, backgroundColor }, size });
             case 'content':
-                return popup.content({ title, titleColor, content, buttons, apiConfig, size, buttonPosition, buttonWidth, buttonContainerClass, buttonContainerStyles, backgroundColor });
+                return popup.content({ title, titleColor, content, buttons, apiConfig, size, buttonPosition, buttonWidth, buttonContainerClass, buttonContainerStyles, backgroundColor, position });
             case 'apiContent':
                 return popup.apiContent({ title, titleColor, endpoint: apiConfig?.endpoint, method: apiConfig?.method, data: apiConfig?.data, buttons, size, position, buttonPosition, buttonWidth, buttonContainerClass, buttonContainerStyles, backgroundColor });
             case 'error':

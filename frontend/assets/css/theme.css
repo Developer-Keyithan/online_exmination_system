@@ -59,6 +59,10 @@ select {
   @apply transition-all duration-200 outline-none focus:shadow-[0_0_0_2px] focus:shadow-[#fff3] border border-[#fff2] rounded-md px-3 py-2 text-gray-200 placeholder:text-gray-400;
 }
 
+.input-with-eye {
+  padding-right: 2rem !important;
+}
+
 /* Navbar */
 .navbar {
   position: fixed;
@@ -507,7 +511,7 @@ select {
 }
 
 .popover-close:hover {
-  @apply  rotate-90 text-red-400;
+  @apply rotate-90 text-red-400;
 }
 
 .popover-body {
@@ -566,8 +570,15 @@ select {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .prose {
@@ -583,7 +594,7 @@ select {
   .no-print {
     display: none !important;
   }
-  
+
   .print-only {
     display: block !important;
   }

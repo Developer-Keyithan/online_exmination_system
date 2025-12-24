@@ -16,10 +16,10 @@
             <div class="bg-[#0005] p-6 rounded-xl border border-[#fff2]">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-bold text-gray-100">Profile Information</h2>
-                    <button ng-click="toggleEdit()" ng-class="{'bg-cyan-600': !editing, 'bg-yellow-600': editing}"
+                    <!-- <button ng-click="toggleEdit()" ng-class="{'bg-cyan-600': !editing, 'bg-yellow-600': editing}"
                         class="px-4 py-2 rounded-lg text-white hover:opacity-90 transition-opacity">
                         {{editing ? 'Cancel' : 'Edit Profile'}}
-                    </button>
+                    </button> -->
                 </div>
 
                 <div class="space-y-6">
@@ -27,7 +27,7 @@
                     <div class="flex items-center space-x-6">
                         <div class="relative">
                             <div
-                                class="w-24 h-24 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 flex items-center justify-center text-white text-2xl font-bold">
+                                class="w-24 h-24 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 flex items-center justify-center text-white text-4xl font-bold">
                                 {{user.name.charAt(0)}}
                             </div>
                             <input type="file" id="avatarUpload" class="hidden" accept="image/*" ng-disabled="!editing"
@@ -50,7 +50,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-2">Full Name *</label>
                             <input type="text" ng-model="profileData.name" ng-disabled="!editing" required
-                                class="w-full px-4 py-3 bg-[#0007] border rounded-lg text-gray-100 focus:outline-none focus:border-cyan-500"
+                                class="w-full px-4 py-3 bg-[#0007] border rounded-lg text-gray-100"
                                 ng-class="{'border-[#fff2]': !editing, 'border-cyan-500': editing, 'border-red-500': errors.name}">
                             <p ng-if="errors.name" class="text-red-400 text-sm mt-1">{{errors.name}}</p>
                         </div>
@@ -58,7 +58,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-2">Email Address *</label>
                             <input type="email" ng-model="profileData.email" ng-disabled="!editing" required
-                                class="w-full px-4 py-3 bg-[#0007] border rounded-lg text-gray-100 focus:outline-none focus:border-cyan-500"
+                                class="w-full px-4 py-3 bg-[#0007] border rounded-lg text-gray-100"
                                 ng-class="{'border-[#fff2]': !editing, 'border-cyan-500': editing, 'border-red-500': errors.email}">
                             <p ng-if="errors.email" class="text-red-400 text-sm mt-1">{{errors.email}}</p>
                         </div>
@@ -66,8 +66,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-2">Phone Number *</label>
                             <input type="tel" ng-model="user.phone" ng-change="formatSLPhone()" ng-disabled="!editing"
-                                required
-                                class="w-full px-4 py-3 bg-[#0007] border rounded-lg text-gray-100 focus:outline-none focus:border-cyan-500"
+                                required class="w-full px-4 py-3 bg-[#0007] border rounded-lg text-gray-100"
                                 ng-class="{'border-[#fff2]': !editing, 'border-cyan-500': editing, 'border-red-500': errors.phone}">
                             <p ng-if="errors.phone" class="text-red-400 text-sm mt-1">{{errors.phone}}</p>
                         </div>
@@ -75,14 +74,14 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-2">Registration Number</label>
                             <input type="text" ng-model="profileData.reg_no" ng-disabled="!editing"
-                                class="w-full px-4 py-3 bg-[#0007] border rounded-lg text-gray-100 focus:outline-none focus:border-cyan-500"
+                                class="w-full px-4 py-3 bg-[#0007] border rounded-lg text-gray-100"
                                 ng-class="{'border-[#fff2]': !editing, 'border-cyan-500': editing}">
                         </div>
 
                         <div ng-if="user.role === 6" class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-300 mb-2">Username *</label>
                             <input type="text" ng-model="profileData.username" ng-disabled="!editing" required
-                                class="w-full px-4 py-3 bg-[#0007] border rounded-lg text-gray-100 focus:outline-none focus:border-cyan-500"
+                                class="w-full px-4 py-3 bg-[#0007] border rounded-lg text-gray-100"
                                 ng-class="{'border-[#fff2]': !editing, 'border-cyan-500': editing, 'border-red-500': errors.username}">
                             <p ng-if="errors.username" class="text-red-400 text-sm mt-1">{{errors.username}}</p>
                         </div>
@@ -92,20 +91,20 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-300 mb-2">Notes</label>
                         <textarea ng-model="profileData.note" ng-disabled="!editing" rows="3"
-                            class="w-full px-4 py-3 bg-[#0007] border rounded-lg text-gray-100 focus:outline-none focus:border-cyan-500"
+                            class="w-full px-4 py-3 bg-[#0007] border rounded-lg text-gray-100"
                             ng-class="{'border-[#fff2]': !editing, 'border-cyan-500': editing}"
                             placeholder="Additional information or notes..."></textarea>
                     </div>
 
                     <!-- Save Button -->
-                    <div ng-if="editing" class="flex justify-end">
+                    <!-- <div ng-if="editing" class="flex justify-end">
                         <button ng-click="saveProfile()" ng-disabled="saving"
                             class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center space-x-2 transition-colors"
                             ng-class="{'opacity-50 cursor-not-allowed': saving}">
                             <i class="fas" ng-class="saving ? 'fa-spinner animate-spin' : 'fa-save'"></i>
                             <span>{{saving ? 'Saving...' : 'Save Changes'}}</span>
                         </button>
-                    </div>
+                    </div> -->
                 </div>
             </div>
 
@@ -120,21 +119,46 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-2">Current Password *</label>
-                            <input type="password" ng-model="passwordData.current_password"
-                                class="w-full px-4 py-3 bg-[#0007] border border-[#fff2] rounded-lg text-gray-100 focus:outline-none focus:border-cyan-500">
+                            <div class="relative">
+                                <input ng-attr-type="{{ showCurrentPassword ? 'text' : 'password' }}"
+                                    ng-model="passwordData.current_password"
+                                    class="input-with-eye w-full pl-4 py-3 pr-12 bg-[#0007] border border-[#fff2] rounded-lg text-gray-100"
+                                    placeholder="Enter your account's current password">
+                                <i class="fas absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-200"
+                                    ng-class="showCurrentPassword ? 'fa-eye-slash' : 'fa-eye'"
+                                    ng-click="showCurrentPassword = !showCurrentPassword">
+                                </i>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-300 mb-2">New Password *</label>
-                                <input type="password" ng-model="passwordData.new_password"
-                                    class="w-full px-4 py-3 bg-[#0007] border border-[#fff2] rounded-lg text-gray-100 focus:outline-none focus:border-cyan-500">
+                                <div class="relative">
+                                    <input ng-attr-type="{{ showNewPassword ? 'text' : 'password' }}"
+                                        ng-model="passwordData.new_password"
+                                        class="input-with-eye w-full px-4 py-3 bg-[#0007] border border-[#fff2] rounded-lg text-gray-100"
+                                        placeholder="Enter your new password">
+                                    <i class="fas absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-200"
+                                        ng-class="showNewPassword ? 'fa-eye-slash' : 'fa-eye'"
+                                        ng-click="showNewPassword = !showNewPassword">
+                                    </i>
+                                </div>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-300 mb-2">Confirm Password *</label>
-                                <input type="password" ng-model="passwordData.confirm_password"
-                                    class="w-full px-4 py-3 bg-[#0007] border border-[#fff2] rounded-lg text-gray-100 focus:outline-none focus:border-cyan-500">
+                                <div class="relative">
+                                    <input ng-attr-type="{{ showConfirmPassword ? 'text' : 'password' }}"
+                                        ng-model="passwordData.confirm_password"
+                                        class="input-with-eye w-full px-4 py-3 bg-[#0007] border border-[#fff2] rounded-lg text-gray-100"
+                                        ng-class="{'bg-red-800/30': passwordData.confirm_password && passwordData.confirm_password !== passwordData.new_password}"
+                                        placeholder="Re-enter your new password">
+                                    <i class="fas absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-200"
+                                        ng-class="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"
+                                        ng-click="showConfirmPassword = !showConfirmPassword">
+                                    </i>
+                                </div>
                             </div>
                         </div>
 
@@ -186,7 +210,7 @@
                                          'bg-red-500': passwordStrength < 2,
                                          'bg-yellow-500': passwordStrength >= 2 && passwordStrength < 3,
                                          'bg-green-500': passwordStrength >= 3
-                                     }" ng-style="{'width': (passwordStrength * 33.33) + '%'}"></div>
+                                     }" ng-style="{'width': (passwordStrength * 25) + '%'}"></div>
                             </div>
                         </div>
 
@@ -228,14 +252,17 @@
 
                     <div class="flex items-center justify-between">
                         <span class="text-gray-300">Account Status</span>
-                        <span ng-class="{'text-green-400': user.status === 0,'text-orange-400': user.status === 1,'text-red-400': user.status === 2}">
-                            {{user.status === 0 ? 'Active' : user.status === 1 ? 'Inactive' : 'Suspended'}}
+                        <span
+                            ng-class="{'text-green-400': user.status === 0,'text-orange-400': user.status === 1,'text-red-400': user.status === 2,'text-red-600': user.status === 3}">
+                            {{user.status === 0 ? 'Active' : user.status === 1 ? 'Inactive' : user.status === 2 ?
+                            'Suspended' : user.status === 3 ? 'Deleted' : 'Unknown'}}
                         </span>
                     </div>
 
                     <div class="flex items-center justify-between">
                         <span class="text-gray-300">Last Login</span>
-                        <span class="text-gray-300">{{lastLogin | fromNow}}</span>
+                        <span class="text-gray-300" live-from-now="{{lastLogin}}"></span>
+
                     </div>
                 </div>
 
@@ -249,7 +276,7 @@
             </div>
 
             <!-- Danger Zone -->
-            <div class="bg-[#0005] p-6 rounded-xl border border-red-500/30">
+            <div ng-if="user.role !== 1 && user.role !== 2" class="bg-[#0005] p-6 rounded-xl border border-red-500/30">
                 <h2 class="text-xl font-bold text-gray-100 mb-6">Danger Zone</h2>
 
                 <div class="space-y-4">

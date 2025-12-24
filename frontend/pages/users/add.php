@@ -73,7 +73,7 @@ $userGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <!-- Phone Number -->
                 <div class="form-group">
                     <label for="phone" class="form-label">Phone Number <span class="text-red-700">*</span></label>
-                    <input type="tel" id="phone" ng-model="userData.phone" class="form-input" maxlength="9" name="phone"
+                    <input type="tel" id="phone" ng-model="userData.phone" class="form-input" maxlength="10" name="phone"
                         placeholder="Enter phone number">
                     <div class="error-message" ng-show="addUserForm.submitted && addUserForm.phone.$error.required">
                         Phone Number is required

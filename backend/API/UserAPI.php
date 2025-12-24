@@ -97,23 +97,27 @@ class UserAPI
     }
 
     // Generate registration number
-    function generateRegNo($db, $prefix)
+    function generateRegNo(PDO $db, string $prefix): string
     {
-        $validPrefixes = ['LEC', 'STU', 'PRE', 'HOD'];
+        $validPrefixes = ['TEC', 'SADMIN', 'ADMIN', 'LEC', 'STU', 'PAR', 'HOD'];
         if (!in_array($prefix, $validPrefixes)) {
             throw new Exception("Invalid prefix");
         }
 
-        // Get last reg_no with this prefix
-        $stmt = $db->prepare("SELECT reg_no FROM users WHERE reg_no LIKE ? ORDER BY id DESC LIMIT 1");
-        $stmt->execute([$prefix . '%']);
+        $stmt = $db->prepare("
+            SELECT reg_no
+            FROM users
+            WHERE reg_no LIKE ?
+            ORDER BY CAST(SUBSTRING(reg_no, LENGTH(?) + 1) AS UNSIGNED) DESC
+            LIMIT 1
+        ");
+        $stmt->execute([$prefix . '%', $prefix]);
         $last = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($last) {
-            // Extract numeric part and increment
-            $number = (int) substr($last['reg_no'], 3) + 1;
+            $number = (int) substr($last['reg_no'], strlen($prefix)) + 1;
         } else {
-            $number = 1001; // start from 1001
+            $number = 1001; // start number
         }
 
         return $prefix . $number;
@@ -125,7 +129,10 @@ class UserAPI
             // Get POST data safely
             $fullname = $_POST['fullname'] ?? '';
             $email = $_POST['email'] ?? '';
-            $phone = str_replace(0, '', $_POST['phone']) ?? '';
+            $phone = $_POST['phone'] ?? '';
+            if (str_starts_with($phone, '0')) {
+                $phone = substr($phone, 1);
+            }
             $username = $_POST['username'] ?? '';
             $group_name = $_POST['userGroup'] ?? '';
             $status = $_POST['status'] ?? '';
@@ -154,14 +161,20 @@ class UserAPI
                 throw new Exception("Passwords do not match");
 
             $group = null;
-            if ($group_name == 'Administrator') $group = 2;
-            if ($group_name == 'Admin') $group = 3;
-            if ($group_name == 'HOD') $group = 4;
-            if ($group_name == 'Lecturer') $group = 5;
-            if ($group_name == 'Student') $group = 6;
-            if ($group_name == 'Parent') $group = 7;
-
-            print_r($group);
+            if ($group_name == 'Technical')
+                $group = 1;
+            if ($group_name == 'Administrator')
+                $group = 2;
+            if ($group_name == 'Admin')
+                $group = 3;
+            if ($group_name == 'HOD')
+                $group = 4;
+            if ($group_name == 'Lecturer')
+                $group = 5;
+            if ($group_name == 'Student')
+                $group = 6;
+            if ($group_name == 'Parent')
+                $group = 7;
 
             $stmt = $this->db->prepare("SELECT * FROM users WHERE email = ?");
             $stmt->execute([$email]);
@@ -176,20 +189,30 @@ class UserAPI
             $stmt = $this->db->prepare("SELECT * FROM users WHERE phone = ? AND user_group = ?");
             $stmt->execute([$username, $group]);
             if ($stmt->rowCount() > 0)
-                throw new Exception("Phone number already exists on this user group $group_name" );
+                throw new Exception("Phone number already exists on this user group $group_name");
 
             // Hash the password
             $hashedPwd = password_hash($pwd, PASSWORD_DEFAULT);
 
-            if ($group == 4) $prefix = 'HOD';
-            if ($group == 5) $prefix = 'LEC';
-            if ($group == 6) $prefix = 'STU';
-            if ($group == 7) $prefix = 'PRE';
-            if ($group == 1 || $group == 2 || $group == 3) {
-                $reg_no = null;
-            } else {
-                $reg_no = $this->generateRegNo($this->db, $prefix);
-            }
+            if ($group == 1)
+                $prefix = 'TEC';
+            if ($group == 2)
+                $prefix = 'SADMIN';
+            if ($group == 3)
+                $prefix = 'ADMIN';
+            if ($group == 4)
+                $prefix = 'HOD';
+            if ($group == 5)
+                $prefix = 'LEC';
+            if ($group == 6)
+                $prefix = 'STU';
+            if ($group == 7)
+                $prefix = 'PAR';
+            // if ($group == 1 || $group == 2 || $group == 3) {
+            //     $reg_no = null;
+
+            $reg_no = $this->generateRegNo($this->db, $prefix);
+
             // Insert into database (example using PDO)
             $stmt = $this->db->prepare("INSERT INTO users (reg_no, name, email, phone, username, user_group, status, password, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$reg_no, $fullname, $email, $phone, $username, $group, $status, $hashedPwd, $note]);
