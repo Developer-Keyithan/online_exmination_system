@@ -21,7 +21,6 @@ APP_NAME=Online Exam
 APP_VERSION=1.0.0
 APP_ENV=local
 APP_DEBUG=true
-# APP_URL=https://a2.dnipos.com/
 APP_URL=http://localhost/NIT/exam
 APP_FOLDER=
 IS_CPANEL = false

@@ -1720,12 +1720,15 @@ class ExamAPI
                             $status = 'live';
                         } elseif ($row['schedule_type'] === 'scheduled') {
                             date_default_timezone_set('Asia/Colombo');
+                            $currentTime = new DateTime();
+                            $startTime = new DateTime($row['start_time']);
+                            $duration = (int)$row['duration']; // duration in minutes
 
-                            $currentTime = time();
-                            $startTime = (int) $row['start_time'];
-                            $duration = (int) $row['duration'];
-                            $endTime = $startTime + ($duration * 60);
+                            // Add duration to start time
+                            $endTime = clone $startTime;
+                            $endTime->modify("+{$duration} minutes");
 
+                            // Determine status
                             if ($currentTime < $startTime) {
                                 $status = 'scheduled';
                             } elseif ($currentTime >= $startTime && $currentTime <= $endTime) {
@@ -1849,23 +1852,23 @@ class ExamAPI
                         'total_marks' => (int) $row['total_marks'],
                         'passing_marks' => (int) $row['passing_marks'],
                         'passing_percentage' =>
-                            round(($row['passing_marks'] / $row['total_marks']) * 100),
+                        round(($row['passing_marks'] / $row['total_marks']) * 100),
                         'schedule_type' => $row['schedule_type'],
                         'start_time' => $row['start_time']
                             ? str_replace(' ', 'T', $row['start_time']) . 'Z'
                             : null,
                         'your_score' =>
-                            $row['score'] !== null ? (int) $row['score'] : null,
+                        $row['score'] !== null ? (int) $row['score'] : null,
                         'percentage' => $percentage,
                         'is_passed' =>
-                            $row['score'] !== null
+                        $row['score'] !== null
                             ? $row['score'] >= $row['passing_marks']
                             : null,
                         'last_attempt_date' => $row['completed_at']
                             ? str_replace(' ', 'T', $row['completed_at']) . 'Z'
                             : null,
                         'attempts_remaining' =>
-                            (int) $row['max_attempts'] - (int) $row['attempts_count'],
+                        (int) $row['max_attempts'] - (int) $row['attempts_count'],
                         'time_remaining' => $row['time_remaining'],
                         'shuffle_questions' => (bool) $row['shuffle_questions'],
                         'shuffle_options' => (bool) $row['shuffle_options'],
