@@ -150,26 +150,16 @@ Router::group(['prefix' => 'API'], function () {
 
     // Profile routes
     Router::get('/profile', 'ProfileAPI@getProfile');
-    Router::put('/profile/update', 'ProfileAPI@update');
     Router::post('/profile/change-password', 'ProfileAPI@changePassword');
     Router::get('/profile/sessions', 'ProfileAPI@getSessions');
     Router::get('/profile/last-login', 'ProfileAPI@getLastLogin');
-    Router::post('/profile/upload-avatar', 'ProfileAPI@uploadAvatar');
     Router::get('/profile/export-data', 'ProfileAPI@exportData');
     Router::delete('/profile/delete-account', 'ProfileAPI@deleteAccount');
-    Router::delete('/profile/logout-session/{id}', 'ProfileAPI@logoutSession');
-    Router::post('/profile/logout-all-sessions', 'ProfileAPI@logoutAllSessions');
 
     // Dashboard routes
-    Router::get('/dashboard/tech', 'DashboardAPI@techDashboard');
     Router::get('/dashboard/admin', 'DashboardAPI@adminDashboard');
     Router::get('/dashboard/lecturer', 'DashboardAPI@lecturerDashboard');
     Router::get('/dashboard/student', 'DashboardAPI@studentDashboard');
-
-    // System routes
-    Router::post('/system/clear-cache', 'SystemAPI@clearCache');
-    Router::post('/system/backup', 'SystemAPI@backup');
-    Router::get('/system/check-updates', 'SystemAPI@checkUpdates');
 });
 
 Router::group(['prefix' => 'modal'], function () {

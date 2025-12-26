@@ -1500,6 +1500,10 @@ video {
   min-width: 300px;
 }
 
+.min-w-\[350px\] {
+  min-width: 350px;
+}
+
 .min-w-full {
   min-width: 100%;
 }
@@ -4475,6 +4479,10 @@ select:focus {
 
 .navbar {
   position: fixed;
+}
+
+.first-letter-uppercase::first-letter {
+  text-transform: uppercase;
 }
 
 /* Animated background elements */

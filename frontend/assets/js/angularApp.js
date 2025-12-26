@@ -199,11 +199,12 @@ app.filter('formatDateTime', function () {
 app.filter('fromNow', function () {
   return function (datetimeStr) {
     if (!datetimeStr) return '';
+
     var now = new Date();
     var dt = new Date(datetimeStr);
     if (isNaN(dt)) return datetimeStr;
 
-    var diff = now - dt;
+    var diff = dt - now;           // future >0, past <0
     var absDiff = Math.abs(diff);
 
     var seconds = Math.floor(absDiff / 1000);
@@ -216,25 +217,146 @@ app.filter('fromNow', function () {
 
     var text = '';
 
-    if (diff >= 0) { // past
-      if (seconds < 10) text = 'just now';
-      else if (seconds < 60) text = seconds + ' sec ago';
-      else if (minutes < 60) text = minutes + ' min ago';
-      else if (hours < 24) text = hours + ` hour${hours > 1 ? 's' : ''} ago`;
-      else if (days === 1) text = 'yesterday';
-      else if (days < 7) text = days + ` day${days > 1 ? 's' : ''} ago`;
-      else if (weeks < 5) text = weeks + ` week${weeks > 1 ? 's' : ''} ago`;
-      else if (months < 12) text = months + ` month${months > 1 ? 's' : ''} ago`;
-      else text = years + ` year${years > 1 ? 's' : ''} ago`;
-    } else { // future
-      if (seconds < 60) text = 'in a few seconds';
-      else if (minutes < 60) text = 'in ' + minutes + ' min';
-      else if (hours < 24) text = 'in ' + hours + ` hour${hours > 1 ? 's' : ''}`;
-      else if (days === 1) text = 'tomorrow';
-      else if (days < 7) text = 'in ' + days + ` day${days > 1 ? 's' : ''}`;
-      else if (weeks < 5) text = 'in ' + weeks + ` week${weeks > 1 ? 's' : ''}`;
-      else if (months < 12) text = 'in ' + months + ` month${months > 1 ? 's' : ''}`;
-      else text = 'in ' + years + ` year${years > 1 ? 's' : ''}`;
+    // ------------------ FUTURE ------------------
+    if (diff > 0) {
+      if (days === 0 && hours >= 1) {           // 1–24 hours remaining
+        text = 'today, in ' + hours + ' hour' + (hours > 1 ? 's' : '');
+      } else if (days === 0) {                  // <1 hour
+        if (minutes < 1) text = 'today, in a few seconds';
+        else text = 'today, in ' + minutes + ' min';
+      } else if (days === 1) text = 'tomorrow';
+      else if (days < 7) text = 'in ' + days + ' days';
+      else if (weeks < 5) text = 'in ' + weeks + ' week' + (weeks > 1 ? 's' : '');
+      else if (months < 12) text = 'in ' + months + ' month' + (months > 1 ? 's' : '');
+      else text = 'in ' + years + ' year' + (years > 1 ? 's' : '');
+    }
+    // ------------------ PAST ------------------
+    else {
+      if (days === 0 && hours >= 1) {           // 1–24 hours ago
+        text = 'today, ' + hours + ' hour' + (hours > 1 ? 's' : '') + ' ago';
+      } else if (days === 0) {                  // <1 hour
+        if (minutes < 1) text = 'today, just now';
+        else text = 'today, ' + minutes + ' min ago';
+      } else if (days === 1) text = 'yesterday';
+      else if (days < 7) text = days + ' days ago';
+      else if (weeks < 5) text = weeks + ' week' + (weeks > 1 ? 's' : '') + ' ago';
+      else if (months < 12) text = months + ' month' + (months > 1 ? 's' : '') + ' ago';
+      else text = years + ' year' + (years > 1 ? 's' : '') + ' ago';
+    }
+
+    return text;
+  };
+});
+app.filter('fromNowDate', function () {
+  return function (datetimeStr) {
+    if (!datetimeStr) return '';
+
+    var now = new Date();
+    var dt = new Date(datetimeStr);
+    if (isNaN(dt)) return datetimeStr;
+
+    var diff = dt - now;
+    var days = Math.floor(Math.abs(diff) / (1000 * 60 * 60 * 24));
+
+    if (diff >= 0) { // future
+      if (days === 0) return 'today';
+      if (days === 1) return 'tomorrow';
+      if (days < 7) return 'in ' + days + ' days';
+      return dt.toLocaleDateString();
+    } else { // past
+      if (days === 0) return 'today';
+      if (days === 1) return 'yesterday';
+      if (days < 7) return days + ' days ago';
+      return dt.toLocaleDateString();
+    }
+  };
+});
+app.filter('fromNowTime', function () {
+  return function (datetimeStr) {
+    if (!datetimeStr) return '';
+
+    var now = new Date();
+    var dt = new Date(datetimeStr);
+    if (isNaN(dt)) return datetimeStr;
+
+    var diff = dt - now;           // future >0, past <0
+    var absDiff = Math.abs(diff);
+
+    var seconds = Math.floor(absDiff / 1000);
+    var minutes = Math.floor(seconds / 60);
+    var hours = Math.floor(minutes / 60);
+    var days = Math.floor(hours / 24);
+    var weeks = Math.floor(days / 7);
+    var months = Math.floor(days / 30);
+    var years = Math.floor(days / 365);
+
+    var text = '';
+
+    // ------------------ FUTURE ------------------
+    if (diff > 0) {
+      if (days === 0 && hours >= 1) {           // 1–24 hours remaining
+        text = 'today, in ' + hours + ' hour' + (hours > 1 ? 's' : '');
+      } else if (days === 0) {                  // <1 hour
+        if (minutes < 1) text = 'today, in a few seconds';
+        else text = 'today, in ' + minutes + ' min';
+      } else if (days === 1) text = 'tomorrow';
+      else if (days < 7) text = 'in ' + days + ' days';
+      else if (weeks < 5) text = 'in ' + weeks + ' week' + (weeks > 1 ? 's' : '');
+      else if (months < 12) text = 'in ' + months + ' month' + (months > 1 ? 's' : '');
+      else text = 'in ' + years + ' year' + (years > 1 ? 's' : '');
+    }
+    // ------------------ PAST ------------------
+    else {
+      if (days === 0 && hours >= 1) {           // 1–24 hours ago
+        text = 'today, ' + hours + ' hour' + (hours > 1 ? 's' : '') + ' ago';
+      } else if (days === 0) {                  // <1 hour
+        if (minutes < 1) text = 'today, just now';
+        else text = 'today, ' + minutes + ' min ago';
+      } else if (days === 1) text = 'yesterday';
+      else if (days < 7) text = days + ' days ago';
+      else if (weeks < 5) text = weeks + ' week' + (weeks > 1 ? 's' : '') + ' ago';
+      else if (months < 12) text = months + ' month' + (months > 1 ? 's' : '') + ' ago';
+      else text = years + ' year' + (years > 1 ? 's' : '') + ' ago';
+    }
+
+    return text;
+  };
+});
+app.filter('fromNowHoursOnly', function () {
+  return function (datetimeStr) {
+    if (!datetimeStr) return '';
+
+    var now = new Date();
+    var dt = new Date(datetimeStr);
+    if (isNaN(dt)) return datetimeStr;
+
+    var diff = dt - now;            // future >0, past <0
+    var absDiff = Math.abs(diff);
+
+    var minutes = Math.floor(absDiff / (1000 * 60));
+    var hours   = Math.floor(minutes / 60);
+    var days    = Math.floor(hours / 24);
+
+    var text = '';
+
+    if (days === 0) { // same day
+      if (hours >= 1) {  // 1–24 hours
+        if (diff > 0) text = 'today, in ' + hours + ' hour' + (hours > 1 ? 's' : '');
+        else text = 'today, ' + hours + ' hour' + (hours > 1 ? 's' : '') + ' ago';
+      } else {           // <1 hour
+        if (diff > 0) text = 'today, in ' + minutes + ' min';
+        else text = 'today, ' + minutes + ' min ago';
+      }
+    } else {           // >24 hours
+      if (diff > 0) {  // future
+        if (days === 1) text = 'tomorrow';
+        else if (days < 7) text = 'in ' + days + ' days';
+        else text = dt.toLocaleDateString();
+      } else {          // past
+        if (days === 1) text = 'yesterday';
+        else if (days < 7) text = days + ' days ago';
+        else text = dt.toLocaleDateString();
+      }
     }
 
     return text;

@@ -133,42 +133,16 @@ app.controller('DashboardController', ['$scope', '$http', '$timeout', function (
     function loadStudentDashboard() {
         $http.get(window.baseUrl + '/API/dashboard/student')
             .then(function (response) {
-                if (response.data.success) {
+                if (response.data.status === 'success') {
                     $scope.studentStats = response.data.stats;
                     $scope.studentUpcomingExams = response.data.upcomingExams;
                     $scope.recentResults = response.data.recentResults;
                     $scope.scoreDistribution = response.data.scoreDistribution;
-                    $scope.subjectPerformance = response.data.subjectPerformance;
                 } else {
-                    // Demo data
-                    $scope.studentStats = {
-                        courses: 5,
-                        examsTaken: 8,
-                        avgScore: 85,
-                        upcomingExams: 2
-                    };
-                    $scope.studentUpcomingExams = [
-                        { id: 1, title: 'Mathematics Final', date: 'Tomorrow', course: 'Math 101', duration: 120, start_time: '10:00 AM', hash: 'abc123' },
-                        { id: 2, title: 'Physics Quiz', date: 'Next Week', course: 'Physics', duration: 60, start_time: '2:00 PM', hash: 'def456' }
-                    ];
-                    $scope.recentResults = [
-                        { attempt_id: 101, exam_id: 1, exam_title: 'Chemistry Test', course: 'Chemistry', score: 92, passed: true, date: 'Nov 15' },
-                        { attempt_id: 102, exam_id: 2, exam_title: 'Biology Exam', course: 'Biology', score: 78, passed: true, date: 'Nov 10' },
-                        { attempt_id: 103, exam_id: 3, exam_title: 'Math Quiz', course: 'Mathematics', score: 65, passed: false, date: 'Nov 5' }
-                    ];
-                    $scope.scoreDistribution = [
-                        { range: '90-100%', count: 3, percentage: 30 },
-                        { range: '80-89%', count: 2, percentage: 20 },
-                        { range: '70-79%', count: 2, percentage: 20 },
-                        { range: '60-69%', count: 2, percentage: 20 },
-                        { range: 'Below 60%', count: 1, percentage: 10 }
-                    ];
-                    $scope.subjectPerformance = [
-                        { name: 'Mathematics', score: 92 },
-                        { name: 'Physics', score: 85 },
-                        { name: 'Chemistry', score: 78 },
-                        { name: 'Biology', score: 88 }
-                    ];
+                    $scope.studentStats = {};
+                    $scope.studentUpcomingExams = [];
+                    $scope.recentResults = [];
+                    $scope.scoreDistribution = [];
                 }
                 $scope.loading = false;
             })
@@ -191,88 +165,49 @@ app.controller('DashboardController', ['$scope', '$http', '$timeout', function (
         return roles[roleId] || 'User';
     };
 
-    $scope.refreshLogs = function () {
-        if ($scope.user.role === 1) {
-            $scope.systemLogs.unshift({
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                type: 'info',
-                user: $scope.user.name,
-                action: 'Manual Refresh',
-                details: 'Logs refreshed manually'
-            });
-        }
-    };
+    // $scope.refreshLogs = function () {
+    //     if ($scope.user.role === 1) {
+    //         $scope.systemLogs.unshift({
+    //             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    //             type: 'info',
+    //             user: $scope.user.name,
+    //             action: 'Manual Refresh',
+    //             details: 'Logs refreshed manually'
+    //         });
+    //     }
+    // };
 
-    $scope.clearCache = function () {
-        $http.post(window.baseUrl + '/API/system/clear-cache')
-            .then(function (response) {
-                showNotification('Cache cleared successfully', 'success');
-            })
-            .catch(function (error) {
-                showNotification('Failed to clear cache', 'error');
-            });
-    };
+    // $scope.clearCache = function () {
+    //     $http.post(window.baseUrl + '/API/system/clear-cache')
+    //         .then(function (response) {
+    //             showNotification('Cache cleared successfully', 'success');
+    //         })
+    //         .catch(function (error) {
+    //             showNotification('Failed to clear cache', 'error');
+    //         });
+    // };
 
-    $scope.runBackup = function () {
-        $http.post(window.baseUrl + '/API/system/backup')
-            .then(function (response) {
-                showNotification('Backup started successfully', 'success');
-            })
-            .catch(function (error) {
-                showNotification('Failed to start backup', 'error');
-            });
-    };
+    // $scope.runBackup = function () {
+    //     $http.post(window.baseUrl + '/API/system/backup')
+    //         .then(function (response) {
+    //             showNotification('Backup started successfully', 'success');
+    //         })
+    //         .catch(function (error) {
+    //             showNotification('Failed to start backup', 'error');
+    //         });
+    // };
 
-    $scope.checkUpdates = function () {
-        $http.get(window.baseUrl + '/API/system/check-updates')
-            .then(function (response) {
-                if (response.data.updates) {
-                    showNotification('System is up to date', 'success');
-                } else {
-                    showNotification('Updates available', 'info');
-                }
-            })
-            .catch(function (error) {
-                showNotification('Failed to check updates', 'error');
-            });
-    };
-
-    function showNotification(message, type) {
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full`;
-
-        const typeClasses = {
-            success: 'bg-green-600 text-white',
-            error: 'bg-red-600 text-white',
-            info: 'bg-blue-600 text-white'
-        };
-
-        notification.className += ' ' + (typeClasses[type] || typeClasses.info);
-        notification.innerHTML = `
-            <div class="flex items-center space-x-3">
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : 'fa-info-circle'}"></i>
-                <span>${message}</span>
-            </div>
-        `;
-
-        document.body.appendChild(notification);
-
-        // Animate in
-        $timeout(() => {
-            notification.classList.remove('translate-x-full');
-            notification.classList.add('translate-x-0');
-        }, 10);
-
-        // Remove after 5 seconds
-        $timeout(() => {
-            notification.classList.remove('translate-x-0');
-            notification.classList.add('translate-x-full');
-            $timeout(() => {
-                if (notification.parentElement) {
-                    document.body.removeChild(notification);
-                }
-            }, 300);
-        }, 5000);
-    }
+    // $scope.checkUpdates = function () {
+    //     $http.get(window.baseUrl + '/API/system/check-updates')
+    //         .then(function (response) {
+    //             if (response.data.updates) {
+    //                 showNotification('System is up to date', 'success');
+    //             } else {
+    //                 showNotification('Updates available', 'info');
+    //             }
+    //         })
+    //         .catch(function (error) {
+    //             showNotification('Failed to check updates', 'error');
+    //         });
+    // };
 }]);

@@ -23,41 +23,6 @@ class DashboardAPI
         $this->user = Auth::getUser();
     }
 
-    // Tech dashboard
-    public function techDashboard()
-    {
-        try {
-            $stats = [];
-
-            // Get total users
-            $stmt = $this->db->query("SELECT COUNT(*) FROM users WHERE status = 1");
-            $stats['totalUsers'] = $stmt->fetchColumn();
-
-            // Get active users (logged in last 24 hours)
-            $stmt = $this->db->query("SELECT COUNT(*) FROM users WHERE updated_at >= DATE_SUB(NOW(), INTERVAL 1 DAY)");
-            $stats['activeUsers'] = $stmt->fetchColumn();
-
-            // Get system logs (you'll need to create a system_logs table)
-            $logs = [];
-
-            return $this->successResponse('Dashboard data loaded', [
-                'stats' => $stats,
-                'logs' => $logs,
-                'systemStatus' => [
-                    'online' => true,
-                    'uptime' => '99.9%'
-                ],
-                'dbStats' => [
-                    'size' => $this->getDatabaseSize(),
-                    'tables' => $this->countTables(),
-                    'lastBackup' => 'Today'
-                ]
-            ]);
-        } catch (Exception $e) {
-            return $this->errorResponse('Failed to load dashboard data: ' . $e->getMessage());
-        }
-    }
-
     // Admin dashboard
     public function adminDashboard()
     {
@@ -304,74 +269,144 @@ class DashboardAPI
         try {
             $userId = $this->user['id'];
 
-            // Get student stats
-            $stats = [];
+            $examTaken = 0;
+            $passedCount = 0;
+            $totalScore = 0;
 
-            // Get exam attempts count
-            $stmt = $this->db->prepare("SELECT COUNT(*) FROM exam_attempts WHERE user_id = ?");
+            $upcomingExams = [];
+            $allResults = [];
+
+            // Score ranges
+            $scoreDistributions = [
+                ['range' => '75-100%', 'count' => 0, 'percentage' => 0],
+                ['range' => '65-74%', 'count' => 0, 'percentage' => 0],
+                ['range' => '55-64%', 'count' => 0, 'percentage' => 0],
+                ['range' => '40-54%', 'count' => 0, 'percentage' => 0],
+                ['range' => 'Below 40%', 'count' => 0, 'percentage' => 0],
+            ];
+
+            // Registrations
+            $stmt = $this->db->prepare(
+                "SELECT * FROM exam_registration WHERE student_id = ?"
+            );
             $stmt->execute([$userId]);
-            $stats['examsTaken'] = $stmt->fetchColumn();
+            $registrations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Get average score
-            $stmt = $this->db->prepare("SELECT AVG(percentage) FROM exam_attempts WHERE user_id = ? AND status = 'completed'");
-            $stmt->execute([$userId]);
-            $stats['avgScore'] = round($stmt->fetchColumn(), 1) ?: 0;
+            foreach ($registrations as $reg) {
 
-            // Get recent results
-            $stmt = $this->db->prepare("
-                SELECT ea.id as attempt_id, ea.exam_id, ea.percentage as score, 
-                       ea.completed_date as date, ei.title as exam_title
-                FROM exam_attempts ea
-                LEFT JOIN exam_info ei ON ea.exam_id = ei.id
-                WHERE ea.user_id = ? AND ea.status = 'completed'
-                ORDER BY ea.completed_date DESC 
-                LIMIT 5
-            ");
-            $stmt->execute([$userId]);
-            $recentResults = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                // Attempt
+                $stmt = $this->db->prepare(
+                    "SELECT * FROM exam_attempts 
+                 WHERE registration_id = ? AND student_id = ?"
+                );
+                $stmt->execute([$reg['id'], $userId]);
+                $attempt = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Add passed flag
-            foreach ($recentResults as &$result) {
-                $result['passed'] = $result['score'] >= 50; // Assuming 50% is passing
-                $result['course'] = 'General'; // You'll need to map exams to courses
+                if (!$attempt)
+                    continue;
+
+                // Exam info
+                $stmt = $this->db->prepare(
+                    "SELECT ei.id, ei.title, ei.code, ei.duration, es.start_time, ea.url AS hash
+                 FROM exam_info ei
+                 LEFT JOIN exam_settings es ON ei.id = es.exam_id
+                 LEFT JOIN exam_attempts ea ON ea.id = ?
+                 WHERE ei.id = ?"
+                );
+                $stmt->execute([$attempt['id'], $reg['exam_id']]);
+                $exam = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if (!$exam)
+                    continue;
+
+                /* ---------------- Upcoming Exams ---------------- */
+                if ($reg['status'] === 'registered' && $attempt['status'] === 'not_started') {
+                    $upcomingExams[] = [
+                        'id' => $exam['id'],
+                        'title' => $exam['title'],
+                        'code' => str_replace(' ', "_", $exam['code']),
+                        'duration' => $exam['duration'],
+                        'date' => str_replace(' ', 'T', $exam['start_time']),
+                        'start_time' =>str_replace(' ', 'T', $exam['start_time'])
+                    ];
+                }
+
+                /* ---------------- Completed Exams ---------------- */
+                if (in_array($attempt['status'], ['completed', 'rules_violation'])) {
+
+                    $examTaken++;
+                    $score = (int) $attempt['score'];
+                    $totalScore += $score;
+
+                    if ((int) $attempt['passed'] === 1) {
+                        $passedCount++;
+                    }
+
+                    // Score distribution
+                    if ($score >= 75)
+                        $scoreDistributions[0]['count']++;
+                    elseif ($score >= 65)
+                        $scoreDistributions[1]['count']++;
+                    elseif ($score >= 55)
+                        $scoreDistributions[2]['count']++;
+                    elseif ($score >= 40)
+                        $scoreDistributions[3]['count']++;
+                    else
+                        $scoreDistributions[4]['count']++;
+
+                    $allResults[] = [
+                        'attempt_id' => $attempt['id'],
+                        'exam_id' => $exam['id'],
+                        'exam_title' => $exam['title'],
+                        'code' => strtoupper(str_replace(' ', '_', $exam['code'])),
+                        'score' => $score,
+                        'passed' => (bool) $attempt['passed'],
+                        'date' => str_replace(' ', 'T', $attempt['started_at'])
+                    ];
+                }
             }
 
-            return $this->successResponse('Dashboard data loaded', [
-                'stats' => $stats,
-                'upcomingExams' => [],
-                'recentResults' => $recentResults,
-                'scoreDistribution' => [
-                    ['range' => '90-100%', 'count' => 3, 'percentage' => 30],
-                    ['range' => '80-89%', 'count' => 2, 'percentage' => 20],
-                    ['range' => '70-79%', 'count' => 2, 'percentage' => 20],
-                    ['range' => '60-69%', 'count' => 2, 'percentage' => 20],
-                    ['range' => 'Below 60%', 'count' => 1, 'percentage' => 10]
-                ],
-                'subjectPerformance' => [
-                    ['name' => 'Mathematics', 'score' => 92],
-                    ['name' => 'Physics', 'score' => 85],
-                    ['name' => 'Chemistry', 'score' => 78],
-                    ['name' => 'Biology', 'score' => 88]
-                ]
+            /* ---------------- Calculations ---------------- */
+            $passRate = $examTaken > 0
+                ? round(($passedCount / $examTaken) * 100)
+                : 0;
 
+            $avgScore = $examTaken > 0
+                ? round($totalScore / $examTaken)
+                : 0;
+
+            foreach ($scoreDistributions as &$dist) {
+                $dist['percentage'] = $examTaken > 0
+                    ? round(($dist['count'] / $examTaken) * 100)
+                    : 0;
+            }
+
+            // Recent results (latest 5)
+            usort($allResults, function ($a, $b) {
+                return strtotime($b['date']) - strtotime($a['date']);
+            });
+            $recentResults = array_slice($allResults, 0, 5);
+
+            /* ---------------- Response ---------------- */
+            return $this->successResponse('Dashboard data loaded successfully', [
+                'stats' => [
+                    'passRate' => $passRate,
+                    'examsTaken' => $examTaken,
+                    'avgScore' => $avgScore,
+                    'upcomingExams' => count($upcomingExams)
+                ],
+                'upcomingExams' => $upcomingExams,
+                'recentResults' => $recentResults,
+                'scoreDistribution' => $scoreDistributions
             ]);
+
         } catch (Exception $e) {
-            return $this->errorResponse('Failed to load dashboard data: ' . $e->getMessage());
+            return $this->errorResponse(
+                'Failed to load dashboard data: ' . $e->getMessage()
+            );
         }
     }
 
-    private function getDatabaseSize()
-    {
-        // Get database size
-        $stmt = $this->db->query("SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) as size FROM information_schema.tables WHERE table_schema = DATABASE()");
-        return $stmt->fetchColumn() . ' MB';
-    }
-
-    private function countTables()
-    {
-        $stmt = $this->db->query("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE()");
-        return $stmt->fetchColumn();
-    }
 
     private function successResponse($message, $data = [])
     {

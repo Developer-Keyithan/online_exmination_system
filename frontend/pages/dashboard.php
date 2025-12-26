@@ -1,12 +1,20 @@
 <?php $this->extend('frontend'); ?>
 <?php $this->controller('DashboardController'); ?>
+<?php
+if ((int) user_role() === 1 || (int) user_role() === 7) {
+    header('Location: ' . BASE_URL . '/profile');
+    exit;
+}
+?>
+
 
 <?php $this->start('content'); ?>
 <div ng-controller="DashboardController" ng-init="init()">
     <!-- Header -->
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-100">Dashboard</h1>
-        <p class="text-gray-400">Welcome back, {{user.name}}! Here's your overview.</p>
+        <p class="text-gray-400">Welcome back, <span class="text-gray-200 font-medium">{{user.name}}!</span> Here's your
+            overview.</p>
         <!-- <p class="text-sm text-gray-500">User ID: {{user.id}} | Role: {{getRoleName(user.role)}}</p> -->
     </div>
 
@@ -413,25 +421,29 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 <!-- Upcoming Exams -->
                 <div class="bg-[#0005] p-6 rounded-xl border border-[#fff2]">
-                    <h2 class="text-xl font-bold text-gray-100" ng-class="{'mb-6' : myUpcomingExams.length > 0}">My Upcoming Exams</h2>
+                    <h2 class="text-xl font-bold text-gray-100" ng-class="{'mb-6' : myUpcomingExams.length > 0}">My
+                        Upcoming Exams</h2>
 
                     <!-- Upcoming exams list -->
-                    <div class="max-h-96 overflow-hidden"  ng-if="myUpcomingExams.length > 0">
+                    <div class="max-h-96 overflow-hidden" ng-if="myUpcomingExams.length > 0">
                         <div class="space-y-4 max-h-96 overflow-y-auto">
                             <div ng-repeat="exam in myUpcomingExams"
                                 class="p-4 rounded-lg bg-[#0007] hover:bg-[#0009] transition-colors">
 
                                 <div class="flex justify-between items-start mb-2">
                                     <h3 class="font-medium text-gray-100 capitalize">{{exam.title}}</h3>
-                                    <span class="text-xs px-2 py-1 rounded-full bg-cyan-500/20 text-cyan-300 capitalize">
+                                    <span
+                                        class="text-xs px-2 py-1 rounded-full bg-cyan-500/20 text-cyan-300 capitalize">
                                         {{exam.date | fromNow}}
                                     </span>
                                 </div>
 
-                                <p class="text-sm text-gray-400 mb-3">Code: <span class="uppercase">{{exam.code}}</span></p>
+                                <p class="text-sm text-gray-400 mb-3">Code: <span class="uppercase">{{exam.code}}</span>
+                                </p>
 
                                 <div class="flex justify-between text-sm">
-                                    <span class="text-gray-400">{{exam.students}} student{{exam.students > 1 ? 's' : ''}} enrolled</span>
+                                    <span class="text-gray-400">{{exam.students}} student{{exam.students > 1 ? 's' :
+                                        ''}} enrolled</span>
                                     <a href="<?php echo BASE_URL ?>/exam/edit/{{exam.id}}"
                                         class="text-cyan-400 hover:text-cyan-300">Edit</a>
                                 </div>
@@ -456,7 +468,8 @@
 
                 <!-- Recently Attempted Exams -->
                 <div class="bg-[#0005] p-6 rounded-xl border border-[#fff2]">
-                    <h2 class="text-xl font-bold text-gray-100" ng-class="{'mb-6' : recentAttempts.length > 0}">Recently Attempted Exams by Students</h2>
+                    <h2 class="text-xl font-bold text-gray-100" ng-class="{'mb-6' : recentAttempts.length > 0}">Recently
+                        Attempted Exams by Students</h2>
 
                     <!-- Recently attempted list -->
                     <div class="space-y-4 max-h-96 overflow-y-auto" ng-if="recentAttempts.length > 0">
@@ -511,8 +524,8 @@
                             <i class="fas fa-book-open text-blue-400 text-xl"></i>
                         </div>
                         <div>
-                            <p class="text-sm text-gray-400">My Courses</p>
-                            <h3 class="text-2xl font-bold text-gray-100">{{studentStats.courses || 0}}</h3>
+                            <p class="text-sm text-gray-400">My Pass Rate</p>
+                            <h3 class="text-2xl font-bold text-gray-100">{{studentStats.passRate || 0}}%</h3>
                         </div>
                     </div>
                 </div>
@@ -555,57 +568,107 @@
             </div>
 
             <!-- Upcoming Exams & Recent Results -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="flex flex-wrap lg:flex-row items-start gap-6 mb-8">
                 <!-- Upcoming Exams -->
-                <div class="bg-[#0005] p-6 rounded-xl border border-[#fff2]">
+                <div class="bg-[#0005] p-6 rounded-xl border border-[#fff2] flex-1 min-w-[350px]">
                     <h2 class="text-xl font-bold text-gray-100 mb-6">My Upcoming Exams</h2>
-                    <div class="space-y-4">
-                        <div ng-repeat="exam in studentUpcomingExams"
-                            class="p-4 rounded-lg bg-[#0007] hover:bg-[#0009] transition-colors">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-medium text-gray-100">{{exam.title}}</h3>
-                                <span class="text-xs px-2 py-1 rounded-full bg-cyan-500/20 text-cyan-300">
-                                    {{exam.date}}
-                                </span>
-                            </div>
-                            <p class="text-sm text-gray-400 mb-3">{{exam.course}} • {{exam.duration}} mins</p>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-400">Starts: {{exam.start_time}}</span>
-                                <a href="<?php echo BASE_URL ?>/exam/register/{{exam.hash}}"
-                                    class="text-cyan-400 hover:text-cyan-300">Start</a>
+
+                    <div class="max-h-96 overflow-hidden">
+
+                        <!-- Upcoming exams list -->
+                        <div class="space-y-4 max-h-96 overflow-y-auto overflow-x-hidden"
+                            ng-if="studentUpcomingExams.length > 0">
+
+                            <div ng-repeat="exam in studentUpcomingExams"
+                                class="p-4 rounded-lg bg-[#0007] hover:bg-[#0009] transition-colors">
+
+                                <div class="flex justify-between items-start mb-2">
+                                    <h3 class="font-medium text-gray-100 capitalize">{{ exam.title }}</h3>
+                                    <span
+                                        class="text-xs px-2 py-1 rounded-full bg-cyan-500/20 text-cyan-300 first-letter-uppercase">
+                                        {{ exam.date | fromNowDate }}
+                                    </span>
+                                </div>
+
+                                <p class="text-sm text-gray-400 mb-3">{{ exam.duration | number }} mins</p>
+
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-400">Starts: {{ exam.start_time | fromNowTime }}</span>
+                                    <a href="<?php echo BASE_URL ?>/exam/attempt/{{ exam.id }}/register"
+                                        class="text-cyan-400 hover:text-cyan-300">
+                                        Start
+                                    </a>
+                                </div>
                             </div>
                         </div>
+
+                        <!-- No upcoming exams state -->
+                        <div ng-if="studentUpcomingExams.length === 0"
+                            class="flex flex-col items-center justify-center text-center py-12 text-gray-400">
+
+                            <svg class="w-12 h-12 mb-3 text-gray-500" fill="none" stroke="currentColor"
+                                stroke-width="1.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+
+                            <p class="text-sm font-medium text-gray-300">
+                                No Upcoming Exams
+                            </p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                You’re all caught up 🎉
+                            </p>
+                        </div>
+
                     </div>
                 </div>
 
+
                 <!-- Recent Results -->
-                <div class="bg-[#0005] p-6 rounded-xl border border-[#fff2]">
+                <div class="bg-[#0005] p-6 rounded-xl border border-[#fff2] flex-1 min-w-[350px]">
                     <h2 class="text-xl font-bold text-gray-100 mb-6">Recent Results</h2>
-                    <div class="space-y-4">
+
+                    <!-- Results List -->
+                    <div class="space-y-4 max-h-96 overflow-y-auto overflow-x-hidden" ng-if="recentResults.length > 0">
                         <div ng-repeat="result in recentResults"
                             class="p-4 rounded-lg bg-[#0007] hover:bg-[#0009] transition-colors">
+
                             <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-medium text-gray-100">{{result.exam_title}}</h3>
+                                <h3 class="font-medium text-gray-100 capitalize">{{ result.exam_title }}</h3>
                                 <span class="text-xl font-bold"
                                     ng-class="result.passed ? 'text-green-400' : 'text-red-400'">
-                                    {{result.score}}%
+                                    {{ result.score }}%
                                 </span>
                             </div>
-                            <p class="text-sm text-gray-400 mb-3">{{result.course}}</p>
+
+                            <p class="text-sm text-gray-400 mb-3">{{ result.code }}</p>
+
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-400">{{result.date}}</span>
-                                <a href="<?php echo BASE_URL ?>/results/review/{{result.attempt_id}}/{{result.exam_id}}/{{user.id}}"
+                                <span class="text-gray-400 first-letter-uppercase">{{ result.date | fromNow }}</span>
+                                <a href="<?php echo BASE_URL ?>/result/review/{{ result.attempt_id }}/{{ result.exam_id }}/{{ user.id }}"
                                     class="text-cyan-400 hover:text-cyan-300">Review</a>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Performance Overview -->
-            <div class="bg-[#0005] p-6 rounded-xl border border-[#fff2]">
-                <h2 class="text-xl font-bold text-gray-100 mb-6">Performance Overview</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- No Results State -->
+                    <div ng-if="recentResults.length === 0"
+                        class="flex flex-col items-center justify-center text-center py-12 text-gray-400">
+                        <svg class="w-12 h-12 mb-3 text-gray-500" fill="none" stroke="currentColor" stroke-width="1.5"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12h6m2 0a2 2 0 100-4H7a2 2 0 100 4m0 0v4a2 2 0 002 2h6a2 2 0 002-2v-4" />
+                        </svg>
+                        <p class="text-sm font-medium text-gray-300">No Results</p>
+                        <p class="text-xs text-gray-500 mt-1">You haven’t completed any exams yet.</p>
+                    </div>
+
+                </div>
+
+
+                <!-- Performance Overview -->
+                <div class="bg-[#0005] p-6 rounded-xl border border-[#fff2] flex-1 min-w-[350px]">
+                    <h2 class="text-xl font-bold text-gray-100 mb-6">Performance Overview</h2>
                     <div>
                         <h3 class="text-lg font-medium text-gray-100 mb-4">Score Distribution</h3>
                         <div class="space-y-3">
@@ -618,22 +681,6 @@
                                     </div>
                                 </div>
                                 <span class="text-gray-300">{{score.count}}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-medium text-gray-100 mb-4">Subject Performance</h3>
-                        <div class="space-y-3">
-                            <div ng-repeat="subject in subjectPerformance" class="flex items-center justify-between">
-                                <span class="text-gray-300">{{subject.name}}</span>
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-24 bg-gray-700 rounded-full h-2">
-                                        <div class="h-2 rounded-full"
-                                            ng-class="subject.score >= 70 ? 'bg-green-500' : subject.score >= 50 ? 'bg-yellow-500' : 'bg-red-500'"
-                                            ng-style="{'width': subject.score + '%'}"></div>
-                                    </div>
-                                    <span class="text-gray-300 w-10 text-right">{{subject.score}}%</span>
-                                </div>
                             </div>
                         </div>
                     </div>

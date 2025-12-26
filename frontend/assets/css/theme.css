@@ -81,6 +81,9 @@ select {
   position: fixed;
 }
 
+.first-letter-uppercase::first-letter {
+  text-transform: uppercase;
+}
 
 /* Animated background elements */
 .light-effect {
