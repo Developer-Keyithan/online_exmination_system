@@ -1130,7 +1130,7 @@ app.controller('ExamPreviewController', [
         $scope.areQuestionsComplete = function () {
             // For preview, check if we have questions and sections
             if (!$scope.allQuestions || $scope.allQuestions.length === 0) return false;
-            if (!$scope.originalSections || $scope.originalSections.length === 0) return false;
+            if (!$scope.originalSections || $scope.originalSections.length !== 0) return false;
 
             // Check if all questions are properly assigned to sections
             let allQuestionsAssigned = true;
