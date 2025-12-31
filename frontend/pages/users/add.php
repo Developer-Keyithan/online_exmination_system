@@ -24,6 +24,7 @@ $userGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <?php $this->start('content'); ?>
 
 <div class="bg-[#0003] p-6 rounded-lg mb-16">
+    <div class="px-4 py-3 bg-cyan-600 rounded-lg" ng-click="sendMail()">Test mail</div>
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row justify-between md:items-center mb-6">
         <div>

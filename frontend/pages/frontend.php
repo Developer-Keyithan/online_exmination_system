@@ -4,21 +4,31 @@
 <!-- load head tag  -->
 <?php include 'layouts/head.php' ?>
 <!-- start body -->
+<?php
+function isAuthLayout()
+{
+    $authPages = ['login', 'forgot-password', 'reset-password', '404', 'unauthorized', 'forbidden'];
+    return in_array(currentNav(), $authPages) || in_array(currentNav(1), $authPages);
+}
 
-<body class="flex flex-row justify-center <?php echo in_array(currentNav(), ['login', '404', 'unauthorized', 'forbidden'])? 'items-center': 'text-white';?> min-h-[100vh] relative bg-gradient-to-br from-[#0f172a] from-0% via-[#1e293b] via-50% to-[#334155] to-100%">
-    <?php if (currentNav() != 'login' && currentNav() != '404' && currentNav() != 'unauthorized' && currentNav() != 'forbidden')
+?>
+
+<body class="flex flex-row justify-center <?php echo isAuthLayout() ? 'items-center' : 'text-white'; ?> min-h-[100vh] relative bg-gradient-to-br from-[#0f172a] from-0% via-[#1e293b] via-50% to-[#334155] to-100%">
+    <?php if (!isAuthLayout())
         include 'layouts/sidebar.php' ?>
-        <div class="w-full">
-        <?php if (currentNav() != 'login' && currentNav() != '404' && currentNav() != 'unauthorized' && currentNav() != 'forbidden')
-        include 'layouts/header.php'; ?>
-        <div class="w-full <?php echo (currentNav() == 'login') ? 'p-0' : ((currentNav() == '404') ? 'p-0' : 'p-4') ?>"
+    <div class="w-full">
+        <?php if (!isAuthLayout())
+            include 'layouts/header.php'; ?>
+        <div class="w-full <?php echo isAuthLayout() ? 'p-0' : 'p-4' ?>"
             <?= $this->getController() ? 'ng-controller="' . $this->getController() . '"' : '' ?>>
-            <?php if (currentNav() != 'login' && currentNav() != '404' && currentNav() != 'unauthorized' && currentNav() != 'forbidden'): ?>
+            <?php if (!isAuthLayout()): ?>
                 <div class="mt-3 mb-4 rounded-lg">
                     <div class="flex flex-row justify-between">
                         <h4 class="text-white text-xl font-semibold capitalize">
-                            <?php // Uncomment if you want to show current nav title
-                                // echo ucwords(str_replace('_', ' ', currentNav())); ?>
+                            <?php
+                            // Uncomment if you want to show current nav title
+                            // echo ucwords(str_replace('_', ' ', currentNav())); 
+                            ?>
                         </h4>
 
                         <?php if (currentNav() != 'dashboard'): ?>
@@ -46,7 +56,7 @@
                                     foreach ($breadcrumbs as $index => $crumb):
                                         $path .= '/' . $crumb;
                                         $isLast = ($index == count($breadcrumbs) - 1);
-                                        ?>
+                                    ?>
                                         <li aria-current="<?= $isLast ? 'page' : ''; ?>">
                                             <div class="flex items-center">
                                                 <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
@@ -58,9 +68,11 @@
                                                         <?= ucwords(str_replace('_', ' ', $crumb)) ?>
                                                     </span>
                                                 <?php else: ?>
-                                                    <!-- <a href="<?php // echo BASE_URL . $path ?>"
+                                                    <!-- <a href="<?php // echo BASE_URL . $path 
+                                                                    ?>"
                                                         class="ml-1 text-gray-700 hover:text-blue-600 md:ml-2">
-                                                        <?php // echo ucwords(str_replace('_', ' ', $crumb)) ?>
+                                                        <?php // echo ucwords(str_replace('_', ' ', $crumb)) 
+                                                        ?>
                                                     </a> -->
                                                     <span class="ml-1 text-gray-500">
                                                         <?php echo ucwords(str_replace('_', ' ', $crumb)) ?>
@@ -80,12 +92,12 @@
             <?= $this->section('content') ?>
         </div>
 
-        <?php if (currentNav() != 'login' && currentNav() != '404' && currentNav() != 'unauthorized' && currentNav() != 'forbidden')
+        <?php if (!isAuthLayout())
             include 'layouts/footer.php' ?>
-        </div>
-        <!-- end body -->
-    </body>
-    <!-- load all scripts -->
+    </div>
+    <!-- end body -->
+</body>
+<!-- load all scripts -->
 <?php include 'layouts/script.php' ?>
 <!-- end html -->
 

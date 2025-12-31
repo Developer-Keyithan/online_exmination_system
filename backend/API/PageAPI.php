@@ -48,6 +48,26 @@ class PageAPI
         return view('forbidden.forbidden', ['title' => '403 Forbidden']);
     }
 
+    public function resetPassword($resetToken)
+    {
+        if (!$resetToken) {
+            $this->notFound();
+        } else {
+            $stmt = db()->prepare("SELECT reset_token FROM users WHERE reset_token = ?");
+            $stmt->execute([$resetToken]);
+            if ($stmt->rowCount() == 1) {
+                return view('auth.reset', ['title' => 'Reset Password']);
+            } else {
+                $this->notFound();
+            }
+        }
+    }
+
+    public function forgotPassword()
+    {
+        return view('auth.forgot', ['title' => 'Forgot Password']);
+    }
+
     public function dashboard()
     {
         $this->requirePermission('dashboard.view');
@@ -59,13 +79,13 @@ class PageAPI
         $this->requirePermission('courses.view');
         return view('courses.all', ['title' => 'All Courses']);
     }
-    
+
     public function addCourse()
     {
         $this->requirePermission('courses.create');
         return view('courses.add', ['title' => 'Add Course']);
     }
-    
+
     public function myCourses()
     {
         $this->requirePermission('courses.my_courses');
@@ -77,7 +97,7 @@ class PageAPI
         $this->requirePermission('lectures.view');
         return view('lectures.all', ['title' => 'All Lectures']);
     }
-    
+
     public function myLectures()
     {
         $this->requirePermission('lectures.my');
@@ -89,37 +109,37 @@ class PageAPI
         $this->requirePermission('exams.view');
         return view('exams.all', ['title' => 'All Exams']);
     }
-    
+
     public function createExam()
     {
         $this->requirePermission('exams.create');
         return view('exams.create', ['title' => 'Create Exam']);
     }
-    
+
     public function editExam()
     {
         $this->requirePermission('exams.edit');
         return view('exams.create', ['title' => 'Edit Exam']);
     }
-    
+
     public function myExams()
     {
         $this->requirePermission('exams.my');
         return view('exams.my', ['title' => 'My Exams']);
     }
-    
+
     public function previewExam($id)
     {
         $this->requirePermission('exams.view');
         return view('exams.preview', ['title' => 'Preview Exam', 'exam_id' => $id]);
     }
-    
+
     public function examAttemptRegister($hash)
     {
         $this->requirePermission('exams.attempt');
         return view('exams.register', ['title' => 'Register For Exam', 'rest_url_hash' => $hash]);
     }
-    
+
     public function attemptExam($hash, $id)
     {
         $this->requirePermission('exams.attempt');
@@ -140,13 +160,13 @@ class PageAPI
         $this->requirePermission('questions.bank');
         return view('questions.bank', ['title' => 'Question Bank']);
     }
-    
+
     public function createQuestions()
     {
         $this->requirePermission('questions.create');
         return view('questions.create', ['title' => 'Create Questions']);
     }
-    
+
     public function myQuestions()
     {
         $this->requirePermission('questions.my');
@@ -164,7 +184,7 @@ class PageAPI
         $this->requirePermission('results.all');
         return view('results.all', ['title' => 'All Results']);
     }
-    
+
     public function myResults()
     {
         $this->requirePermission('results.my');
@@ -205,13 +225,13 @@ class PageAPI
         $this->requirePermission('attendance.view');
         return view('attendance.view', ['title' => 'View Attendance']);
     }
-    
+
     public function markAttendance()
     {
         $this->requirePermission('attendance.mark');
         return view('attendance.mark', ['title' => 'Mark Attendance']);
     }
-    
+
     public function myAttendance()
     {
         $this->requirePermission('attendance.my');
@@ -223,13 +243,13 @@ class PageAPI
         $this->requirePermission('notifications.view');
         return view('notifications.index', ['title' => 'Notifications']);
     }
-    
+
     public function users()
     {
         $this->requirePermission('users.view');
         return view('users.list', ['title' => 'All Users']);
     }
-    
+
     public function addUser()
     {
         $this->requirePermission('users.create');
@@ -247,7 +267,7 @@ class PageAPI
         $this->requirePermission('reports.exam');
         return view('reports.exam', ['title' => 'Exam Reports']);
     }
-    
+
     public function studentPerformance()
     {
         $this->requirePermission('reports.performance');

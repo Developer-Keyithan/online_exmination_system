@@ -71,6 +71,12 @@ Router::group(['middleware' => ['auth']], function () {
 
     // 🔹 Settings
     Router::get('/settings', 'PageAPI@settings', 'settings');
+
+    // 🔹 Reset password
+    Router::get('/reset-password/{token}', 'PageAPI@resetPassword', 'reset_password');
+
+    // 🔹 Settings
+    Router::get('/forgot-password', 'PageAPI@forgotPassword', 'forgot_password');
 });
 
 Router::group(['prefix' => 'API'], function () {
@@ -160,6 +166,9 @@ Router::group(['prefix' => 'API'], function () {
     Router::get('/dashboard/admin', 'DashboardAPI@adminDashboard');
     Router::get('/dashboard/lecturer', 'DashboardAPI@lecturerDashboard');
     Router::get('/dashboard/student', 'DashboardAPI@studentDashboard');
+
+    // Mail
+    Router::post('test-mail', 'UserAPI@testMail', 'test_mail');
 });
 
 Router::group(['prefix' => 'modal'], function () {

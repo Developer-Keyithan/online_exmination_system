@@ -1,6 +1,8 @@
 <?php
+
 use Lib\View;
 use Lib\Database;
+
 if (!function_exists('route')) {
     function route($name, $parameters = [])
     {
@@ -25,7 +27,6 @@ if (!function_exists('redirect')) {
         header("Location: " . $url);
         exit;
     }
-
 }
 
 if (!function_exists('config')) {
@@ -140,10 +141,15 @@ if (!function_exists('dbTable')) {
     }
 }
 
-function currentNav()
+function currentNav($index = null)
 {
     $current = strtok($_SERVER['REQUEST_URI'], '?');
     $current = str_replace('/NIT/exam/', '', $current);
+
+    if ($index !== null) {
+        $parts = explode('/', trim($current, '/'));
+        $current = $parts[(int)$index] ?? '';
+    }
     return $current;
 }
 
@@ -170,7 +176,7 @@ function hasPermission($permission)
         session_start();
     }
 
-    return in_array($permission, $_SESSION['permissions']?? []);
+    return in_array($permission, $_SESSION['permissions'] ?? []);
 }
 
 function isActiveMenuItem($item, $current)
@@ -202,7 +208,7 @@ function isCollapse()
 function renderMenuOptions($menu, $collapse, $level = 0)
 {
     $current = currentNav();
-    ?>
+?>
     <ul class="space-y-1 <?php echo ($level == 0) ? 'mb-32' : '' ?>">
         <?php foreach ($menu as $item): ?>
             <?php if (!hasAccess($item))
@@ -248,7 +254,7 @@ function renderMenuOptions($menu, $collapse, $level = 0)
             </li>
         <?php endforeach; ?>
     </ul>
-    <?php
+<?php
 }
 
 function format_nic($number)
@@ -268,7 +274,6 @@ function format_nic($number)
     else {
         return $number;
     }
-
 }
 
 function format_mobile($number)
@@ -334,7 +339,7 @@ function uploadImg($folderName, $file, $allowed)
 function currency_format($value)
 {
     if (is_numeric($value)) {
-        $place = 2;//get_decimal_place();
+        $place = 2; //get_decimal_place();
         if ($place > 0) {
             return number_format($value, $place);
         }
@@ -441,7 +446,8 @@ function getUserGroupName($id)
     return $row ? $row['name'] : null;
 }
 
-function getUserName($id) {
+function getUserName($id)
+{
     $sql = "SELECT name FROM users WHERE id = ?";
     $statement = db()->prepare($sql);
     $statement->execute([$id]);
