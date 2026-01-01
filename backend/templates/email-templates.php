@@ -1,5 +1,5 @@
 <?php
-function resetMailTemplate($toMail, $resetLink, $tokenExpire, $fullname, $username, $password = null)
+function welcomeMailTemplate($toMail, $resetLink, $tokenExpire, $fullname, $username, $password = null)
 {
     $mailBody = "
         <!DOCTYPE html>
@@ -92,6 +92,129 @@ function resetMailTemplate($toMail, $resetLink, $tokenExpire, $fullname, $userna
             </div>
         </body>
         </html>
+    ";
+
+    return $mailBody;
+}
+
+function resetMailTemplate($toMail, $resetLink, $fullname)
+{
+    $sentTime = date('D, M d, Y \a\t h:i A');
+
+    $mailBody = "
+    <!DOCTYPE html>
+    <html lang='en'>
+    <head>
+        <meta charset='UTF-8'>
+        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+        <title>Password Reset</title>
+        <style>
+            body {
+                font-family: Inter, sans-serif;
+                background: #0a0a0a;
+                color: #e5e7eb;
+                padding: 20px;
+            }
+            .box {
+                max-width: 600px;
+                margin: auto;
+                background: #0f172a;
+                border-radius: 16px;
+                padding: 35px;
+                border: 1px solid rgba(255,255,255,0.1);
+            }
+            h1 {
+                color: #f8fafc;
+                margin-bottom: 20px;
+            }
+            p {
+                color: #cbd5e1;
+                line-height: 1.6;
+                font-size: 16px;
+            }
+            .btn {
+                display: inline-block;
+                margin: 30px 0;
+                padding: 15px 35px;
+                background: #7c3aed;
+                color: #fff;
+                text-decoration: none;
+                border-radius: 10px;
+                font-weight: 600;
+            }
+            .cta {
+                text-align: center;
+                margin: 35px 0;
+            }
+            .cta a {
+                display: inline-block;
+                padding: 16px 36px;
+                background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+                color: #fff;
+                text-decoration: none;
+                border-radius: 12px;
+                font-weight: 600;
+            }
+            .note {
+                background: rgba(239,68,68,0.1);
+                border: 1px solid rgba(239,68,68,0.25);
+                padding: 18px;
+                border-radius: 12px;
+                margin-top: 25px;
+                text-align: center;
+            }
+            .note strong {
+                color: #f87171;
+            }
+                
+            .footer {
+                text-align: center;
+                margin-top: 30px;
+                font-size: 13px;
+                color: #94a3b8;
+            }
+        </style>
+    </head>
+    <body>
+        <div class='box'>
+            <h1>Password Reset Request</h1>
+
+            <p>Hello $fullname,</p>
+
+            <p>
+                We received a request to reset the password for your account associated with <strong>$toMail</strong>.
+            </p>
+
+            <p>
+                Click the button below to reset your password. If you did not request this, you can safely ignore this email.
+            </p>
+
+            <div class='cta'>
+                <a href='$resetLink'>Reset Password</a>
+            </div>
+
+            <p style='margin-top:12px;'>
+                <strong>Email sent at: </strong>$sentTime
+            </p>
+
+            <div class='note'>
+                <p>
+                    <strong>This password reset link is valid for ONLY 5 minutes from the time this email was sent.</strong>
+                </p>
+
+                <p style='margin-top:10px; color:#94a3b8;'>
+                    After 5 minutes, this link will automatically become invalid
+                    and you must request a new password reset.
+                </p>
+            </div>
+
+            <div class='footer'>
+                © " . config('app.copyright') . "<br>
+                This is an automated email. Please do not reply.
+            </div>
+        </div>
+    </body>
+    </html>
     ";
 
     return $mailBody;

@@ -75,7 +75,7 @@ Router::group(['middleware' => ['auth']], function () {
     // 🔹 Reset password
     Router::get('/reset-password/{token}', 'PageAPI@resetPassword', 'reset_password');
 
-    // 🔹 Settings
+    // 🔹 forgot password
     Router::get('/forgot-password', 'PageAPI@forgotPassword', 'forgot_password');
 });
 
@@ -102,8 +102,8 @@ Router::group(['prefix' => 'API'], function () {
     Router::post('/questions/assign_to_section/{id}', 'QuestionAPI@assignQuestionToSection', 'assign_question_to_section', ['auth']);
     Router::post('/questions/unassign_section/{id}', 'QuestionAPI@unassignSection', 'assign_question_to_section', ['auth']);
 
+    Router::post('/reset/send-email', 'AuthAPI@sendResetLink', 'resend_reset_link', ['auth']);
     Router::post('/reset/{token}', 'AuthAPI@updateResetInfos', 'update_reset_infos');
-    Router::post('/reset/resend/{token}', 'AuthAPI@resendResetLink', 'resend_reset_link', ['auth']);
 
 
     Router::get('/users', 'UserAPI@getAllUsersHandler', 'get_all_users', ['auth']);

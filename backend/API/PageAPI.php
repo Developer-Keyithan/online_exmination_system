@@ -7,20 +7,19 @@ class PageAPI
 
     public function __construct()
     {
-        $currentRoute = $_SERVER['REQUEST_URI'] ?? '/';
+        $route = trim($_SERVER['REQUEST_URI'] ?? '/', '/');
 
-        // Skip login redirect if already on login page OR 404 page
-        if (!Auth::isLoggedIn() && !str_contains($currentRoute, 'login') && !str_contains($currentRoute, '/404')) {
-            $encodedUrl = rawurlencode($currentRoute);
+        $public = ['login', '404', 'forbidden', 'unauthorized', 'forgot-password', 'reset-password'];
 
-            $router = Router::getInstance();
-            $loginUrl = $router->url('login');
-            $loginUrl .= '?redirect=' . $encodedUrl;
-
-            header("Location: $loginUrl");
+        if (!Auth::isLoggedIn() && !array_reduce($public, fn($c, $r) => $c || str_contains($route, $r), false)) {
+            header(
+                "Location: " . Router::getInstance()->url('login') .
+                    '?redirect=' . rawurlencode('/' . $route)
+            );
             exit;
         }
     }
+
 
     private function requirePermission($permission)
     {
@@ -40,12 +39,12 @@ class PageAPI
 
     public function notFound()
     {
-        return view('not_found.not_found', ['title' => '404 Page Not Found']);
+        return view('auth.404', ['title' => '404 Page Not Found']);
     }
 
     public function forbidden()
     {
-        return view('forbidden.forbidden', ['title' => '403 Forbidden']);
+        return view('auth.forbidden', ['title' => '403 Forbidden']);
     }
 
     public function resetPassword($resetToken)

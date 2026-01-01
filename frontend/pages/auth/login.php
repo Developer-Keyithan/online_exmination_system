@@ -52,7 +52,7 @@
                 <label for="remember-me" class="ml-2 block text-sm text-blue-200">Remember me</label>
             </div>
 
-            <a href="#" class="text-sm text-blue-200 hover:text-white transition-colors duration-300">
+            <a href="<?php echo BASE_URL ?>/forgot-password" class="text-sm text-blue-200 hover:text-white transition-colors duration-300">
                 Forgot password?
             </a>
         </div>

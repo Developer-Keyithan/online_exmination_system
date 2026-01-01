@@ -3,7 +3,7 @@
 use Backend\Modal\Auth;
 
 require_once './vendor/autoload.php'; // PHPMailer autoload
-require_once './backend/templates/email-templates.php'; // Your resetMailTemplate function file
+require_once './backend/templates/email-templates.php'; // Your welcomeMailTemplate function file
 require_once './backend/helpers/mailer.php'; // Your sendMail() function file
 class AuthAPI
 {
@@ -249,25 +249,27 @@ class AuthAPI
         }
     }
 
-    public function resendResetLink($token)
+    public function sendResetLink()
     {
-        try {
-            $incomingToken = $token;
-            $stmt = $this->db->prepare('SELECT * FROM users WHERE reset_token = ?');
-            $stmt->execute([$incomingToken]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        header('Content-Type: application/json; charset=utf-8');
 
+        try {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $email = $data['email'] ?? null;
+            $stmt = $this->db->prepare('SELECT * FROM users WHERE email = ?');
+            $stmt->execute([$email]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$user) {
                 return json_encode([
                     'status' => 'error',
-                    'msg' => "Can't find the token, maybe it expired"
+                    'msg' => "Can't find the email, maybe it doesn't exist",
+                    'email' => $email
                 ]);
             }
 
             $toMail = $user['email'];
             $fullname = $user['name'];
-            $username = $user['username'];
             $newToken = bin2hex(random_bytes(32));
             $resetLink = BASE_URL . '/reset-password/' . $newToken;
             $tokenExpire = new DateTime('now', new DateTimeZone('Asia/Colombo'));
@@ -278,7 +280,7 @@ class AuthAPI
             $stmt->execute([$newToken, $tokenExpire, $toMail]);
 
             // Generate email HTML using your template
-            $message = resetMailTemplate($toMail, $resetLink, $tokenExpire, $fullname, $username);
+            $message = resetMailTemplate($toMail, $resetLink, $fullname);
 
             // Send the email
             $result = sendMail($toMail, 'Reset Your Password', $message, $fullname);

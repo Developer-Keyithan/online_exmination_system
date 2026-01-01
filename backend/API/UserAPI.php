@@ -1,6 +1,6 @@
 <?php
 require_once './vendor/autoload.php'; // PHPMailer autoload
-require_once './backend/templates/email-templates.php'; // Your resetMailTemplate function file
+require_once './backend/templates/email-templates.php'; // Your welcomeMailTemplate function file
 require_once './backend/helpers/mailer.php'; // Your sendMail() function file
 class UserAPI
 {
@@ -231,7 +231,7 @@ class UserAPI
             $stmt->execute([$token, $tokenExpire, $toMail]);
 
             // Generate email HTML using your template
-            $message = resetMailTemplate($toMail, $resetLink, $tokenExpire, $fullname, $username, $password);
+            $message = welcomeMailTemplate($toMail, $resetLink, $tokenExpire, $fullname, $username, $password);
 
             // Send the email
             $result = sendMail($toMail, 'Reset Your Password', $message, $fullname);

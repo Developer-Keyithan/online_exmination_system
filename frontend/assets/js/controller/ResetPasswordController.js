@@ -256,7 +256,9 @@ app.controller('ResetPasswordController', ['$scope', '$http', '$timeout', '$inte
         $scope.error = null;
 
         const token = getParameterFromUrl();
-        $http.post(window.baseUrl + '/API/reset/resend/' + token)
+        $http.post(window.baseUrl + '/API/reset/send-email', {
+            email: $scope.email
+        })
             .then(response => {
                 if (response.data.status === 'success') {
                     Toast.fire({

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 24, 2025 at 12:26 PM
+-- Generation Time: Jan 01, 2026 at 09:17 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -289,6 +289,8 @@ CREATE TABLE `users` (
   `password` varchar(255) DEFAULT NULL,
   `note` text DEFAULT NULL,
   `status` int(11) DEFAULT 1,
+  `reset_token` varchar(64) DEFAULT NULL,
+  `token_expire` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -297,23 +299,23 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `reg_no`, `name`, `phone`, `username`, `user_group`, `email`, `password`, `note`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'TEC1001', 'Technical', 769104866, 'Technical', 1, 'nit@nit.lk', '$2y$10$yxmxgdwkKx./JeouE7440eWhyEmHwyKtA2gLGFnTBeO0WBluD316K', NULL, 0, '2025-11-10 04:35:12', '2025-12-24 05:31:01'),
-(2, 'SADMIN1002', 'Super Admin', 770000000, 'Super Admin', 2, 'sadmin@gmail.com', '$2y$10$XSHpkVodlQWIK1dcqwoxaecQvH/1FLq5KFSiaMnL8hS2DXdI1WeBm', NULL, 0, '2025-11-10 04:35:12', '2025-12-24 05:43:00'),
-(3, 'ADMIN1003', 'Admin', 770000001, 'Admin', 3, 'admin@gmail.com', '$2y$10$IlvEIF9FHbKO4idOCYAie.NFQkokCRylyChihPeVr5..PGfMGYhbC', NULL, 0, '2025-11-11 05:15:21', '2025-12-24 05:43:06'),
-(4, 'HOD1004', 'HOD', 770000002, 'HOD', 4, 'hod@gmail.com', '$2y$10$comQ2IKtK4Mzyu8X8kg74.N17/9WGXbZcSqcDrT0ks8dDXBDUO6Xi', NULL, 0, '2025-11-11 05:15:52', '2025-12-24 05:31:20'),
-(5, 'LEC1005', 'Lecturer', 770000003, 'Lecturer', 5, 'lecturer@gmail.com', '$2y$10$kPn8ypKFeiBb.NySZKiqJubY1QXp0/x6pALTVONOZTKVuGcRTz0QK', NULL, 0, '2025-11-11 05:15:52', '2025-12-24 05:31:31'),
-(6, 'STU1006', 'Student', 770000004, 'Student', 6, 'student@gmail.com', '$2y$10$YkAfCZplNZIapz2F5HWz.ud71q59USbBUmZn2Yc8PPP4.zTXwRIJC', NULL, 0, '2025-11-11 05:15:52', '2025-12-24 05:31:41'),
-(7, 'PAR1007', 'Parent', 770000005, 'Parent', 7, 'parent@gmail.com', '$2y$10$QifOmKW/FcDWPEH61qZhNu8ma5ApURI8.HOyogFknfq3MnZkg79G2', NULL, 0, '2025-11-11 05:15:52', '2025-12-24 05:31:46'),
-(8, 'STU1008', 'Saththiyaseelan Keyithan', 772114093, 'keyithan', 6, 'sathyjaseelankeyithan@gamil.com', '$2y$10$kDXnewF3PdrTtHkA/t0cX.w.xqTpFtqBqBj7cpFtiWdx16Mo7xTeq', '', 0, '2025-12-12 11:25:50', '2025-12-24 05:31:55'),
-(11, 'STU1009', 'Saththiyaseelan Keyithan', 772114093, 'Keyithanb', 6, 'saththiyaseelankeyithan@gamil.com', '$2y$10$k4pxrO7HLIrE8ncvhopGz.3Qz0uxjQKu6883494QdKjmlm4xiNfEC', '', 0, '2025-12-12 11:35:28', '2025-12-24 05:32:00'),
-(12, 'STU1010', 'Saththiyaseelan Keyithan', 772114093, 'keyi', 6, 'sathyseelankeyithan@gamil.com', '$2y$10$76n.80qqYVRczqJPoza3buVSrtz4TVsFfzlnAMf8mSKv3Y1EX0Tpu', '', 0, '2025-12-12 11:36:20', '2025-12-24 05:32:08'),
-(13, 'STU1012', 'Saththiyaseelan Keyithan', 77211493, 'nitexist', 6, 'tech@nit.lk', '$2y$10$NVJKzuytRBbNKh8vqrJFyuRCVf.Zt2jZzccfuFdw0hYk7A6g3b7HC', '', 0, '2025-12-13 03:58:20', '2025-12-24 05:32:23'),
-(14, 'STU1013', 'Saththiyaseelan Keyithan', 77211493, 'Keyith', 1, 'nit@tech.lk', '$2y$10$fuMjI2WHPRBjFwgYo6ubPO.SdRT9FLX8r.TyiaL28GsdpiVAWuUm6', '', 0, '2025-12-13 05:05:38', '2025-12-24 05:32:30'),
-(15, 'STU1014', 'Saththiyaseelan Keyithan', 7622918, 'Tech', 6, 'sadmin@nit.com', '$2y$10$vPb0aSK3qdldVDSbKC1h6eKnGzue7iGKMvUi/dkgsJSc2jTt49f56', '', 0, '2025-12-13 05:09:28', '2025-12-24 05:32:35'),
-(16, 'ADMIN1015', 'Saththiyaseelan Keyithan', 772020918, 'NIT_TECH', 3, 'skeyithan@gmail.com', '$2y$10$hOVQ88HUUnYki4X576L6PufQETxatBRuU6a07hj2OvwPg3c9B.wSi', '', 0, '2025-12-24 05:44:09', '2025-12-24 10:09:45'),
-(17, 'ADMIN1016', 'Saththiyaseelan Keyithan', 770202918, 'deleted_17', 3, 'deleted_17_1766568827@deleted.com', '$2y$10$crKDI1Kq9nb1BqMF4fUcM.kXJRyGAbH5AsmxKe0CEoM3.vvJxX6Pu', '', 3, '2025-12-24 05:46:26', '2025-12-24 09:33:47'),
-(19, 'STU1015', 'Saththiyaseelan Keyithan', 772114093, 'deleted_19', 6, 'deleted_19_1766568873@deleted.com', '$2y$10$vr2zIx3c2.jaJVnxG.iKHO5vUZm8qJZtJVRT/yUElaJVjEvm8sdZW', '', 3, '2025-12-24 07:08:24', '2025-12-24 09:34:33');
+INSERT INTO `users` (`id`, `reg_no`, `name`, `phone`, `username`, `user_group`, `email`, `password`, `note`, `status`, `reset_token`, `token_expire`, `created_at`, `updated_at`) VALUES
+(1, 'TEC1001', 'Technical', 769104866, 'Technical', 1, 'nit@nit.lk', '$2y$10$yxmxgdwkKx./JeouE7440eWhyEmHwyKtA2gLGFnTBeO0WBluD316K', NULL, 0, '716a0e344973c3fc3de6a2fd8310d4584d1302b178ff847d3e38c8ab145bbb45', '2025-12-25 11:10:58', '2025-11-10 04:35:12', '2025-12-31 09:26:04'),
+(2, 'SADMIN1002', 'Super Admin', 770000000, 'Super Admin', 2, 'sadmin@gmail.com', '$2y$10$XSHpkVodlQWIK1dcqwoxaecQvH/1FLq5KFSiaMnL8hS2DXdI1WeBm', NULL, 0, NULL, NULL, '2025-11-10 04:35:12', '2025-12-24 05:43:00'),
+(3, 'ADMIN1003', 'Admin', 770000001, 'Admin', 3, 'admin@gmail.com', '$2y$10$IlvEIF9FHbKO4idOCYAie.NFQkokCRylyChihPeVr5..PGfMGYhbC', NULL, 0, NULL, NULL, '2025-11-11 05:15:21', '2025-12-24 05:43:06'),
+(4, 'HOD1004', 'HOD', 770000002, 'HOD', 4, 'hod@gmail.com', '$2y$10$comQ2IKtK4Mzyu8X8kg74.N17/9WGXbZcSqcDrT0ks8dDXBDUO6Xi', NULL, 0, NULL, NULL, '2025-11-11 05:15:52', '2025-12-24 05:31:20'),
+(5, 'LEC1005', 'Lecturer', 770000003, 'Lecturer', 5, 'lecturer@gmail.com', '$2y$10$kPn8ypKFeiBb.NySZKiqJubY1QXp0/x6pALTVONOZTKVuGcRTz0QK', NULL, 0, NULL, NULL, '2025-11-11 05:15:52', '2025-12-24 05:31:31'),
+(6, 'STU1006', 'Student', 770000004, 'Student', 6, 'student@gmail.com', '$2y$10$YkAfCZplNZIapz2F5HWz.ud71q59USbBUmZn2Yc8PPP4.zTXwRIJC', NULL, 0, NULL, NULL, '2025-11-11 05:15:52', '2025-12-24 05:31:41'),
+(7, 'PAR1007', 'Parent', 770000005, 'Parent', 7, 'parent@gmail.com', '$2y$10$QifOmKW/FcDWPEH61qZhNu8ma5ApURI8.HOyogFknfq3MnZkg79G2', NULL, 0, NULL, NULL, '2025-11-11 05:15:52', '2025-12-24 05:31:46'),
+(11, 'STU1009', 'Saththiyaseelan Keyithan', 772114093, 'Keyithanb', 6, 'saththiyaseelankeyithan@gamil.com', '$2y$10$k4pxrO7HLIrE8ncvhopGz.3Qz0uxjQKu6883494QdKjmlm4xiNfEC', '', 0, NULL, NULL, '2025-12-12 11:35:28', '2025-12-24 05:32:00'),
+(12, 'STU1010', 'Saththiyaseelan Keyithan', 772114093, 'keyi', 6, 'sathyseelankeyithan@gamil.com', '$2y$10$76n.80qqYVRczqJPoza3buVSrtz4TVsFfzlnAMf8mSKv3Y1EX0Tpu', '', 0, NULL, NULL, '2025-12-12 11:36:20', '2025-12-24 05:32:08'),
+(13, 'STU1012', 'Saththiyaseelan Keyithan', 77211493, 'nitexist', 6, 'tech@nit.lk', '$2y$10$NVJKzuytRBbNKh8vqrJFyuRCVf.Zt2jZzccfuFdw0hYk7A6g3b7HC', '', 0, NULL, NULL, '2025-12-13 03:58:20', '2025-12-24 05:32:23'),
+(14, 'STU1013', 'Saththiyaseelan Keyithan', 77211493, 'Keyith', 1, 'nit@tech.lk', '$2y$10$fuMjI2WHPRBjFwgYo6ubPO.SdRT9FLX8r.TyiaL28GsdpiVAWuUm6', '', 0, NULL, NULL, '2025-12-13 05:05:38', '2025-12-24 05:32:30'),
+(15, 'STU1014', 'Saththiyaseelan Keyithan', 7622918, 'Tech', 6, 'sadmin@nit.com', '$2y$10$vPb0aSK3qdldVDSbKC1h6eKnGzue7iGKMvUi/dkgsJSc2jTt49f56', '', 0, NULL, NULL, '2025-12-13 05:09:28', '2025-12-24 05:32:35'),
+(16, 'ADMIN1015', 'Saththiyaseelan Keyithan', 772020918, 'NIT_TECH', 3, 'skeyithan@gmail.com', '$2y$10$hOVQ88HUUnYki4X576L6PufQETxatBRuU6a07hj2OvwPg3c9B.wSi', '', 0, NULL, NULL, '2025-12-24 05:44:09', '2025-12-24 10:09:45'),
+(17, 'ADMIN1016', 'Saththiyaseelan Keyithan', 770202918, 'deleted_17', 3, 'deleted_17_1766568827@deleted.com', '$2y$10$crKDI1Kq9nb1BqMF4fUcM.kXJRyGAbH5AsmxKe0CEoM3.vvJxX6Pu', '', 3, NULL, NULL, '2025-12-24 05:46:26', '2025-12-24 09:33:47'),
+(19, 'STU1015', 'Saththiyaseelan Keyithan', 772114093, 'deleted_19', 6, 'deleted_19_1766568873@deleted.com', '$2y$10$vr2zIx3c2.jaJVnxG.iKHO5vUZm8qJZtJVRT/yUElaJVjEvm8sdZW', '', 3, NULL, NULL, '2025-12-24 07:08:24', '2025-12-24 09:34:33'),
+(21, 'STU1016', 'Saththiyaseelan Keyithan', 772114093, 'Keyithan', 6, 'sathyjaseelankeyithan@gmail.com', '$2y$10$vuxhEQdn/1lzSNpmmU/iQuV54rFCjVQJ.Hg.4x17kcKrrBrFUYchi', '', 0, '640d50f1df45024df4c9ee68b509583ee98952596d60079bb512c4b9ff20e859', '2026-01-01 08:19:40', '2025-12-31 09:50:12', '2026-01-01 08:14:40');
 
 -- --------------------------------------------------------
 
@@ -446,7 +448,7 @@ ALTER TABLE `sections`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `user_group`
